@@ -2,7 +2,7 @@
 
 **Design document · printed recipe pages to structured recipes, on the device, without losing
 anything**
-Version 0.2 · 21 November 2026 · **Rulings in from the design conversation (SLT-020 to SLT-090);
+Version 0.7 · 21 November 2026 · **Rulings in from the design conversation (SLT-020 to SLT-090);
 not for the agent until a task names it**
 
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md` and `00B_SYLANTRO_GUARDRAILS.md`.
@@ -39,7 +39,7 @@ upgrade, so durability outranks everything (SLT-030).
 
 - iPhone and iPad; the Mac runs the iPad app. Scanning is iPhone and iPad first; the Mac is for
   browsing, editing and cooking from a bigger screen.
-- The floor is iOS 26.6 (SLT-013). Foundation Models needs iOS 26 and an Apple Intelligence device: iPhone 15 Pro or newer, or an Apple silicon iPad or Mac.
+- The floor is iOS 26.5 (SLT-013). Foundation Models needs iOS 26 and an Apple Intelligence device: iPhone 15 Pro or newer, or an Apple silicon iPad or Mac.
 - Built on sylib-swift, with Score It \* as the template (SLT-080, `02`).
 
 ---
@@ -175,6 +175,18 @@ the mirror is intact. It never deletes the store and never traps. The screen's d
 SyLibCloud's `CloudAccountStatus` at the root, `ICloudStatusButton` in the main toolbar, and
 `ICloudInfoSheet` with Sylantro's own `ICloudInfoContent`. Its wording is Pops's.
 
+### 5.6 Sharing a recipe (SLT-100 to SLT-103)
+
+One recipe at a time, as a file another Sylantro user imports; no shared or public database for
+the MVP; a recipe she already has is skipped when clearly the same, otherwise she chooses. The
+design is `04_SHARING_DESIGN.md`.
+
+### 5.7 Photos and image storage *(proposed)*
+
+Page scans and dish photos: one photo model, HEIC sizes, device-only thumbnails, JPEG copies in
+the mirror, and what CloudKit does with them. The design, and what the spike measures, is
+`05_IMAGE_STORAGE_DESIGN.md`.
+
 ---
 
 ## 6. Nutrition and PKU extension points (SLT-022)
@@ -212,6 +224,7 @@ The spike's real pages and results never enter the repository (`00B` §2); fixtu
 - Whether her clinic or dietitian uses a specific phenylalanine food list.
 - How a recipe is restored from the mirror, and whether the recovery screen offers it.
 - The duplicate rule's threshold, set from the spike.
+- Sharing's open details: `04` §8. Photos: `05` §9.
 
 ---
 
@@ -219,5 +232,10 @@ The spike's real pages and results never enter the repository (`00B` §2); fixtu
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.7 | §5.6 and §5.7 moved to `04` and `05`; pointers left | Pops, 21 Nov 2026 |
+| 0.6 | §5.6: an import she already has is skipped when clearly the same, otherwise she chooses | SLT-103 (Pops, 21 Nov 2026) |
+| 0.5 | §5.7: dish photos and an image storage plan, proposed (P-1 to P-7), with what was verified about CloudKit assets | Pops, 21 Nov 2026: "Make it so" |
+| 0.4 | §5.6: sharing one recipe as a file for the MVP; a shared binder parked; no public database | SLT-100 to SLT-102 (Pops, 21 Nov 2026) |
+| 0.3 | §1: the floor is iOS 26.5 | SLT-013 (Pops, 21 Nov 2026) |
 | 0.2 | §1: the floor is iOS 26.6 | SLT-013 (Pops, 21 Nov 2026) |
 | 0.1 | First version, from the design draft of 21 Nov 2026 and the studio survey: the platform, on-device extraction, the two stores and the mirror, never wiping the store, the schema, and the milestones | Pops, 21 Nov 2026: "write up the design as we have it" |

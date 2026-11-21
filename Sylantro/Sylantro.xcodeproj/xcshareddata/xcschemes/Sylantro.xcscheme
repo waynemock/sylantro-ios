@@ -38,15 +38,6 @@
                ReferencedContainer = "container:Sylantro.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B0630E6B30B1405900EB2694"
-               BuildableName = "SylantroUITests.xctest"
-               ReferencedContainer = "container:Sylantro.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
