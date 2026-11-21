@@ -2,7 +2,7 @@
 
 **Design document · printed recipe pages to structured recipes, on the device, without losing
 anything**
-Version 0.2 · 21 November 2026 · **Rulings in from the design conversation (SLT-020 to SLT-090);
+Version 0.16 · 21 November 2026 · **Rulings in from the design conversation (SLT-020 to SLT-090);
 not for the agent until a task names it**
 
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md` and `00B_SYLANTRO_GUARDRAILS.md`.
@@ -39,7 +39,7 @@ upgrade, so durability outranks everything (SLT-030).
 
 - iPhone and iPad; the Mac runs the iPad app. Scanning is iPhone and iPad first; the Mac is for
   browsing, editing and cooking from a bigger screen.
-- The floor is iOS 26.6 (SLT-013). Foundation Models needs iOS 26 and an Apple Intelligence device: iPhone 15 Pro or newer, or an Apple silicon iPad or Mac.
+- The floor is iOS 26.5 (SLT-013). Foundation Models needs iOS 26 and an Apple Intelligence device: iPhone 15 Pro or newer, or an Apple silicon iPad or Mac. Her phone is an iPhone 17 Pro (SLT-017).
 - Built on sylib-swift, with Score It \* as the template (SLT-080, `02`).
 
 ---
@@ -48,7 +48,7 @@ upgrade, so durability outranks everything (SLT-030).
 
 | Step | What happens | Where | She waits? |
 |---|---|---|---|
-| 1. Scan | VisionKit's document camera: auto-capture, crop and flatten, many pages per session. A session starts from the **"Let's cook."** scan button (SLT-043) | Capture | Yes |
+| 1. Scan | VisionKit's document camera: auto-capture, crop and flatten. **One capture is one recipe** (SLT-045): she taps **"Let's cook."** (SLT-043), photographs that recipe's page or pages, and taps Save; the camera reopens for the next recipe | Capture | Yes |
 | 2. Save the page | The original photo and the cropped image are saved as a `SourcePage` in a `ScanSession`, then mirrored to Files. From here the page is safe | Capture | Yes, about a second a page with step 1 |
 | 3. Read the text | Vision's text recognition: words, positions, confidence | Background queue | No |
 | 4. Structure the recipe | Foundation Models, guided generation into the schema (§3) | Background queue | No |
@@ -57,8 +57,22 @@ upgrade, so durability outranks everything (SLT-030).
 
 A 30-page session ends with 30 drafts to skim, not 30 forms to type.
 
-- **Multi-page and multi-recipe pages.** In review she can join a page to the previous recipe, or
-  split a page into two recipes. Pages and recipes are many-to-many (§4).
+- **One capture is one recipe** (SLT-045). She says which pages belong together by capturing them
+  together, so Sylantro never guesses. A recipe that runs onto a second page is common (three of the
+  15 in the spike's test set, one with only its header on the first page, `10` §1), and is simply
+  two pages in one capture. A `ScanSession` is still one sitting; it holds many captures, one per
+  recipe. The capture's pages are read and structured together, in the background (SLT-041).
+- **A forgotten page.** Every recipe has **Add page**, which adds a photographed page to it and
+  structures the recipe again; review keeps her edits. **Save asks "Is there a page 2?"** only when
+  the last page looks unfinished: it ends mid-sentence, says "Page 1 of 2", or has an asterisk with
+  no footnote (SLT-046). To tell, Save reads just that page's bottom lines, quickly: the one piece of
+  reading on the capture path, kept that narrow. If she says no, the recipe is saved with a
+  "continues on a page not scanned" warning.
+- **Several recipes on one page** (SLT-047). One magazine page in the test set holds four
+  (`10` H-38). When structuring finds more than one titled recipe in a capture, review lists them
+  and **she picks which to save**: one, some or all. Each saved one is its own recipe sharing the
+  page photo; pages and recipes are many-to-many (§4). One cut off at the foot is offered with the
+  "continues on a page not scanned" warning and Add page.
 - **Duplicates.** A recipe with a matching title and similar ingredients is flagged before it is
   saved twice. The rule for "similar" is set in the spike (§7).
 
@@ -97,6 +111,12 @@ improves.
 - Each field carries a confidence; low ones are tinted in review.
 - Handwritten notes and multi-column magazine pages will be weaker, so review carries more weight
   there.
+- **Handwriting that can't be read is called out, never guessed or dropped** (SLT-066). The
+  ingredient or step keeps its place, is marked `isUnreadable`, and keeps the `sourceBox` of where it
+  sits on the page; writing with no place in the recipe (a margin note) is kept in `unreadableAreas`.
+  *(TS-15, rec.)* The recipe view shows that piece of the page photo in place, cut on the fly from the
+  cropped page by its `sourceBox`, with "Couldn't read this" beside it; she can type what it says.
+  Nothing new is stored: the page photo is already kept and synced (SLT-030, `05`).
 
 ### 3.4 A device that can't structure (SLT-044)
 
@@ -122,12 +142,12 @@ sorted-key JSON `Data` on their model, not models of their own. That same JSON i
 |---|---|---|
 | `ScanSession` | id, startedAt, pageIDs, binderSection | One batch of scanning, so she can see what came in together |
 | `SourcePage` | id, imageFile (original), croppedImageFile, ocrText, ocrWords (text, bounding box, confidence), capturedAt, binderPageLabel, structuringState | The immutable record of the paper; never edited. `structuringState` says whether it is waiting (§3.4) |
-| `Recipe` | id, schemaVersion, title, yield, times, ingredientGroups, steps, notes, tags, attribution, sourcePageIDs, reviewState, extraction, createdAt, updatedAt, parentRecipeID | The structured recipe. `parentRecipeID` links a variant, such as a low-protein version, to its original |
+| `Recipe` | id, schemaVersion, title, yield, times, ingredientGroups, steps, notes, tags, attribution (in parts, SLT-062), printedNutrition (SLT-063), equipment (SLT-064), unreadableAreas (SLT-066), sourcePageIDs, reviewState, extraction, createdAt, updatedAt, parentRecipeID | The structured recipe. `parentRecipeID` links a variant, such as a low-protein version, to its original |
 | `Yield` | servings (number or range), servingsText, quantity, unit | "Makes 24 cookies" and "Serves 4 to 6" both fit; per-serving nutrition divides by this |
 | `Times` | prepMinutes, cookMinutes, totalMinutes, rawText | Parsed where possible, the raw text always kept |
 | `IngredientGroup` | name, ingredients | "For the sauce", "For the crust" |
-| `Ingredient` | id, rawText, quantity (min, max, isApproximate), unit (canonical and raw), item, preparation, isOptional, note, sourceBox, confidence, foodMatch | "2 to 3 cups flour, sifted" becomes min 2, max 3, cup, flour, sifted |
-| `Step` | index, text, groupName, ingredientIDs, sourceBox | Steps point at the ingredients they use, which helps substitutions later |
+| `Ingredient` | id, rawText, quantity (min, max, isApproximate), unit (canonical and raw), item, preparation, isOptional, note, sourceBox, confidence, isHandwritten (SLT-065), isUnreadable (SLT-066), foodMatch | "2 to 3 cups flour, sifted" becomes min 2, max 3, cup, flour, sifted |
+| `Step` | index, text, groupName, ingredientIDs, sourceBox, isHandwritten, isUnreadable | Steps point at the ingredients they use, which helps substitutions later |
 | `Extraction` | engine (on-device; cloud reserved), modelID, promptVersion, overallConfidence, extractedAt, warnings | Lets a newer extractor re-run only recipes an older one made |
 | `reviewState` | needsReview, reviewed, edited | Drives the review inbox |
 
@@ -175,6 +195,18 @@ the mirror is intact. It never deletes the store and never traps. The screen's d
 SyLibCloud's `CloudAccountStatus` at the root, `ICloudStatusButton` in the main toolbar, and
 `ICloudInfoSheet` with Sylantro's own `ICloudInfoContent`. Its wording is Pops's.
 
+### 5.6 Sharing a recipe (SLT-100 to SLT-103)
+
+One recipe at a time, as a file another Sylantro user imports; no shared or public database for
+the MVP; a recipe she already has is skipped when clearly the same, otherwise she chooses. The
+design is `04_SHARING_DESIGN.md`.
+
+### 5.7 Photos and image storage *(proposed)*
+
+Page scans and dish photos: one photo model, HEIC sizes, device-only thumbnails, JPEG copies in
+the mirror, and what CloudKit does with them. The design, and what the spike measures, is
+`05_IMAGE_STORAGE_DESIGN.md`.
+
 ---
 
 ## 6. Nutrition and PKU extension points (SLT-022)
@@ -195,7 +227,7 @@ flow.
 
 | # | Milestone | What it holds |
 |---|---|---|
-| 1 | **Spike and a tested Domain layer** (SLT-090) | 15 to 20 real binder pages (typed, clippings, handwritten) through on-device reading and structuring, scored field by field, to see how much review each page needs. In parallel, as Syderal did, the Domain layer (the recipe types, the ingredient-line parser, unit normalization, the schema check) built and tested before any screen exists |
+| 1 | **Spike and a tested Domain layer** (SLT-090) | 15 to 20 real binder pages (typed, clippings, handwritten) through on-device reading and structuring, scored field by field, to see how much review each page needs. In parallel, as Syderal did, the Domain layer (the recipe types, the ingredient-line parser, unit normalization, the schema check) built and tested before any screen exists. The test set, its rubric and its hard cases are `10`; the pages stay outside git (SLT-092) |
 | 2 | Capture and storage | Batch scanning, `SourcePage` storage, SwiftData + CloudKit, the mirror, the recovery screen. Usable before extraction works, because the photos are safe |
 | 3 | Extraction and review | The background queue, structuring with Foundation Models, the review inbox with tap-to-highlight on the photo |
 | 4 | Nutrition | Food matching against USDA FoodData Central, grams per ingredient, protein and phenylalanine per serving |
@@ -207,11 +239,14 @@ The spike's real pages and results never enter the repository (`00B` §2); fixtu
 
 ## 8. Open questions
 
-- Which iPhone she has. It must support Apple Intelligence (iPhone 15 Pro or newer).
 - Roughly how many pages the binder holds, and how many are handwritten.
 - Whether her clinic or dietitian uses a specific phenylalanine food list.
 - How a recipe is restored from the mirror, and whether the recovery screen offers it.
 - The duplicate rule's threshold, set from the spike.
+- Sharing's open details: `04` §8. Photos: `05` §9.
+- The test set's remaining proposals (page noise, alternate methods, titles as printed, the
+  unreadable-handwriting image): `10` §5, TS-5, TS-10, TS-11, TS-15.
+- How long Save's bottom-lines read takes on her phone (SLT-046), measured in the spike.
 
 ---
 
@@ -219,5 +254,19 @@ The spike's real pages and results never enter the repository (`00B` §2); fixtu
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.16 | §3.3: unreadable handwriting called out, with the cropped image in place proposed; §4: isUnreadable, unreadableAreas | SLT-066 (Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view.") |
+| 0.15 | §4: attribution in parts, printedNutrition, equipment, isHandwritten; §8's open list trimmed | SLT-062 to SLT-065 (Pops, 21 Nov 2026 (decision cards: "Separate parts", "Keep as printed text", "Its own equipment list", "Real ingredients, marked")) |
+| 0.14 | §8: TS-8 removed from the open list | SLT-071 (Pops, 21 Nov 2026 (decision card, "Split into separate ingredients")) |
+| 0.13 | §1: her phone is an iPhone 17 Pro; §8: that question closed, TS-9 removed from the open list | SLT-017, SLT-048 (Pops, 21 Nov 2026: "2-T tablespoon, t teaspoon, 12===dozen 3-iPhone 17 pro") |
+| 0.12 | §2: a page with several recipes, she picks which to save | SLT-047 (Pops, 21 Nov 2026 (decision card, "She picks which to save")) |
+| 0.11 | §8's pointer to `10`'s open proposals updated (TS-13, TS-14 added; TS-12 done) | `10` v0.4 |
+| 0.10 | §2: Save asks for a page 2 only when the last page looks unfinished | SLT-046 (Pops, 21 Nov 2026 (decision card, "Only when the page looks unfinished")) |
+| 0.9 | §2: one capture is one recipe; Add page for a forgotten page; split in review; the join rule withdrawn | SLT-045 (Pops, 21 Nov 2026: "I feel like we import one recipe at a time instead of trying to guess which pages goes with what recipe" → "Sure.") |
+| 0.8 | §2: joining a recipe across pages made a requirement, with the proposed join rule; §7 and §8 point at `10`, the spike's test set | Pops, 21 Nov 2026: "Some are the 2nd page of a recipe" |
+| 0.7 | §5.6 and §5.7 moved to `04` and `05`; pointers left | Pops, 21 Nov 2026 |
+| 0.6 | §5.6: an import she already has is skipped when clearly the same, otherwise she chooses | SLT-103 (Pops, 21 Nov 2026) |
+| 0.5 | §5.7: dish photos and an image storage plan, proposed (P-1 to P-7), with what was verified about CloudKit assets | Pops, 21 Nov 2026: "Make it so" |
+| 0.4 | §5.6: sharing one recipe as a file for the MVP; a shared binder parked; no public database | SLT-100 to SLT-102 (Pops, 21 Nov 2026) |
+| 0.3 | §1: the floor is iOS 26.5 | SLT-013 (Pops, 21 Nov 2026) |
 | 0.2 | §1: the floor is iOS 26.6 | SLT-013 (Pops, 21 Nov 2026) |
 | 0.1 | First version, from the design draft of 21 Nov 2026 and the studio survey: the platform, on-device extraction, the two stores and the mirror, never wiping the store, the schema, and the milestones | Pops, 21 Nov 2026: "write up the design as we have it" |

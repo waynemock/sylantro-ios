@@ -2,7 +2,7 @@
 
 **A Syzygy Softwerks engineering contract · how the app is put together, and the rules every task
 follows**
-Version 0.2 · 21 November 2026 · **Draft: not accepted.** Everything marked *(rec.)* is Claude's
+Version 0.9 · 21 November 2026 · **Draft: not accepted, except §3's Domain names (SLT-091).** Everything marked *(rec.)* is Claude's
 proposal, waiting for Pops. No app code is written from it until Pops accepts it (`00B` §0).
 
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md` and `00B_SYLANTRO_GUARDRAILS.md`.
@@ -42,7 +42,7 @@ Inspect what is already in the source tree and extend it.
 |---|---|
 | App shell | SwiftUI; `NavigationSplitView` on iPad and Mac, one column on iPhone, as Score It \* does *(rec.)* |
 | Devices | iPhone, iPad; Mac as "Designed for iPad" (SLT-012) |
-| Floor | iOS 26.6; Xcode 27 (SLT-013) |
+| Floor | iOS 26.5; Xcode 27 (SLT-013) |
 | Store | SwiftData: a synced store on CloudKit's private database `iCloud.com.syzygysoftwerksllc.Sylantro`, and a device-only store (SLT-050, SLT-051) |
 | Capture | VisionKit's `VNDocumentCameraViewController`, hosted in SwiftUI *(rec.)* |
 | Reading | Vision text recognition *(rec.: the request API is chosen in the spike)* |
@@ -87,7 +87,7 @@ plain values and no camera, model, store or view. That is Milestone 1's half tha
 
 ---
 
-## 3. Domain *(rec.)*
+## 3. Domain *(names accepted, SLT-091)*
 
 - **`Recipe` and its values**: `Yield`, `Times`, `IngredientGroup`, `Ingredient`, `Quantity`,
   `UnitRef`, `Step`, `Extraction`, `ReviewState`, as `01` §4 lists, `Codable`, `Sendable`,
@@ -133,8 +133,9 @@ One `ModelContainer` with two configurations, as SydeTwo builds its own:
   syncedConfig, containerIdentifier:)`, synced models only, inside `#if DEBUG` behind
   `AppConfig.DebugCloudKit.runSchemaExercise` (SLT-015).
 - Each model is a `@Model` twin of a Domain value with `hydrate(from:)` and `toDomain()`; nested
-  data is sorted-key JSON `Data` (SLT-061). Photos are `@Attribute(.externalStorage)` `Data`, so
-  CloudKit carries them as assets.
+  data is sorted-key JSON `Data` (SLT-061). Photos are `@Attribute(.externalStorage)` `Data` on
+  their own model (§5.7); whether CloudKit carries one as an asset is Core Data's choice, measured
+  in the spike (`05` §7).
 - Previews and tests use an in-memory container with `cloudKitDatabase: .none`, never the live
   store.
 
@@ -169,6 +170,8 @@ Sylantro/
       pages/
         page-1.jpg
         page-2.jpg
+      photos/            (dish photos, if P-1 is accepted)
+        dish-1.jpg
   Pages without a recipe/
     <session date>/page-<n>.jpg
 ```
@@ -182,6 +185,17 @@ renames its folder.
 ### 5.5 Settings
 
 On each device, in `@AppStorage`, as Score It \* keeps them *(rec.)*.
+
+### 5.6 Sharing a recipe (SLT-100 to SLT-103)
+
+`RecipeTransfer` in `Domain/` makes and reads the file; a `ShareLink` sends it; the root opens
+it, `RecipeValidator` checks it, and the writers save it, applying SLT-103's duplicate rule. The
+container keeps only its private database. The design is `04_SHARING_DESIGN.md`.
+
+### 5.7 Photos *(proposed)*
+
+`PhotoModel` in `syncedModels`, `PhotoEncoding` in `Domain/`, thumbnails in SyLibCache's
+`ImageCache`, JPEG copies from `MirrorWriter`. The design is `05_IMAGE_STORAGE_DESIGN.md`.
 
 ---
 
@@ -206,12 +220,17 @@ iCloud status, About. Their layout and copy are Pops's and are specified before 
 ```
 Sylantro/
   App/            SylantroApp.swift, AppConfig.swift, StoreRecovery
+    Settings/     SettingsKey, AppPalette (built, SLT-086)
   Capture/        CaptureRecorder, the camera host
   Extraction/     ExtractionQueue, TextReader, RecipeStructurer
   Store/          the @Model twins, SylantroSchemaV1, RecipeEditor
   Mirror/         MirrorWriter
-  Domain/         Recipe values, IngredientLineParser, RecipeValidator, RecipeRendering
-  Views/          the screens
+  Domain/         Recipe values, IngredientLineParser, RecipeValidator, RecipeRendering,
+                  RecipeTransfer
+  Views/          the screens (the Screens layer)
+    Root/         RootView, Sheet, View+TextSizeCap (built, SLT-086)
+    Library/      LibraryView, NoRecipeSelectedView (built, empty, SLT-086)
+    Settings/     SettingsSheet (built, SLT-086)
 SylantroTests/    Domain tests first; fixtures are made up
 ```
 
@@ -232,6 +251,7 @@ SylantroTests/    Domain tests first; fixtures are made up
 - Acceptance of the whole draft, and of the type names in §2 to §8.
 - The recovery screen's choices and copy (§5.3).
 - Restoring from the mirror (§5.3).
+- Sharing's and photos' open details: `04` §8, `05` §9.
 - The Vision request to use, and how a long recipe is split for the model, from the spike.
 
 ---
@@ -240,5 +260,12 @@ SylantroTests/    Domain tests first; fixtures are made up
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.9 | §3's Domain type names accepted, with `06`'s four additions | SLT-091 (Pops, 21 Nov 2026) |
+| 0.8 | §5.6 and §5.7 moved to `04` and `05`; pointers left | Pops, 21 Nov 2026 |
+| 0.7 | §5.6: duplicate imports, SLT-103 | Pops, 21 Nov 2026 |
+| 0.6 | §5.7: `PhotoModel` and photo storage, proposed; §5.1 no longer says photos always sync as assets; §5.4 gains `photos/` | `01` §5.7 (Pops, 21 Nov 2026: "Make it so") |
+| 0.5 | §5.6: sharing one recipe as a file; `RecipeTransfer` in Domain; no CloudKit sharing | SLT-100 to SLT-102 (Pops, 21 Nov 2026) |
+| 0.4 | §8: the app shell's folders, built from Score It \* (Task A-2) | SLT-086 (Pops, 21 Nov 2026) |
+| 0.3 | §1: the floor is iOS 26.5 | SLT-013 (Pops, 21 Nov 2026) |
 | 0.2 | §1: the floor is iOS 26.6 | SLT-013 (Pops, 21 Nov 2026) |
 | 0.1 | Draft, from Score It \*'s `13`, SyJong's `06` and SydeTwo's store, for Pops to accept | SLT-080 (Pops, 21 Nov 2026) |
