@@ -3,7 +3,7 @@
 *One row per locked design decision, always showing the **current** ruling. Sylantro's documents
 are rewritten in place (`00A` §1); this ledger is where a reversal survives. This file is HEAD.*
 
-**Version 0.19** · 21 November 2026 · Companion to all numbered Sylantro documents
+**Version 0.30** · 21 November 2026 · Companion to all numbered Sylantro documents
 
 ---
 
@@ -54,6 +54,7 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | SLT-014 | **Every stored property of a CloudKit-synced model is optional or has a default value**, and every relationship is optional. Until a task replaces the template store, it stays local (`cloudKitDatabase: .none`, `00B` Task A-1), so nothing reaches a CloudKit schema before the real models exist. | SIA-015, JONG-014, learned on Score It \* (29 Oct 2026) *(rec.)* |
 | SLT-015 | **The CloudKit Production schema is deployed only from the real models, and is additive-only from its first deploy.** Development may be reset freely until then. The schema push is SyLibCloud's `CloudKitSchema.initializeDevelopment`, inside `#if DEBUG` behind `AppConfig.DebugCloudKit.runSchemaExercise`, which is `false` in every archive (`00B` §6). | SIA-016, SIA-284 pattern *(rec.)* |
 | SLT-016 | **No UI test target.** Verification is the unit suite (Swift Testing) plus Pops's own on-device checks. The template's `SylantroUITests/` folder has no target and is Pops's to delete. | `project.xcproj` as created: one test target, `SylantroTests` → JONG-007 pattern *(rec.)* |
+| SLT-017 | **Her phone is an iPhone 17 Pro**, so it runs Apple Intelligence: the spike reads and structures the test pages on it (the pinned SE runs only the unit tests, SLT-004). | Pops, 21 Nov 2026: "2-T tablespoon, t teaspoon, 12===dozen 3-iPhone 17 pro" |
 
 ## Product scope
 
@@ -76,10 +77,22 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | ID | Current ruling | Source → chain |
 |---|---|---|
 | SLT-040 | **Extraction is on-device only.** Apple's Vision reads the page; Apple's Foundation Models structures the text into Sylantro's schema with guided generation. No cloud model, no API key, no per-page cost; nothing leaves her devices. A cloud engine was offered and declined; `Extraction.engine` stays in the schema so the question can be reopened only if Pops asks. | Pops, 21 Nov 2026 (decision card) |
-| SLT-041 | **Scanning never waits on processing.** She waits only on capture and save, about a second a page; reading and structuring run in a background queue that fills a review inbox. | `01` §2 (Pops, 21 Nov 2026) |
+| SLT-041 | **Scanning never waits on processing.** She waits only on capture and save, about a second a page; reading and structuring run in a background queue that fills a review inbox. The one exception is Save's quick read of the last page's bottom lines (SLT-046). | `01` §2 (Pops, 21 Nov 2026) |
 | SLT-042 | **Nothing is guessed silently.** Every ingredient keeps its verbatim line; a structuring response that does not match the schema is retried, never saved; low-confidence fields are flagged in review. | `01` §2 (Pops, 21 Nov 2026) |
 | SLT-043 | **A scan session starts from the "Let's cook." scan button.** | Design draft, 21 Nov 2026 |
 | SLT-044 | **A page scanned on a device without Apple Intelligence is still saved and read**, and is structured when it syncs to a capable device. | `01` §3.4 (Pops, 21 Nov 2026) |
+| SLT-045 | **One capture is one recipe.** She taps "Let's cook.", photographs that recipe's page or pages, and taps Save; everything in the capture becomes one recipe, and the camera reopens for the next. Sylantro never guesses which pages belong together. A forgotten page is added later with Add page; two recipes on one page are split in review. The capture's pages are read and structured in the background (SLT-041). | Pops, 21 Nov 2026: "I feel like we import one recipe at a time instead of trying to guess which pages goes with what recipe" → "Sure." → `01` §2, `10` |
+| SLT-046 | **Save asks "Is there a page 2?" only when the capture's last page looks unfinished:** it ends mid-sentence, says "Page 1 of 2" (or any "Page n of m" with n < m), or has a footnote asterisk with no footnote. To tell, Save runs a fast text read of the last page's bottom lines only: the one exception to SLT-041, kept that narrow, its time measured in the spike. If she says no, the recipe is saved with a "continues on a page not scanned" warning, fixed later with Add page (SLT-045). | Pops, 21 Nov 2026: "We should prompt for hey is there a page two when they try to save." → Pops, 21 Nov 2026 (decision card, "Only when the page looks unfinished") → `01` §2, `10` TS-3 |
+| SLT-047 | **A page with several recipes: she picks which to save.** When structuring finds more than one titled recipe in a capture, review lists them and she saves one, some or all; each saved one is its own recipe, sharing the page photo (pages and recipes are many-to-many). A recipe cut off at the foot is offered with a "continues on a page not scanned" warning and Add page. This refines SLT-045's "split in review"; one capture is still one recipe unless the page holds several. | Pops, 21 Nov 2026 (decision card, "She picks which to save") → `01` §2, `10` TS-13 |
+| SLT-048 | **`T` is tablespoon, `t` is teaspoon:** case decides, in the ingredient-line parser (`06` M1-2's case-sensitive spellings) and in structuring. When Vision is unsure of the case, the unit is flagged for review, never guessed. | Pops, 21 Nov 2026: "2-T tablespoon, t teaspoon, 12===dozen 3-iPhone 17 pro" → `06` M1-2, `10` TS-9 |
+| SLT-049 | **"dozen" and "a dozen" are 12** in the ingredient-line parser. | Pops, 21 Nov 2026: "2-T tablespoon, t teaspoon, 12===dozen 3-iPhone 17 pro" → `06` M1-2 |
+
+## Ingredient lines
+
+| ID | Current ruling | Source → chain |
+|---|---|---|
+| SLT-070 | **`S/P`, `s/p` and `S&P` mean salt and pepper, to taste.** | Pops, 21 Nov 2026: "S/p salt and pepper to taste" → `10` TS-8 |
+| SLT-071 | **One line holding several ingredients is split into separate ingredients**, each keeping the shared verbatim line and any shared quantity ("Paprika, cumin, s/p" is four: paprika, cumin, salt, pepper). Done in structuring; M1-2's parser does not split. | Pops, 21 Nov 2026 (decision card, "Split into separate ingredients") → `10` TS-8 |
 
 ## Storage & sync
 
@@ -95,6 +108,11 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 |---|---|---|
 | SLT-060 | **What was on the paper is kept apart from what was understood.** `SourcePage` is the immutable record of the paper; `Recipe` is the structured reading, so a better extractor can re-read the same photos without a re-scan. Pages and recipes are many-to-many. | `01` §4 (Pops, 21 Nov 2026) |
 | SLT-061 | **Value types in `Domain/`, `@Model` twins in the store** with `hydrate(from:)` and `toDomain()`, a `VersionedSchema` from V1, and nested data (ingredient groups, steps, OCR words) as sorted-key JSON `Data` on its model, never separate models. The same JSON is what `recipe.json` holds. | SyLibScoringData's pattern (`ScoringSchemaV3`, `GameModel.optionsData`) *(rec.)* |
+| SLT-062 | **Attribution is stored in parts:** author, publisher (site or magazine), show, episode, source URL, printed date, issue date and copyright line, each optional text, plus free text for anything else ("From Aunt May"). "Page n of m" is not stored. The type is `Attribution`, named after the existing `attribution` property. | Pops, 21 Nov 2026 (decision card, "Separate parts") → `01` §4, `06` M1-1, `10` TS-4 |
+| SLT-063 | **Printed nutrition facts are kept as printed text** (`printedNutrition`) and shown in review. Sylantro's own nutrition (`03`) may check its protein figure against them, never replace it with them. | Pops, 21 Nov 2026 (decision card, "Keep as printed text") → `01` §4, `06` M1-1, `10` TS-6 |
+| SLT-064 | **A printed Equipment list is its own optional list** (`equipment`, a list of strings), shown in its own section. | Pops, 21 Nov 2026 (decision card, "Its own equipment list") → `01` §4, `06` M1-1, `10` TS-7 |
+| SLT-065 | **Handwritten additions are real ingredients or steps, marked:** each is placed where it belongs and carries `isHandwritten`, shown in review in a different style; one whose place is unclear goes last in its list, flagged. | Pops, 21 Nov 2026 (decision card, "Real ingredients, marked") → `01` §4, `06` M1-1, `10` TS-14 |
+| SLT-066 | **Handwriting that can't be read is called out, never guessed or dropped.** An ingredient or step that can't be read keeps its place, is marked `isUnreadable`, and carries the `sourceBox` of where it is on the page; unreadable writing with no place in the recipe (a margin note) is kept as an area on the recipe (`unreadableAreas`). Whether the recipe view shows the cropped piece of the photo in place is open (`10` TS-15). | Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view." → `01` §3.3, §4, `06` M1-1, `10` TS-15 |
 
 ## Architecture
 
@@ -137,12 +155,17 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 |---|---|---|
 | SLT-120 | **Apple News recipes come in link first, with screenshots as the fallback.** Sharing a recipe from Apple News sends its link; Sylantro fetches that one shared page (and the `apple.news` page that leads to it) and reads its schema.org recipe data. Nothing else is fetched, no third-party service is used, and no cookies or identifiers are sent. A page that can't be read asks her for screenshots, which go through the binder pipeline. This is Sylantro's only network use for content; extraction stays on device (SLT-040). *Why:* Apple News shares only a link and has no export. The link gives exact text in one tap, and screenshots cover a paywalled page. The design is `08`. | Pops, 21 Nov 2026 (decision card, "Link first, screenshots fallback") |
 
+## Meals
+
+*SLT-130 to SLT-139 are reserved for `09_MEALS.md`'s rulings. None filed yet.*
+
 ## Implementation plan
 
 | ID | Current ruling | Source → chain |
 |---|---|---|
 | SLT-090 | **Milestone 1 is an accuracy spike and a tested Domain layer.** 15 to 20 real binder pages run through on-device extraction and are scored field by field; in parallel the Domain layer (recipe types, ingredient-line parser) is built and tested before any screen. | Pops, 21 Nov 2026 → Syderal pattern, `01` §7 |
 | SLT-091 | **The Domain type names are accepted:** `Recipe`, `Yield`, `Times`, `IngredientGroup`, `Ingredient`, `Quantity`, `UnitRef`, `Step`, `Extraction`, `ReviewState` and `IngredientLineParser` (`02` §3), with `SourceBox`, `CanonicalUnit`, `RecipeJSON` and `ParsedLine` (`06` §0). Their shapes are `06`'s Tasks M1-1 and M1-2. The rest of `02` stays a draft. | Pops, 21 Nov 2026 (decision card, "Accept as written") |
+| SLT-092 | **The spike's real pages and their answer key live outside git**, in `~/GIT/Syzygy/sylantro-testpages/` beside the repository; `10_ACCURACY_TEST_SET.md` holds only the method, the rubric, the hard cases and made-up examples, naming pages by ID (TP-01 to TP-18). | `00B` §2 → Pops, 21 Nov 2026 (decision card, "Folder beside the repo, outside git") |
 
 ---
 
@@ -150,8 +173,8 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 
 | Question | Where it is answered |
 |---|---|
-| Which iPhone she has; it must support Apple Intelligence (iPhone 15 Pro or newer) | Pops |
 | Roughly how many binder pages there are, and how many are handwritten | Pops, before the spike |
+| The accuracy test set's proposals: page noise, alternate methods, titles as printed; whether unreadable handwriting shows as a cropped image in the recipe view | `10` §5, TS-5, TS-10, TS-11, TS-15 (Pops) |
 | Whether her clinic or dietitian uses a specific phenylalanine food list | Pops, before nutrition |
 | The iCloud Documents capability and `NSUbiquitousContainers` for the mirror (an entitlements change, `00B` §2) | Pops, before the mirror task |
 | How a recipe is restored from the mirror, and whether the recovery screen offers it | `02` §5.3 |
@@ -169,6 +192,7 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | Dish photos, a `PhotoModel` for every photo, HEIC sizes, device-only thumbnails, JPEG copies in the mirror, dish photos in a shared file, and iCloud use shown in Settings *(proposed)* | `05` §9, P-1 to P-7 and IS-1, IS-2 (Pops) |
 | Whether photos sync as CloudKit assets or as costlier bytes in the record | `05` §7, measured in the spike; IS-3 |
 | Apple News import (the way in is SLT-120): any website or Apple News only; when; what stands in for the original; the schema's web source and address; unreadable pages; a spike first | `08` §9, NI-2 to NI-7 (Pops) |
+| Meals (a meal made of recipes, like Thanksgiving): whether to take it forward and how far; meal, tag or collection; sections; a deleted recipe in a meal; which extensions (reuse, shopping list, PKU totals, timeline) and when; the writer; the mirror | `09` §5, ML-1 to ML-8 (Pops) |
 
 ---
 
@@ -176,6 +200,17 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.30 | SLT-066: unreadable handwriting is called out, marked and located; the inline image is open as TS-15 | Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view." |
+| 0.29 | SLT-062 to SLT-065: attribution in parts, printed nutrition kept as text, an equipment list, handwritten additions marked (`10` TS-4, TS-6, TS-7, TS-14 closed) | Pops, 21 Nov 2026 (decision cards: "Separate parts", "Keep as printed text", "Its own equipment list", "Real ingredients, marked") |
+| 0.28 | SLT-071: one line with several ingredients is split (`10` TS-8 closed); SLT-070 trimmed to its meaning | Pops, 21 Nov 2026 (decision card, "Split into separate ingredients") |
+| 0.27 | SLT-070: S/P means salt and pepper, to taste; a new "Ingredient lines" heading, since the Ingestion tens are full | Pops, 21 Nov 2026: "S/p salt and pepper to taste" |
+| 0.26 | SLT-017: her phone is an iPhone 17 Pro (the open question closed); SLT-048: `T` tablespoon, `t` teaspoon (`10` TS-9 closed); SLT-049: dozen is 12 | Pops, 21 Nov 2026: "2-T tablespoon, t teaspoon, 12===dozen 3-iPhone 17 pro" |
+| 0.25 | SLT-047: a page with several recipes, she picks which to save; `10`'s TS-13 closed | Pops, 21 Nov 2026 (decision card, "She picks which to save") |
+| 0.24 | Open decision for `10`'s proposals updated: TS-12 done (handwritten pages added), TS-13 (a page with several recipes) and TS-14 (handwritten additions) proposed | Pops, 21 Nov 2026: added TP-19 to TP-25 |
+| 0.23 | SLT-046: Save asks for a page 2 only when the last page looks unfinished, by a quick read of its bottom lines; SLT-041 notes that one exception; `10`'s TS-3 closed | Pops, 21 Nov 2026 (decision card, "Only when the page looks unfinished") |
+| 0.22 | SLT-045: one capture is one recipe; `10`'s TS-1 and TS-2 closed by it | Pops, 21 Nov 2026: "I feel like we import one recipe at a time instead of trying to guess which pages goes with what recipe" → "Sure." |
+| 0.21 | SLT-092: the spike's real pages and answer key live outside git; `10`'s proposals TS-1 to TS-12 listed as open | Pops, 21 Nov 2026 (decision card, "Folder beside the repo, outside git") |
+| 0.20 | Meals heading added, SLT-130 to SLT-139 reserved for `09`; its open decisions listed; no rulings filed | Pops, 21 Nov 2026: "Here's another feature idea to jot down. Put together a meal made up of recipes on the book." |
 | 0.19 | SLT-120: Apple News import is link first, with screenshots as the fallback; fetching only the shared page is allowed | Pops, 21 Nov 2026 (decision card) |
 | 0.18 | Apple News & web import heading added, SLT-120 to SLT-129 reserved for `08`; its open decisions listed; no rulings filed | Pops, 21 Nov 2026: "start a new design doc for this idea" |
 | 0.17 | SLT-003: Claude may place asset-catalog content, asking first. SLT-115: `AppIconFull` placed by Claude; the test stays the agent's | Pops, 21 Nov 2026: "you can do this one, these kinds of changes are ok for you to make, but do ask first." |

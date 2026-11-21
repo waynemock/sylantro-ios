@@ -2,7 +2,7 @@
 
 **A Syzygy Softwerks task document · the recipe types and the ingredient-line parser, before any
 screen**
-Version 0.2 · 21 November 2026 · Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`,
+Version 0.5 · 21 November 2026 · Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`,
 `00B_SYLANTRO_GUARDRAILS.md` and `02_ARCHITECTURE.md` §2 and §3.
 
 ---
@@ -22,7 +22,8 @@ a build setting, the entitlements or SyLib.
 **Pops accepted `02` §3's Domain type names on 21 November 2026 (SLT-091)** (`Recipe`, `Yield`, `Times`,
 `IngredientGroup`, `Ingredient`, `Quantity`, `UnitRef`, `Step`, `Extraction`, `ReviewState`,
 `IngredientLineParser`). This document adds `SourceBox`, `CanonicalUnit`, `RecipeJSON` and
-`ParsedLine`, which `02` §3 does not name; SLT-091 accepts them too. Both tasks may run, M1-1 first.
+`ParsedLine`, which `02` §3 does not name; SLT-091 accepts them too. `Attribution` is added by
+SLT-062. Both tasks may run, M1-1 first.
 
 **Rules for both tasks:**
 
@@ -63,7 +64,10 @@ the value in the Default column. Property names are the JSON keys.
 | `steps` | `[Step]` | `[]` | |
 | `notes` | `String?` | `nil` | |
 | `tags` | `[String]` | `[]` | |
-| `attribution` | `String?` | `nil` | "From Aunt May", a cookbook's name |
+| `attribution` | `Attribution?` | `nil` | Where it came from, in parts (SLT-062) |
+| `printedNutrition` | `String?` | `nil` | Nutrition facts as printed on the page, raw text (SLT-063) |
+| `equipment` | `[String]` | `[]` | A printed Equipment list, one item each (SLT-064) |
+| `unreadableAreas` | `[SourceBox]` | `[]` | Handwriting that can't be read and has no place in the recipe (SLT-066) |
 | `sourcePageIDs` | `[UUID]` | `[]` | The `SourcePage`s it was read from (SLT-060) |
 | `reviewState` | `ReviewState` | `.needsReview` | |
 | `extraction` | `Extraction?` | `nil` | |
@@ -79,6 +83,11 @@ the value in the Default column. Property names are the JSON keys.
 | `amount` | `Quantity?` | `nil` | "Makes 24": 24 |
 | `amountUnit` | `String?` | `nil` | "cookies" |
 | `rawText` | `String?` | `nil` | As printed |
+
+`Attribution` (`Attribution.swift`), every property `String?` defaulting to `nil`, text as printed
+(nothing parsed into a `URL` or `Date`): `author`, `publisher` (site or magazine), `show`, `episode`,
+`sourceURL`, `printedDate`, `issueDate`, `copyright`, `text` (anything else: "From Aunt May", a
+cookbook's name) (SLT-062).
 
 `Times` (`Times.swift`): `prepMinutes: Int?`, `cookMinutes: Int?`, `totalMinutes: Int?`,
 `rawText: String?`, each defaulting to `nil`.
@@ -100,6 +109,8 @@ the value in the Default column. Property names are the JSON keys.
 | `note` | `String?` | `nil` | |
 | `sourceBox` | `SourceBox?` | `nil` | |
 | `confidence` | `Double?` | `nil` | 0 to 1 |
+| `isHandwritten` | `Bool` | `false` | Added by hand on a printed page (SLT-065) |
+| `isUnreadable` | `Bool` | `false` | Couldn't be read; its `sourceBox` says where it is (SLT-066) |
 
 `Quantity` (`Quantity.swift`): `min: Double` (no default), `max: Double?` (default `nil`; nil is a
 single value), `isApproximate: Bool` (default `false`).
@@ -115,7 +126,7 @@ No conversion factors: those belong to the nutrition task (`03` §6, `00B` §2).
 
 `Step` (`Step.swift`): `id: UUID` (default `UUID()`), `index: Int` (default `0`), `text: String`
 (default `""`), `groupName: String?` (default `nil`), `ingredientIDs: [UUID]` (default `[]`),
-`sourceBox: SourceBox?` (default `nil`).
+`sourceBox: SourceBox?` (default `nil`), `isHandwritten: Bool` (default `false`, SLT-065), `isUnreadable: Bool` (default `false`, SLT-066).
 
 `SourceBox` (`SourceBox.swift`): `pageID: UUID`, `x: Double`, `y: Double`, `width: Double`,
 `height: Double`, none defaulted. Normalized 0 to 1, origin top left, on the cropped page image.
@@ -170,7 +181,7 @@ pointing at it. Tests, named for the rule:
 
 **Done when:**
 
-1. The 13 files above exist in `Sylantro/Domain/Recipe/`, each importing `Foundation` only, every
+1. The 14 files above exist in `Sylantro/Domain/Recipe/`, each importing `Foundation` only, every
    type and extension `nonisolated`.
 2. The 8 tests exist, named as above, and pass.
 3. Sylantro builds with no new warnings, and the suite passes on the pinned destination (`00B` §5.2).
@@ -181,7 +192,7 @@ pointing at it. Tests, named for the rule:
 
 **Do not:** add any `@Model`, change `Item.swift`, the store, any view, any build setting, the
 entitlements or SyLib; add conversion factors, gram weights or nutrient fields; add the nutrition
-slots (`03` §10), which come additively with their own task; add `RecipeRendering`,
+slots (`03` §10; `printedNutrition` is raw text, not a nutrient field), which come additively with their own task; add `RecipeRendering`,
 `RecipeValidator` or `RecipeTransfer`.
 
 ---
@@ -224,7 +235,8 @@ that depend on the locale.
      ⅛ 1/8, ⅜ 3/8, ⅝ 5/8, ⅞ 7/8.
    - a **decimal**: digits `.` digits, or `.` digits (`1.5`, `.5`). The decimal mark is `.` only.
    - an **integer**: digits.
-   - a **number word**, case-insensitive, followed by a space: `a` or `an` 1, `one` 1, `two` 2,
+   - a **number word**, case-insensitive, followed by a space: `a dozen` 12 and `dozen` 12
+     (SLT-049; `a dozen` is tried before `a`), `a` or `an` 1, `one` 1, `two` 2,
      `three` 3, `four` 4, `five` 5, `six` 6, `seven` 7, `eight` 8, `nine` 9, `ten` 10, `eleven` 11,
      `twelve` 12.
 
@@ -309,13 +321,15 @@ appears as a value in `UnitSpellings`. Q is `Quantity(min:max:isApproximate:)`; 
 | 27 | `one onion, diced` | Q(1, nil, false) | – | `onion, diced` |
 | 28 | `1 garlic clove` | Q(1, nil, false) | – | `garlic clove` |
 | 29 | `3/4 c. sugar` | Q(0.75, nil, false) | U(.cup, "c.") | `sugar` |
+| 30 | `about a dozen eggs` | Q(12, nil, true) | – | `eggs` |
+| 31 | `Dozen eggs` | Q(12, nil, false) | – | `eggs` |
 
 **Done when:**
 
 1. The three files exist in `Sylantro/Domain/Parsing/`, `Foundation` only, `nonisolated`.
-2. The tests exist, named as above, and pass: all 29 rows and "every canonical unit has a spelling".
+2. The tests exist, named as above, and pass: all 31 rows and "every canonical unit has a spelling".
 3. Sylantro builds with no new warnings, and the suite passes on the pinned destination. The total
-   is M1-1's 13 plus 29 arguments plus 1: report the run's own total and how Swift Testing counts the
+   is M1-1's 13 plus 31 arguments plus 1: report the run's own total and how Swift Testing counts the
    parameterized test.
 4. No other file changes except this document's Results log.
 5. `git status` before and after, and every git command run.
@@ -328,9 +342,9 @@ read wrongly is reported, not fixed); change M1-1's types.
 
 ## 1. Open in this document
 
-- **"a dozen".** As written, "about a dozen eggs" reads as Q(1, nil, true) with rest `dozen eggs`,
-  which is wrong. Claude's recommendation for a later revision: `a dozen` and `dozen` as 12. Not in
-  M1-2, and not tested, until Pops rules.
+- ~~"a dozen"~~ **Settled by SLT-049:** `a dozen` and `dozen` are 12 (rule 3, rows 30 and 31).
+  "2 dozen" still reads as Q(2) with rest `dozen eggs`; a multiplier is not in M1-2.
+- `T` and `t` were already case-sensitive in M1-2; SLT-048 confirms it (rows 12 and 13).
 
 ---
 
@@ -346,5 +360,8 @@ read wrongly is reported, not fixed); change M1-1's types.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.5 | M1-1: `isUnreadable` on `Ingredient` and `Step`, `unreadableAreas` on `Recipe` | SLT-066 (Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view.") |
+| 0.4 | M1-1: `Attribution` (in parts), `printedNutrition`, `equipment`, and `isHandwritten` on `Ingredient` and `Step`; 14 files | SLT-062 to SLT-065 (Pops, 21 Nov 2026 (decision cards: "Separate parts", "Keep as printed text", "Its own equipment list", "Real ingredients, marked")) |
+| 0.3 | M1-2: `a dozen` and `dozen` read as 12, rows 30 and 31 added; `T` and `t` confirmed | SLT-049, SLT-048 (Pops, 21 Nov 2026: "2-T tablespoon, t teaspoon, 12===dozen 3-iPhone 17 pro") |
 | 0.2 | The type names accepted; both tasks may run | SLT-091 (Pops, 21 Nov 2026) |
 | 0.1 | First version: Tasks M1-1 (recipe types and JSON) and M1-2 (the ingredient-line parser), for Milestone 1's Domain half | SLT-090; Pops, 21 Nov 2026: the next task is the recipe model and the parser, model-first, no screens |

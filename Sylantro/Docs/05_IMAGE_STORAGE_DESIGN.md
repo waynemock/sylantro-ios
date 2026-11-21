@@ -1,7 +1,7 @@
 # Sylantro — Image Storage Design
 
 **Design document · page scans and dish photos: how they are stored, synced, mirrored and shared**
-Version 0.1 · 21 November 2026 · **Draft: not accepted.** Only the rulings in §1 are decided; every
+Version 0.2 · 21 November 2026 · **Draft: not accepted.** Only the rulings in §1 are decided; every
 proposal (P-1 to P-7) and option is Pops's to decide, marked *(rec.)* where Claude recommends one.
 No task is written from an open proposal.
 
@@ -156,6 +156,9 @@ Before any photo task is written:
 - `01` §5.7 and `02` §5.7 point here.
 - `02` §5.1's synced models gain `PhotoModel`; `Domain/` gains `PhotoEncoding`.
 - `04`'s file carries photos as §5 encodes them.
+- Unreadable handwriting (SLT-066, `10` TS-15) is shown as a piece of the cropped page photo, cut on
+  the fly by its `sourceBox`. It is not a new photo kind and nothing extra is stored or synced; it
+  relies on the cropped page being on every device, which §5's option C would change.
 
 ---
 
@@ -189,4 +192,5 @@ Before any photo task is written:
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.2 | §8: unreadable handwriting is cut from the cropped page photo on the fly, not stored | SLT-066 (Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view.") |
 | 0.1 | First version, from `01` §5.7 and `02` §5.7, with the verified CloudKit behavior and the open details as options | Pops, 21 Nov 2026: "Write up docs for sharing and image storage" |

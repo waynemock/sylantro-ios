@@ -1,7 +1,7 @@
 # Sylantro — Project Guard Rails
 
 **Project-level. Sylantro only.** Companion to `00A_STUDIO_CONVENTIONS.md`.
-Version 0.10 · 21 November 2026 · Ships in every agent prompt, alongside `00A`,
+Version 0.11 · 21 November 2026 · Ships in every agent prompt, alongside `00A`,
 `00_DECISION_LEDGER.md` and the task's own documents.
 
 ---
@@ -65,7 +65,7 @@ These are in addition to `00A` §4. Halt and ask; do not resolve inline.
 | A network call of any kind in the reading or structuring path, or any page image, text or recipe sent off the device | Extraction is on-device only (SLT-040) |
 | A structuring result saved without passing the schema check | Nothing is guessed silently (SLT-042) |
 | An ingredient saved without its verbatim line | SLT-042 |
-| Reading or structuring work on the capture path, so the camera waits on it | Scanning never waits on processing (SLT-041) |
+| Reading or structuring work on the capture path, so the camera waits on it. The one exception is Save's fast read of the last page's bottom lines to decide whether to ask "Is there a page 2?" (SLT-046); reading anything more at Save is a stop | Scanning never waits on processing (SLT-041) |
 | A change to any SwiftData `@Model` that the task does not name | Once a CloudKit Production schema is deployed it is additive-only (SLT-015) |
 | A synced model property that is non-optional with no default value, or a non-optional relationship | CloudKit refuses to load the store, and the app traps on launch (SLT-014) |
 | Nested recipe data (ingredient groups, steps, OCR words) stored as its own `@Model` rather than as JSON `Data` | SLT-061 |
@@ -325,6 +325,7 @@ The test target is already at the floor (`"26.5"` for both targets), so no build
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.11 | §2: the capture-path stop condition names its one exception, Save's bottom-lines read | SLT-046 (Pops, 21 Nov 2026 (decision card, "Only when the page looks unfinished")) |
 | 0.10 | Task A-4 trimmed to the test: Claude placed `AppIconFull.imageset` | Pops, 21 Nov 2026: "you can do this one, these kinds of changes are ok for you to make, but do ask first." |
 | 0.9 | Task A-4 added: `AppIconFull` for About's icon, with a test | SLT-115 (Pops, 21 Nov 2026) |
 | 0.8 | Task A-2 marked as written in error (SLT-003); Task A-3 added, the Xcode agent's build and suite check of the shell | Pops, 21 Nov 2026 |
