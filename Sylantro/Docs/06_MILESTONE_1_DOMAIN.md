@@ -2,7 +2,7 @@
 
 **A Syzygy Softwerks task document · the recipe types and the ingredient-line parser, before any
 screen**
-Version 0.5 · 21 November 2026 · Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`,
+Version 0.7 · 22 November 2026 · Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`,
 `00B_SYLANTRO_GUARDRAILS.md` and `02_ARCHITECTURE.md` §2 and §3.
 
 ---
@@ -203,7 +203,14 @@ slots (`03` §10; `printedNutrition` is raw text, not a nutrient field), which c
 
 **Deliverable:** `Sylantro/Domain/Parsing/IngredientLineParser.swift`,
 `Sylantro/Domain/Parsing/ParsedLine.swift`, `Sylantro/Domain/Parsing/UnitSpellings.swift`, and
-`SylantroTests/Domain/IngredientLineParserTests.swift`.
+`SylantroTests/Domain/IngredientLineParserTests.swift`; and one change to M1-1, below.
+
+**A fix to M1-1 first (SLT-067).** In `Sylantro/Domain/Recipe/UnitRef.swift`, `init(from:)` reads
+`canonical` as an optional `String` and maps it with `CanonicalUnit(rawValue:)`, so a value this app
+doesn't know (from a newer app or a shared file) gives `canonical` nil instead of throwing; `raw` is
+still required. Nothing else in M1-1 changes. One test is added to `RecipeJSONTests.swift`'s
+`@Suite("Recipe JSON")`: **9. "an unknown canonical unit reads as none"**: decoding
+`{"canonical":"bushel","raw":"bu"}` as a `UnitRef` gives `canonical` nil and `raw` "bu".
 
 **What it does.** It reads the quantity and unit at the start of one ingredient line and hands back
 the rest. Splitting the rest into item and preparation is the structurer's job (`02` §4), not this
@@ -286,7 +293,7 @@ exactly these keys (lowercase, no periods):
 
 **Tests** (`SylantroTests/Domain/IngredientLineParserTests.swift`, `@Suite("The ingredient-line
 parser")`). One parameterized `@Test("each line parses as the table says", arguments:)` over these
-29 rows, plus one test, "every canonical unit has a spelling", that checks each `CanonicalUnit` case
+31 rows, plus one test, "every canonical unit has a spelling", that checks each `CanonicalUnit` case
 appears as a value in `UnitSpellings`. Q is `Quantity(min:max:isApproximate:)`; U is
 `UnitRef(canonical:raw:)`; `–` is nil.
 
@@ -327,16 +334,18 @@ appears as a value in `UnitSpellings`. Q is `Quantity(min:max:isApproximate:)`; 
 **Done when:**
 
 1. The three files exist in `Sylantro/Domain/Parsing/`, `Foundation` only, `nonisolated`.
-2. The tests exist, named as above, and pass: all 31 rows and "every canonical unit has a spelling".
+2. The tests exist, named as above, and pass: all 31 rows, "every canonical unit has a spelling",
+   and M1-1's new test 9.
 3. Sylantro builds with no new warnings, and the suite passes on the pinned destination. The total
-   is M1-1's 13 plus 31 arguments plus 1: report the run's own total and how Swift Testing counts the
+   is M1-1's 13, plus 1 (test 9), plus 31 arguments plus 1: report the run's own total and how Swift Testing counts the
    parameterized test.
-4. No other file changes except this document's Results log.
+4. No other file changes except `UnitRef.swift`, `RecipeJSONTests.swift` (test 9) and this
+   document's Results log.
 5. `git status` before and after, and every git command run.
 
 **Do not:** convert units, add gram weights or densities (`03` §6, `00B` §2); split the rest into
 item and preparation; add a unit spelling, number word or rule not given here (a line the rules
-read wrongly is reported, not fixed); change M1-1's types.
+read wrongly is reported, not fixed); change M1-1's types beyond the `UnitRef` fix above.
 
 ---
 
@@ -345,6 +354,10 @@ read wrongly is reported, not fixed); change M1-1's types.
 - ~~"a dozen"~~ **Settled by SLT-049:** `a dozen` and `dozen` are 12 (rule 3, rows 30 and 31).
   "2 dozen" still reads as Q(2) with rest `dozen eggs`; a multiplier is not in M1-2.
 - `T` and `t` were already case-sensitive in M1-2; SLT-048 confirms it (rows 12 and 13).
+- **Lines the rules read oddly** (M1-2 Results, note (e), reported not fixed): `A few sprigs mint`
+  reads Q(1) (the number word `a`); `1-inch piece ginger` reads Q(1) with rest `-inch piece ginger`.
+  Claude's recommendation for a later revision: `a few` is not a quantity, and a number joined to
+  `-inch` is a size, not a quantity. Not changed until Pops rules; the spike shows how often they occur.
 
 ---
 
@@ -352,7 +365,8 @@ read wrongly is reported, not fixed); change M1-1's types.
 
 | Task | Date | Status | Summary |
 |---|---|---|---|
-| | | | |
+| M1-2 | 22 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 16 tests in 5 suites passed after 0.035 seconds."; `** TEST SUCCEEDED **`. **How the parameterized test counts:** Swift Testing counts it as **one test**, with its arguments listed as test cases: "✔ Test "each line parses as the table says" with 31 test cases passed". So the 16 is 13 + 1 (test 9) + 1 (the 31-row test) + 1 ("every canonical unit has a spelling"). The "13 + 1 + 31 + 1" in clause 3 counts arguments, and the run doesn't report that figure. **Clauses:** ✅ 1 `Sylantro/Domain/Parsing/IngredientLineParser.swift`, `ParsedLine.swift` and `UnitSpellings.swift` exist, each `import Foundation` only and `nonisolated`. `UnitRef.init(from:)` reads `canonical` as `String?` mapped with `CanonicalUnit(rawValue:)`, and `raw` still uses `decode` (SLT-067). ✅ 2 all 31 rows pass, as do "every canonical unit has a spelling" and test 9 "an unknown canonical unit reads as none". ✅ 3 builds and passes on the pinned destination. The only warning is the existing appintentsmetadataprocessor "Metadata extraction skipped", so there are no new warnings. ✅ 4 my edits outside the new files are `UnitRef.swift` (the fix), `RecipeJSONTests.swift` (test 9) and this row. ✅ 5 git status before and after is below. **Files:** the 3 Parsing files, `SylantroTests/Domain/IngredientLineParserTests.swift`, `Domain/Recipe/UnitRef.swift`, `SylantroTests/Domain/RecipeJSONTests.swift`, and this row. **Git status before** (branch `milestone-1`): all staged by Pops: `A .gitignore`, `M` `Docs/00_DECISION_LEDGER.md`, `01_INGESTION_DESIGN.md`, `06_MILESTONE_1_DOMAIN.md`, `README.md`, `D` the three xcuserdata files, and `A` M1-1's 14 Domain files and `RecipeJSONTests.swift`. **After:** the same index, plus unstaged `M` on `06_MILESTONE_1_DOMAIN.md` (this row), `UnitRef.swift` and `RecipeJSONTests.swift`, and `??` for `Sylantro/Domain/Parsing/` and `SylantroTests/Domain/IngredientLineParserTests.swift`. **Git:** `git status --short` (×2), `git branch --list`. **Notes:** decisions where 06 is silent, for review: (a) "spaces" in rules 2 to 5 means U+0020 only; tabs and non-breaking spaces are trimmed only at the ends (rule 1). (b) The range word `to` and the `of ` in rule 5 are matched case-insensitively, as are the prefixes and number words. (c) A mixed number whose fraction has a zero denominator (`1 1/0`), or a range end with one (`1-1/0`), is treated like row 26: no quantity at all, and rest = *line*. (d) In a mixed number with an integer fraction (`1 1/2`), at least one space is needed, so `11/2` reads as the fraction 5.5. (e) The rules read some lines oddly, as 06 says they should; these are reported, not fixed: `A few sprigs mint` reads Q(1) with rest `few sprigs mint` (the number word `a`). `2 dozen eggs` reads Q(2) with rest `dozen eggs` (as §1 says). `1-inch piece ginger` reads Q(1) with rest `-inch piece ginger`, because a range mark without an amount after it is not consumed. |
+| M1-1 | 21 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 13 tests in 4 suites passed after 0.037 seconds."; `** TEST SUCCEEDED **` (5 before + 8; Task A-4 has not run). **Clauses:** ✅ 1 the 14 files are in `Sylantro/Domain/Recipe/` (`Recipe`, `Attribution`, `Yield`, `Times`, `IngredientGroup`, `Ingredient`, `Quantity`, `UnitRef`, `CanonicalUnit`, `Step`, `SourceBox`, `Extraction`, `ReviewState`, `RecipeJSON`), each `import Foundation` only, every type `nonisolated`, and no extensions. Each struct has an explicit memberwise `init` with the Default column and a hand-written `init(from:)`, where `decode` is used only for `Recipe.id`, `Quantity.min`, `UnitRef.raw` and `SourceBox`'s five properties. `ReviewState.init(from:)` falls back to `.needsReview`. Encoding is synthesized. ✅ 2 the 8 tests in `SylantroTests/Domain/RecipeJSONTests.swift`, `@Suite("Recipe JSON")`, named as in M1-1, all pass. ✅ 3 builds and passes on the pinned destination with 13 tests. The only warning in the log is the existing "appintentsmetadataprocessor: Metadata extraction skipped, no AppIntents.framework dependency found" (seen in A-3), so there are no new warnings. ✅ 4 no other file changed except this row. ✅ 5 git status before and after is below. **Files:** the 14 above, `SylantroTests/Domain/RecipeJSONTests.swift`, and this row. **Fixes:** none needed outside the new files. **Git status before** (branch `milestone-1`): ` M Sylantro.xcworkspace/xcuserdata/wayne.xcuserdatad/UserInterfaceState.xcuserstate` (Pops's). **After:** the same, plus `?? Sylantro/Domain/`, `?? SylantroTests/Domain/` and ` M Docs/06_MILESTONE_1_DOMAIN.md`. **Git:** `git status` (×1), `git status --short` (×3), `git branch --list`. **Notes:** (a) Properties are `var`; the task didn't say `let` or `var`. (b) `full` sets every property to a non-default value, `schemaVersion` 2 included. Test 2 therefore encodes a copy of `full` with `schemaVersion` set back to `Recipe.currentSchemaVersion` so that `"schemaVersion" : 1` is written. `attribution` must be non-nil there too, because synthesized encoding leaves out nil optionals. (c) Tests 7 and 8 round-trip a minimal `Recipe` through `RecipeJSON` and check only the engine or unit, because a default `Date()` has fractions that `.iso8601` drops. (d) For review: `01` §4 lists `Yield` as "servings, servingsText, quantity, unit" and gives `IngredientGroup` and `Step` no `id`. M1-1's names (`servings`, `amount`, `amountUnit`, `rawText`, and the ids) were built as written. `01` §4's `foodMatch` was left out under M1-1's "no nutrition slots". (e) `CanonicalUnit` uses synthesized decoding, so an unknown canonical value in a file throws. M1-1 gives a fallback only for `ReviewState`. |
 
 ---
 
@@ -360,6 +374,8 @@ read wrongly is reported, not fixed); change M1-1's types.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.7 | §1: the lines M1-2 reads oddly listed, with a recommendation, open for Pops | M1-2 Results, note (e) |
+| 0.6 | M1-2 also fixes `UnitRef`'s decoding so an unknown canonical unit reads as nil (M1-1 Results, note (e)); test 9 added | SLT-067 (Pops, 22 Nov 2026 (decision card, "Yes, fold it into M1-2")) |
 | 0.5 | M1-1: `isUnreadable` on `Ingredient` and `Step`, `unreadableAreas` on `Recipe` | SLT-066 (Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view.") |
 | 0.4 | M1-1: `Attribution` (in parts), `printedNutrition`, `equipment`, and `isHandwritten` on `Ingredient` and `Step`; 14 files | SLT-062 to SLT-065 (Pops, 21 Nov 2026 (decision cards: "Separate parts", "Keep as printed text", "Its own equipment list", "Real ingredients, marked")) |
 | 0.3 | M1-2: `a dozen` and `dozen` read as 12, rows 30 and 31 added; `T` and `t` confirmed | SLT-049, SLT-048 (Pops, 21 Nov 2026: "2-T tablespoon, t teaspoon, 12===dozen 3-iPhone 17 pro") |

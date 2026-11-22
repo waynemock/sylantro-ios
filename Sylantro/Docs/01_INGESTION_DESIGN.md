@@ -2,7 +2,7 @@
 
 **Design document · printed recipe pages to structured recipes, on the device, without losing
 anything**
-Version 0.16 · 21 November 2026 · **Rulings in from the design conversation (SLT-020 to SLT-090);
+Version 0.18 · 22 November 2026 · **Rulings in from the design conversation (SLT-020 to SLT-090);
 not for the agent until a task names it**
 
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md` and `00B_SYLANTRO_GUARDRAILS.md`.
@@ -39,7 +39,7 @@ upgrade, so durability outranks everything (SLT-030).
 
 - iPhone and iPad; the Mac runs the iPad app. Scanning is iPhone and iPad first; the Mac is for
   browsing, editing and cooking from a bigger screen.
-- The floor is iOS 26.5 (SLT-013). Foundation Models needs iOS 26 and an Apple Intelligence device: iPhone 15 Pro or newer, or an Apple silicon iPad or Mac. Her phone is an iPhone 17 Pro (SLT-017).
+- The floor is iOS 26.5 (SLT-013). Foundation Models needs iOS 26 and an Apple Intelligence device: iPhone 15 Pro or newer, or an Apple silicon iPad or Mac. Her phone is an iPhone 17 Pro; the spike runs on Pops's iPhone 18 Pro (SLT-017).
 - Built on sylib-swift, with Score It \* as the template (SLT-080, `02`).
 
 ---
@@ -143,11 +143,11 @@ sorted-key JSON `Data` on their model, not models of their own. That same JSON i
 | `ScanSession` | id, startedAt, pageIDs, binderSection | One batch of scanning, so she can see what came in together |
 | `SourcePage` | id, imageFile (original), croppedImageFile, ocrText, ocrWords (text, bounding box, confidence), capturedAt, binderPageLabel, structuringState | The immutable record of the paper; never edited. `structuringState` says whether it is waiting (§3.4) |
 | `Recipe` | id, schemaVersion, title, yield, times, ingredientGroups, steps, notes, tags, attribution (in parts, SLT-062), printedNutrition (SLT-063), equipment (SLT-064), unreadableAreas (SLT-066), sourcePageIDs, reviewState, extraction, createdAt, updatedAt, parentRecipeID | The structured recipe. `parentRecipeID` links a variant, such as a low-protein version, to its original |
-| `Yield` | servings (number or range), servingsText, quantity, unit | "Makes 24 cookies" and "Serves 4 to 6" both fit; per-serving nutrition divides by this |
+| `Yield` | servings (number or range), amount, amountUnit, rawText | "Makes 24 cookies" and "Serves 4 to 6" both fit; per-serving nutrition divides by this |
 | `Times` | prepMinutes, cookMinutes, totalMinutes, rawText | Parsed where possible, the raw text always kept |
-| `IngredientGroup` | name, ingredients | "For the sauce", "For the crust" |
+| `IngredientGroup` | id, name, ingredients | "For the sauce", "For the crust" |
 | `Ingredient` | id, rawText, quantity (min, max, isApproximate), unit (canonical and raw), item, preparation, isOptional, note, sourceBox, confidence, isHandwritten (SLT-065), isUnreadable (SLT-066), foodMatch | "2 to 3 cups flour, sifted" becomes min 2, max 3, cup, flour, sifted |
-| `Step` | index, text, groupName, ingredientIDs, sourceBox, isHandwritten, isUnreadable | Steps point at the ingredients they use, which helps substitutions later |
+| `Step` | id, index, text, groupName, ingredientIDs, sourceBox, isHandwritten, isUnreadable | Steps point at the ingredients they use, which helps substitutions later |
 | `Extraction` | engine (on-device; cloud reserved), modelID, promptVersion, overallConfidence, extractedAt, warnings | Lets a newer extractor re-run only recipes an older one made |
 | `reviewState` | needsReview, reviewed, edited | Drives the review inbox |
 
@@ -246,7 +246,7 @@ The spike's real pages and results never enter the repository (`00B` §2); fixtu
 - Sharing's open details: `04` §8. Photos: `05` §9.
 - The test set's remaining proposals (page noise, alternate methods, titles as printed, the
   unreadable-handwriting image): `10` §5, TS-5, TS-10, TS-11, TS-15.
-- How long Save's bottom-lines read takes on her phone (SLT-046), measured in the spike.
+- How long Save's bottom-lines read takes (SLT-046), measured in the spike on Pops's iPhone 18 Pro.
 
 ---
 
@@ -254,6 +254,8 @@ The spike's real pages and results never enter the repository (`00B` §2); fixtu
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.18 | §1, §8: the spike runs on Pops's iPhone 18 Pro | SLT-017 |
+| 0.17 | §4: `Yield`, `IngredientGroup` and `Step` fields matched to `06` M1-1 as built (`foodMatch` stays here as a later nutrition field) | `06` M1-1 Results, note (d) |
 | 0.16 | §3.3: unreadable handwriting called out, with the cropped image in place proposed; §4: isUnreadable, unreadableAreas | SLT-066 (Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view.") |
 | 0.15 | §4: attribution in parts, printedNutrition, equipment, isHandwritten; §8's open list trimmed | SLT-062 to SLT-065 (Pops, 21 Nov 2026 (decision cards: "Separate parts", "Keep as printed text", "Its own equipment list", "Real ingredients, marked")) |
 | 0.14 | §8: TS-8 removed from the open list | SLT-071 (Pops, 21 Nov 2026 (decision card, "Split into separate ingredients")) |

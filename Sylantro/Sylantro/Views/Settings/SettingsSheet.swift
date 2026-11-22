@@ -44,6 +44,15 @@ struct SettingsSheet: View {
                     }
                 }
                 .paletteRowBackground()
+
+                #if DEBUG
+                Section {
+                    NavigationLink("Accuracy spike") {
+                        SpikeView()
+                    }
+                }
+                .paletteRowBackground()
+                #endif
             }
             .paletteListBackground()
             .navigationTitle("Settings")

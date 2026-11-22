@@ -3,7 +3,7 @@
 *One row per locked design decision, always showing the **current** ruling. Sylantro's documents
 are rewritten in place (`00A` §1); this ledger is where a reversal survives. This file is HEAD.*
 
-**Version 0.30** · 21 November 2026 · Companion to all numbered Sylantro documents
+**Version 0.36** · 22 November 2026 · Companion to all numbered Sylantro documents
 
 ---
 
@@ -54,7 +54,7 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | SLT-014 | **Every stored property of a CloudKit-synced model is optional or has a default value**, and every relationship is optional. Until a task replaces the template store, it stays local (`cloudKitDatabase: .none`, `00B` Task A-1), so nothing reaches a CloudKit schema before the real models exist. | SIA-015, JONG-014, learned on Score It \* (29 Oct 2026) *(rec.)* |
 | SLT-015 | **The CloudKit Production schema is deployed only from the real models, and is additive-only from its first deploy.** Development may be reset freely until then. The schema push is SyLibCloud's `CloudKitSchema.initializeDevelopment`, inside `#if DEBUG` behind `AppConfig.DebugCloudKit.runSchemaExercise`, which is `false` in every archive (`00B` §6). | SIA-016, SIA-284 pattern *(rec.)* |
 | SLT-016 | **No UI test target.** Verification is the unit suite (Swift Testing) plus Pops's own on-device checks. The template's `SylantroUITests/` folder has no target and is Pops's to delete. | `project.xcproj` as created: one test target, `SylantroTests` → JONG-007 pattern *(rec.)* |
-| SLT-017 | **Her phone is an iPhone 17 Pro**, so it runs Apple Intelligence: the spike reads and structures the test pages on it (the pinned SE runs only the unit tests, SLT-004). | Pops, 21 Nov 2026: "2-T tablespoon, t teaspoon, 12===dozen 3-iPhone 17 pro" |
+| SLT-017 | **The spike runs on Pops's iPhone 18 Pro, never on hers.** Her phone is an iPhone 17 Pro, so Sylantro's reading and structuring will run on it; the spike's timings come from his newer phone and may be somewhat faster than hers. The pinned SE runs only the unit tests (SLT-004). | Pops, 21 Nov 2026: "2-T tablespoon, t teaspoon, 12===dozen 3-iPhone 17 pro" → Pops, 22 Nov 2026: "we wont be running on my partners phone, she hates when I do that...we will use my iphone 18 pro." |
 
 ## Product scope
 
@@ -113,6 +113,7 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | SLT-064 | **A printed Equipment list is its own optional list** (`equipment`, a list of strings), shown in its own section. | Pops, 21 Nov 2026 (decision card, "Its own equipment list") → `01` §4, `06` M1-1, `10` TS-7 |
 | SLT-065 | **Handwritten additions are real ingredients or steps, marked:** each is placed where it belongs and carries `isHandwritten`, shown in review in a different style; one whose place is unclear goes last in its list, flagged. | Pops, 21 Nov 2026 (decision card, "Real ingredients, marked") → `01` §4, `06` M1-1, `10` TS-14 |
 | SLT-066 | **Handwriting that can't be read is called out, never guessed or dropped.** An ingredient or step that can't be read keeps its place, is marked `isUnreadable`, and carries the `sourceBox` of where it is on the page; unreadable writing with no place in the recipe (a margin note) is kept as an area on the recipe (`unreadableAreas`). Whether the recipe view shows the cropped piece of the photo in place is open (`10` TS-15). | Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view." → `01` §3.3, §4, `06` M1-1, `10` TS-15 |
+| SLT-067 | **An unknown value in a saved file never stops a recipe from opening.** An enum read from a file falls back instead of throwing: an unknown `ReviewState` reads as needs review, an unknown canonical unit as none (the unit as written is kept). Extends SLT-061's decoding rule. | Pops, 22 Nov 2026 (decision card, "Yes, fold it into M1-2") → `06` M1-2 |
 
 ## Architecture
 
@@ -159,6 +160,22 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 
 *SLT-130 to SLT-139 are reserved for `09_MEALS.md`'s rulings. None filed yet.*
 
+## Structuring
+
+| ID | Current ruling | Source → chain |
+|---|---|---|
+| SLT-140 | **Structure in parts.** The page text is split by its headings first (or, when it has none, by one small model call that labels each line); then the model is asked separately for the header, the ingredient lines and the steps. A capture holding several recipes (SLT-047) still uses one call for now. | Pops, 22 Nov 2026: "all six" (spike run 1, `10` §7) → `11` M1-4 |
+| SLT-141 | **The model's output is capped and steady:** greedy sampling and a maximum response length per call, so a run that would loop fails fast instead. | Pops, 22 Nov 2026: "all six" (spike run 1, `10` §7) → `11` M1-4 |
+| SLT-142 | **Every value the model returns is checked against the page's text** (`RecipeValidator`): a title, group name, equipment item, note, nutrition text, author or publisher not found on the page is dropped with a warning; an ingredient or step not found is kept with a warning; an ingredient that is a copied step is removed. Extends SLT-042. | Pops, 22 Nov 2026: "all six" (spike run 1, `10` §7) → `11` M1-4 |
+| SLT-143 | **Yield, times, the source URL and "Page n of m" are found by Domain rules, not the model**; notes, equipment and printed nutrition are taken from their sections as printed. The model never fills them. | Pops, 22 Nov 2026: "all six" (spike run 1, `10` §7) → `11` M1-4 |
+| SLT-144 | **Structuring runs only while Sylantro is open.** A page refused because the app is in the background (a phone call, a locked screen) waits and is structured when she is back in the app; it is never failed for that. Shapes `ExtractionQueue` (`02` §4). | Pops, 22 Nov 2026: "all six" (spike run 1, `10` §7) → `11` M1-4 |
+| SLT-145 | **Reading is pinned to English:** Vision's automatic language detection is off, so handwriting is not read as look-alike letters from another alphabet. | Pops, 22 Nov 2026: "all six" (spike run 1, `10` §7) → `11` M1-4 |
+| SLT-146 | **Ingredient lines come from the page, not the model.** The model answers with the numbers of each ingredient's lines (and of its group's subheading); `rawText` and group names are those OCR lines as read, a wrapped line joined by rule. Quantity and unit come only from the ingredient-line parser (`06` M1-2). | Pops, 22 Nov 2026: "All" (spike run 2, `10` §7) → `11` M1-5 |
+| SLT-147 | **A failed part is retried, then falls back.** A part whose answer can't be read (it reached its length cap or lacks a field) is asked once more with double the cap; if the ingredients or steps still fail, or their section is empty, they are asked over the whole page's lines, with a review warning. A section found empty counts as not found, so the page is labelled line by line. Extends SLT-140 and SLT-141. | Pops, 22 Nov 2026: "All" (spike run 2, `10` §7) → `11` M1-5 |
+| SLT-148 | **The title comes from the page's layout.** The lines at the top of the first page (before the first heading or labelled ingredient or step, page clutter removed) are offered to the model with each line's text size; it answers with the first and last line numbers, and the title is those lines as read. | Pops, 22 Nov 2026: "All" (spike run 2, `10` §7) → `11` M1-5 |
+| SLT-149 | **Fields stay inside their own section.** Page clutter (a line starting with a web address, "Page n of m", or a printed date) belongs to no section; the equipment section ends at the first line that looks like a step or a sentence; times come only from labelled time lines ("Prep:", "Cook time"), never from a step; a group name is a short subheading. Extends SLT-143. | Pops, 22 Nov 2026: "All" (spike run 2, `10` §7) → `11` M1-5 |
+| SLT-150 | **A line read with non-Latin letters is unreadable, not text.** It is left out of what the model sees and marked as an unreadable area with its location (SLT-066). Pinning English (SLT-145) did not stop these look-alike lines in run 2. | Pops, 22 Nov 2026: "All" (spike run 2, `10` §7) → `11` M1-5 |
+
 ## Implementation plan
 
 | ID | Current ruling | Source → chain |
@@ -166,6 +183,7 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | SLT-090 | **Milestone 1 is an accuracy spike and a tested Domain layer.** 15 to 20 real binder pages run through on-device extraction and are scored field by field; in parallel the Domain layer (recipe types, ingredient-line parser) is built and tested before any screen. | Pops, 21 Nov 2026 → Syderal pattern, `01` §7 |
 | SLT-091 | **The Domain type names are accepted:** `Recipe`, `Yield`, `Times`, `IngredientGroup`, `Ingredient`, `Quantity`, `UnitRef`, `Step`, `Extraction`, `ReviewState` and `IngredientLineParser` (`02` §3), with `SourceBox`, `CanonicalUnit`, `RecipeJSON` and `ParsedLine` (`06` §0). Their shapes are `06`'s Tasks M1-1 and M1-2. The rest of `02` stays a draft. | Pops, 21 Nov 2026 (decision card, "Accept as written") |
 | SLT-092 | **The spike's real pages and their answer key live outside git**, in `~/GIT/Syzygy/sylantro-testpages/` beside the repository; `10_ACCURACY_TEST_SET.md` holds only the method, the rubric, the hard cases and made-up examples, naming pages by ID (TP-01 to TP-18). | `00B` §2 → Pops, 21 Nov 2026 (decision card, "Folder beside the repo, outside git") |
+| SLT-093 | **The spike runs as a hidden, debug-only screen in Sylantro**, reached from Settings in Debug builds only. It reads and structures test photos picked from Files, saves nothing, and exports a results file that goes to `~/GIT/Syzygy/sylantro-testpages/results/`, outside git. The reader and structurer it builds are the pipeline's own and carry into Milestone 3. | Pops, 22 Nov 2026 (decision card, "Hidden spike screen in Sylantro") → `11` |
 
 ---
 
@@ -193,6 +211,7 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | Whether photos sync as CloudKit assets or as costlier bytes in the record | `05` §7, measured in the spike; IS-3 |
 | Apple News import (the way in is SLT-120): any website or Apple News only; when; what stands in for the original; the schema's web source and address; unreadable pages; a spike first | `08` §9, NI-2 to NI-7 (Pops) |
 | Meals (a meal made of recipes, like Thanksgiving): whether to take it forward and how far; meal, tag or collection; sections; a deleted recipe in a meal; which extensions (reuse, shopping list, PKU totals, timeline) and when; the writer; the mirror | `09` §5, ML-1 to ML-8 (Pops) |
+| The implementation plan's proposals: a thin slice first, milestone documents, numbers as names with the order kept in `12` §2, placing new feature documents, accepting designs at their milestone, sync from M2, the order after M3 (what 1.0 holds is ruled in `12` IP-7: everything designed so far, M1 to M8, Ship last; filed at close-out), when NI-5 and P-1, P-2 are settled | `12` §6, IP-1 to IP-9 (Pops); filed as SLT-094 onward |
 
 ---
 
@@ -200,6 +219,12 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.36 | SLT-146 to SLT-150: spike run 2's five fixes accepted (ingredient lines by number, retry and fallback, title from layout, fields in their sections, non-Latin lines unreadable) | Pops, 22 Nov 2026: "All" (spike run 2, `10` §7) |
+| 0.35 | SLT-140 to SLT-145: spike run 1's six fixes accepted (a new Structuring heading); the open decision closed | Pops, 22 Nov 2026: "all six" (spike run 1, `10` §7) |
+| 0.34 | Open decision added: spike run 1's proposals SP-1 to SP-6 | `10` §7 |
+| 0.33 | Open decision added for `12_IMPLEMENTATION_PLAN.md` (draft): IP-1 to IP-9, SLT-094 onward reserved for them; no rulings filed | Pops, 22 Nov 2026: "it's important, especially as we add more feature docs...order is important." |
+| 0.32 | SLT-017 rewritten: the spike runs on Pops's iPhone 18 Pro; SLT-093: the spike is a hidden debug-only screen (`11`) | Pops, 22 Nov 2026: "we wont be running on my partners phone, she hates when I do that...we will use my iphone 18 pro."; Pops, 22 Nov 2026 (decision card, "Hidden spike screen in Sylantro") |
+| 0.31 | SLT-067: an unknown enum value in a file falls back instead of throwing | Pops, 22 Nov 2026 (decision card, "Yes, fold it into M1-2") |
 | 0.30 | SLT-066: unreadable handwriting is called out, marked and located; the inline image is open as TS-15 | Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view." |
 | 0.29 | SLT-062 to SLT-065: attribution in parts, printed nutrition kept as text, an equipment list, handwritten additions marked (`10` TS-4, TS-6, TS-7, TS-14 closed) | Pops, 21 Nov 2026 (decision cards: "Separate parts", "Keep as printed text", "Its own equipment list", "Real ingredients, marked") |
 | 0.28 | SLT-071: one line with several ingredients is split (`10` TS-8 closed); SLT-070 trimmed to its meaning | Pops, 21 Nov 2026 (decision card, "Split into separate ingredients") |
