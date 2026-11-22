@@ -1,7 +1,7 @@
 # Sylantro — Apple News Recipe Import
 
 **Design document · bringing the recipes she and Pops saved in Apple News into Sylantro**
-Version 0.2 · 21 November 2026 · **Draft; one ruling in (SLT-120, the way in).** Everything else is
+Version 0.3 · 22 November 2026 · **Draft; one ruling in (SLT-120, the way in).** Everything else is
 an option for Pops, marked *(rec.)* where Claude recommends one. No task is written from an open
 option.
 
@@ -128,8 +128,9 @@ it, or a future reader can't re-read it and the publisher may later change or re
 | B. A, plus a snapshot of the page | Also a PDF or web archive of the page | She can see what it looked like | Large; cookie banners and ads; copyright of the whole page |
 | C. A, plus a screenshot-like image of the recipe | Also an image rendered from the recipe data | Something to show in review | Made up by Sylantro, not an original |
 
-How the source is modeled (a `SourcePage` with a kind, or a separate `SourceWebPage`) is a schema
-change to `01` §4 and `06`'s M1-1, NI-5.
+**Ruled (NI-5):** the source is a `SourcePage` with a kind (`scan`, `screenshot` or `web`), not a
+separate type, Pops, 22 Nov 2026 (decision card, "A kind of SourcePage"). A web page keeps its address, fetch date and the recipe data as fetched, and
+has no photo. The kind is added with M2's first model task, so a recipe has one list of originals.
 
 ---
 
@@ -227,7 +228,7 @@ Claude can write this up as a checklist for Pops, or as a spike task with a resu
 | NI-2 | Apple News only, or any recipe website | §2.2: any `https` link *(rec.)*; Apple News only |
 | NI-3 | Where it sits in the milestones | §8: after Milestone 3 *(rec.)*; sooner, as a separate milestone |
 | NI-4 | What is kept as the original of a web recipe | §3.1: A, the JSON-LD and address *(rec.)*; B, plus a page snapshot; C, plus a rendered image |
-| NI-5 | How the web source and address enter the schema | §3.1, §5: a `SourcePage` kind or a new source type; the address in `attribution`. Settled with `06` M1-1, before its JSON is frozen |
+| NI-5 | *Ruled:* a kind of `SourcePage` (scan, screenshot, web); a web one keeps its address, fetch date and the recipe data as fetched; the address also in `attribution.sourceURL` (built in M1-1). Pops, 22 Nov 2026 (decision card, "A kind of SourcePage") |
 | NI-6 | A paywalled or unreadable page | §3 step 5: flag "Needs screenshots" *(rec.)*; or try Foundation Models on the page text |
 | NI-7 | Run the spike in §7 first | Yes, as a checklist for Pops *(rec.)*; as a spike task doc |
 
@@ -239,5 +240,6 @@ When Pops rules, the rulings are filed in the ledger as SLT-120 onward at this d
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.3 | NI-5 ruled: a web original is a kind of `SourcePage`; the kind enters with M2's first model task | Pops, 22 Nov 2026 (decision card, "A kind of SourcePage") |
 | 0.2 | SLT-120: link first, screenshots as the fallback; fetching only the shared page is allowed; NI-1 closed | Pops, 21 Nov 2026 (decision card, "Link first, screenshots fallback") |
 | 0.1 | First version: what Apple News provides (a link only, no export), five ways in, the network question, duplicates, the original's stand-in, a spike, and open decisions NI-1 to NI-7 | Pops, 21 Nov 2026: "importing recipes from apple news… i suspect its just a link. start a new design doc for this idea." |

@@ -2,8 +2,10 @@
 
 **A Syzygy Softwerks engineering contract · how the app is put together, and the rules every task
 follows**
-Version 0.9 · 21 November 2026 · **Draft: not accepted, except §3's Domain names (SLT-091).** Everything marked *(rec.)* is Claude's
-proposal, waiting for Pops. No app code is written from it until Pops accepts it (`00B` §0).
+Version 0.14 · 22 November 2026 · **Accepted** (Pops, 22 Nov 2026), including the App-layer names in §2
+and §8 (`RecipeEditor`, `CaptureRecorder`, `ExtractionQueue`, `MirrorWriter`) and §5.1, §5.2, §5.4 and
+§5.5 as written; §3's Domain names by SLT-091. **Still open:** the recovery screen's copy
+(§5.3, `13` §6), and the photo details §5.7 points to (`05`). No app code is written from those until Pops rules.
 
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md` and `00B_SYLANTRO_GUARDRAILS.md`.
 *Every task that writes app code reads this file in full first.*
@@ -133,9 +135,9 @@ One `ModelContainer` with two configurations, as SydeTwo builds its own:
   syncedConfig, containerIdentifier:)`, synced models only, inside `#if DEBUG` behind
   `AppConfig.DebugCloudKit.runSchemaExercise` (SLT-015).
 - Each model is a `@Model` twin of a Domain value with `hydrate(from:)` and `toDomain()`; nested
-  data is sorted-key JSON `Data` (SLT-061). Photos are `@Attribute(.externalStorage)` `Data` on
-  their own model (§5.7); whether CloudKit carries one as an asset is Core Data's choice, measured
-  in the spike (`05` §7).
+  data is sorted-key JSON `Data` (SLT-061). **No image data is stored in either store**
+  (SLT-053): a photo's record holds only its metadata and a reference to its file, and the image
+  is a file, kept where `05` IS-4 rules (§5.7).
 - Previews and tests use an in-memory container with `cloudKitDatabase: .none`, never the live
   store.
 
@@ -155,9 +157,9 @@ One `ModelContainer` with two configurations, as SydeTwo builds its own:
 `SylantroApp` builds the container in a `do`/`catch`. On failure it does **not** delete anything,
 does not call `fatalError`, and does not open a fresh store in the same place. It shows a recovery
 screen with: what failed, in Pops's words; that the mirror in Files is intact; and, only after she
-confirms, a choice the screen's task will specify (open read-only, or move the store aside to a
-dated folder and start fresh, then offer to restore from the mirror). The screen's copy and
-choices are an open decision.
+confirms, **Try Again** (retry opening the store) or **Start Fresh** (move the old store,
+untouched, to a dated folder and open a new empty one, which iCloud refills), ruled in `13` §5
+(SC-7). Restoring from the mirror is M3's (`12` §4). The screen's copy is `13` §6.
 
 ### 5.4 The mirror's layout *(rec.)*
 
@@ -168,12 +170,12 @@ Sylantro/
       recipe.json
       recipe.md
       pages/
-        page-1.jpg
-        page-2.jpg
+        page-1.heic
+        page-2.heic
       photos/            (dish photos, if P-1 is accepted)
-        dish-1.jpg
+        dish-1.heic
   Pages without a recipe/
-    <session date>/page-<n>.jpg
+    <session date>/page-<n>.heic
 ```
 
 Written with `NSFileCoordinator` into the ubiquity container's `Documents` folder, which shows in
@@ -194,8 +196,9 @@ container keeps only its private database. The design is `04_SHARING_DESIGN.md`.
 
 ### 5.7 Photos *(proposed)*
 
-`PhotoModel` in `syncedModels`, `PhotoEncoding` in `Domain/`, thumbnails in SyLibCache's
-`ImageCache`, JPEG copies from `MirrorWriter`. The design is `05_IMAGE_STORAGE_DESIGN.md`.
+`PhotoModel` in `syncedModels` holds a photo's metadata and file reference only, never its bytes
+(SLT-053); the image files live where `05` IS-4 rules. `PhotoEncoding` in `Domain/`, thumbnails in
+SyLibCache's `ImageCache` (on each device, never stored), HEIC copies from `MirrorWriter` (`05` P-5). The design is `05_IMAGE_STORAGE_DESIGN.md`.
 
 ---
 
@@ -248,7 +251,7 @@ SylantroTests/    Domain tests first; fixtures are made up
 
 ## 10. Open in this document
 
-- Acceptance of the whole draft, and of the type names in §2 to §8.
+- The recovery screen's copy (`13` §6) and photos (§5.7, `05`); the rest is accepted.
 - The recovery screen's choices and copy (§5.3).
 - Restoring from the mirror (§5.3).
 - Sharing's and photos' open details: `04` §8, `05` §9.
@@ -260,6 +263,11 @@ SylantroTests/    Domain tests first; fixtures are made up
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.14 | §5.4, §5.7: the mirror's photos are HEIC copies | `05` P-5, Pops, 22 Nov 2026 (decision card, "HEIC copies") |
+| 0.13 | §5.3: the recovery screen offers Try Again or Start Fresh (`13` SC-7) | Pops, 22 Nov 2026 (decision card, "Try Again or Start Fresh") |
+| 0.12 | §5.1, §5.7: no image data in either store; photos are files the records refer to | SLT-053 (Pops, 22 Nov 2026: "looks good. can you make sure we are storing no image data in the database") |
+| 0.11 | §5.1, §5.2, §5.4 and §5.5 accepted as written (settings stay per device); §5.3 and §5.7 still open | Pops, 22 Nov 2026 (decision card, "Accept all four as written") |
+| 0.10 | Accepted except §5 (Data), App-layer names included; §5 walked through with Pops before its ruling | Pops, 22 Nov 2026: "walk me thru section 5 Data, everything else looks good and can be. accepted" |
 | 0.9 | §3's Domain type names accepted, with `06`'s four additions | SLT-091 (Pops, 21 Nov 2026) |
 | 0.8 | §5.6 and §5.7 moved to `04` and `05`; pointers left | Pops, 21 Nov 2026 |
 | 0.7 | §5.6: duplicate imports, SLT-103 | Pops, 21 Nov 2026 |

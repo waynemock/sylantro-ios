@@ -10,4 +10,11 @@ enum AppConfig {
     enum DebugCloudKit {
         static let runSchemaExercise = false
     }
+
+    /// Shows the accuracy spike's row in Settings (SLT-093). The spike's code ships in every build;
+    /// this flag alone hides it. It stays `true` through the TestFlight beta and is turned off
+    /// when App Store copy starts for RC0 (`00B` §6).
+    enum AccuracySpike {
+        static let isEnabled = true
+    }
 }

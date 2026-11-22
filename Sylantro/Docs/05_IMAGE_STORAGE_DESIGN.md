@@ -1,7 +1,7 @@
 # Sylantro — Image Storage Design
 
 **Design document · page scans and dish photos: how they are stored, synced, mirrored and shared**
-Version 0.2 · 21 November 2026 · **Draft: not accepted.** Only the rulings in §1 are decided; every
+Version 0.11 · 22 November 2026 · **Draft: not accepted.** Only the rulings in §1 are decided; every
 proposal (P-1 to P-7) and option is Pops's to decide, marked *(rec.)* where Claude recommends one.
 No task is written from an open proposal.
 
@@ -29,10 +29,15 @@ library feels and how much of her iCloud plan Sylantro uses.
 | SLT-014 | Every synced property optional or defaulted | So is every photo field |
 | SLT-084 | SyLibCache is added when thumbnails are built | `ImageCache` is the thumbnail cache |
 | SLT-100 | A shared recipe file carries its page photos | `04` §2 |
+| SLT-053 | **No image data in the database** | Every photo is a file; its record in the store holds only metadata and the file's name (§4, §4.1) |
 
 ---
 
 ## 2. What was verified about iCloud and photos
+
+**Background since SLT-053.** These findings are why storing photos in the database was costly
+and hard to control. Pops ruled that no image data goes in the database at all, so the
+asset-or-bytes question below no longer applies to Sylantro; it is kept as the reason for the rule.
 
 Read on Apple's developer forums and its archived CloudKit limits page, 21 Nov 2026 (§10).
 
@@ -56,17 +61,19 @@ Read on Apple's developer forums and its archived CloudKit limits page, 21 Nov 2
 
 | # | Proposal | Why |
 |---|---|---|
-| P-1 | **Dish photos.** A recipe can have any number of photos of the finished dish, taken with the camera or picked from Photos; the first is the recipe's cover in the library | A recipe she has cooked is easier to find by its picture |
+| P-1 | **Dish photos** *(ruled: the model now, the screens after M3)*. A recipe can have any number of photos of the finished dish, taken with the camera or picked from Photos; the first is the recipe's cover in the library. M2's `PhotoModel` carries the `dish` kind and the recipe link; taking, picking and showing dish photos is built after M3 | A recipe she has cooked is easier to find by its picture |
 | P-2 | **One `PhotoModel` for every photo** (§4) | Lists fetch recipes and pages without loading image bytes; each photo syncs as its own record |
-| P-3 | **HEIC, sized sensibly** (§5) | Fast sync and less of her iCloud plan, while staying sharp enough to read a page |
-| P-4 | **Thumbnails made on each device, never synced**, cached with `ImageCache` | They can always be rebuilt |
-| P-5 | **JPEG copies in the mirror**, beside each recipe's plain file (§6) | Any computer can open them; the mirror is the copy that outlives the app |
+| P-3 | **HEIC, sized sensibly** (§5) *(ruled: §5's figures as starting points, tuned after the sync check)* | Fast sync and less of her iCloud plan, while staying sharp enough to read a page |
+| P-4 | **Thumbnails made on each device, never synced**, cached with `ImageCache` *(ruled; also required by SLT-053)* | They can always be rebuilt |
+| P-5 | **HEIC copies in the mirror** *(ruled)*, beside each recipe's plain file (§6): the same files the app keeps | Smaller, and identical to the app's own; some older PCs and websites can't open HEIC. Pops, 22 Nov 2026 (decision card, "HEIC copies") |
 | P-6 | **A shared recipe file includes its dish photos** as well as its page photos | The receiver gets the whole recipe (`04` SH-5) |
-| P-7 | **Settings shows how much iCloud storage Sylantro's photos use**, with a note that it counts against her plan | Photos are the bulk of her data |
+| P-7 | **Settings shows how much iCloud storage Sylantro's photos use**, with a note that it counts against her plan *(ruled: yes, built after M2)* | Photos are the bulk of her data |
 
 ---
 
-## 4. The model (P-2)
+## 4. The model (P-2, ruled)
+
+**Ruled: one `PhotoModel` for every photo** (P-2, IS-1), Pops, 22 Nov 2026 (decision card, "One PhotoModel for every photo").
 
 `PhotoModel`, in the synced store:
 
@@ -79,14 +86,30 @@ Read on Apple's developer forums and its archived CloudKit limits page, 21 Nov 2
 | `sortIndex` | `Int` | Dish photo order; 0 is the cover |
 | `pixelWidth`, `pixelHeight` | `Int` | For layout before the image loads |
 | `takenAt` | `Date` | |
-| `data` | `Data?` | `@Attribute(.externalStorage)` |
+| `fileName` | `String?` | The image file's name, `<id>.heic`, in the photo folder (§4.1). Never the bytes (SLT-053) |
 
-Every property is optional or defaulted and both relationships are optional (SLT-014). No list or
-query reads `data`. Writes go through the writers (SLT-082): `CaptureRecorder` adds page photos and
+Every property is optional or defaulted and both relationships are optional (SLT-014). The record
+is a few hundred bytes, so lists and sync never carry an image. Writes go through the writers (SLT-082): `CaptureRecorder` adds page photos and
 never removes one (SLT-030); `RecipeEditor` adds, orders and removes dish photos.
 
-**Option:** keep page photos on `SourcePageModel` as today and use `PhotoModel` for dish photos only.
-Simpler for the first milestones, but two shapes for the same thing *(rec.: one model for all)*.
+**Option:** keep page photos' file names on `SourcePageModel` as today and use `PhotoModel` for dish photos only.
+Simpler for the first milestones, but two shapes for the same thing. *Not taken (IS-1).*
+
+### 4.1 Where the image files live (IS-4, ruled: A)
+
+**Ruled: option A**, Pops, 22 Nov 2026 (decision card, "App-only folder in iCloud Drive"). Filed in the ledger at this document's close-out.
+
+The store holds the file's name; the file has to be somewhere that reaches her other devices.
+
+| Option | What it is | For | Against |
+|---|---|---|---|
+| **A. An app-only photo folder in her iCloud Drive** *(ruled)* | HEIC files in the app's iCloud container but outside `Documents`, so Files doesn't show them; iCloud Drive syncs them. The mirror keeps its own HEIC copies (P-5) | Nothing she does in Files can break the app; sync is Apple's, file by file | Two copies of each photo in her iCloud (one in the hidden folder, one in the mirror) |
+| B. The mirror's folders are the photo store | Each photo lives once, in its recipe's folder in Files | One copy; less iCloud use | Moving or deleting a file in Files breaks the app; a page moves folders when it joins a recipe |
+| C. CloudKit assets the app syncs itself | Files on the device, sent as CloudKit assets with `CKSyncEngine`, outside SwiftData | Full control of sync and cost | A much larger design and more code to get right |
+
+In every option, with iCloud off the files go in the app's own folder on the device. A record can
+arrive on a device before its file does: the app asks iCloud to download it and shows a
+placeholder until it lands, and never treats a missing file as a deleted photo (SLT-030).
 
 ---
 
@@ -106,7 +129,7 @@ The figures are starting points for the spike (§7), held as one constant each i
 
 | Option | What it keeps |
 |---|---|
-| **A. The camera's image as HEIC at full resolution** *(rec.)* | Every pixel the camera saw, at a fraction of the size |
+| **A. The camera's image as HEIC at full resolution** *(ruled, IS-2)* | Every pixel the camera saw, at a fraction of the size |
 | B. Lossless (PNG) | Exactly what the camera returned, at several times the size |
 | C. Original only, no separate cropped copy; crop on the fly | Half the photos, but the crop is redone every time |
 
@@ -121,12 +144,13 @@ Sylantro/
       recipe.json
       recipe.md
       pages/
-        page-1.jpg
+        page-1.heic
       photos/
-        dish-1.jpg
+        dish-1.heic
 ```
 
-JPEG, not HEIC, so the mirror opens anywhere. `MirrorWriter` writes the copies after each save
+HEIC, the same as the app's own files (P-5, SLT-054): Sylantro is Apple-only. A recipe exported
+out of Sylantro carries JPEG copies instead (SLT-054). `MirrorWriter` writes the copies after each save
 (`02` §5.4). A dish photo removed in the app is removed from the mirror; a page photo is never
 removed.
 
@@ -134,20 +158,13 @@ removed.
 
 ## 7. What the spike measures
 
-Before any photo task is written:
+Since SLT-053 there is no asset-or-bytes question. Once the photo task is built, Pops checks on
+his iPhone and iPad:
 
-1. Sync a dozen page and dish photos at §5's sizes between two devices.
-2. In CloudKit Console, check whether each photo's field landed as an asset or as bytes, and the
-   storage it showed.
-3. Note the sync time for a 30-page session.
-
-**If photos land as bytes**, the options are:
-
-| Option | What it is |
-|---|---|
-| A. Accept it | Simple, but costs her more iCloud storage |
-| B. Larger photos, so they cross into assets | Works against P-3 |
-| C. Keep image files ourselves and sync them as assets outside SwiftData (for example with `CKSyncEngine`) | Controls the cost; a larger design, made only if the measurement calls for it |
+1. A 30-page session's photos reach the other device, and how long it takes.
+2. A recipe opened on the other device before its photos arrive shows placeholders, then the
+   photos, with nothing lost.
+3. In CloudKit Console, the photo records are small (no image field), as SLT-053 requires.
 
 ---
 
@@ -166,10 +183,11 @@ Before any photo task is written:
 
 | # | Question |
 |---|---|
-| P-1 to P-7 | Accept, change or drop each proposal (§3) |
-| IS-1 | One `PhotoModel` for all photos, or dish photos only (§4) |
-| IS-2 | How the page original is kept (§5: A *(rec.)*, B, C) |
-| IS-3 | What to do if the spike shows photos syncing as bytes (§7: A, B, C) |
+| P-6 | Accept, change or drop (§3), at M6's start; P-1 to P-5 and P-7 are ruled |
+| IS-1 | *Ruled:* one `PhotoModel` for all photos (§4) |
+| IS-2 | *Ruled: A,* HEIC at full resolution, plus a separate cropped copy (§5) |
+| IS-3 | *Settled by SLT-053:* no photo bytes in the store, so none can sync as bytes |
+| IS-4 | *Ruled: A,* an app-only photo folder in her iCloud Drive (§4.1) |
 
 ---
 
@@ -192,5 +210,14 @@ Before any photo task is written:
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.11 | §6: SLT-054, HEIC in the app and the mirror, JPEG only on export | Pops, 22 Nov 2026: "I decide on heic instead of jpg, this will only be an apple apple, if we need to export a recipe it can be jpg." |
+| 0.10 | P-7 ruled: Settings shows Sylantro's iCloud photo use, built after M2 | Pops, 22 Nov 2026 (decision card, "Yes, but after M2") |
+| 0.9 | P-3 and P-4 ruled: §5's sizes as starting points; thumbnails on each device only | Pops, 22 Nov 2026 (decision card, "Accept as starting points") |
+| 0.8 | P-5 ruled: HEIC copies in the mirror, not JPEG | Pops, 22 Nov 2026 (decision card, "HEIC copies") |
+| 0.7 | IS-2 ruled: the page original as HEIC at full resolution, with a separate cropped copy | Pops, 22 Nov 2026 (decision card, "HEIC at full resolution") |
+| 0.6 | P-1 ruled: dish photos; the `dish` kind and recipe link in M2's model, the screens after M3 | Pops, 22 Nov 2026 (decision card, "Yes, model now, screens later") |
+| 0.5 | P-2 and IS-1 ruled: one `PhotoModel` for every photo, page and dish | Pops, 22 Nov 2026 (decision card, "One PhotoModel for every photo") |
+| 0.4 | IS-4 ruled: A, HEIC files in an app-only folder in her iCloud container, outside `Documents`; the mirror keeps its JPEG copies | Pops, 22 Nov 2026 (decision card, "App-only folder in iCloud Drive") |
+| 0.3 | SLT-053: no image data in the database. §4's `data` becomes `fileName`; §4.1 and IS-4 added (where the files live); §7's measurement rewritten; IS-3 settled | Pops, 22 Nov 2026: "looks good. can you make sure we are storing no image data in the database" |
 | 0.2 | §8: unreadable handwriting is cut from the cropped page photo on the fly, not stored | SLT-066 (Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view.") |
 | 0.1 | First version, from `01` §5.7 and `02` §5.7, with the verified CloudKit behavior and the open details as options | Pops, 21 Nov 2026: "Write up docs for sharing and image storage" |

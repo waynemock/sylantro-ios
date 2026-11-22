@@ -20,6 +20,7 @@ struct SettingsSheet: View {
     @Environment(\.syTheme) private var syTheme
     @Environment(\.dismiss) private var dismiss
     @State private var route: Route?
+    @State private var isShowingSpike = false
 
     var body: some View {
         NavigationStack {
@@ -44,6 +45,19 @@ struct SettingsSheet: View {
                     }
                 }
                 .paletteRowBackground()
+
+                if AppConfig.AccuracySpike.isEnabled {
+                    Section {
+                        // A sheet, so the spike closes only from its Done (`11` M1-7).
+                        Button {
+                            isShowingSpike = true
+                        } label: {
+                            Text("Accuracy spike")
+                                .foregroundStyle(.primary)
+                        }
+                    }
+                    .paletteRowBackground()
+                }
             }
             .paletteListBackground()
             .navigationTitle("Settings")
@@ -65,6 +79,11 @@ struct SettingsSheet: View {
                                 backgroundColor: syTheme.backgroundColor)
                     // A presented sheet doesn't take the root's cap.
                     .appTextSizeCap()
+            }
+        }
+        .sheet(isPresented: $isShowingSpike) {
+            NavigationStack {
+                SpikeView()
             }
         }
     }

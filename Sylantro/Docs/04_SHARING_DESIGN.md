@@ -1,7 +1,7 @@
 # Sylantro — Sharing Design
 
 **Design document · sending one recipe to another Sylantro user, and what is left for later**
-Version 0.1 · 21 November 2026 · **Rulings SLT-100 to SLT-103 in; everything else is an option for
+Version 0.2 · 22 November 2026 · **Rulings SLT-100 to SLT-103 in; everything else is an option for
 Pops**, marked *(rec.)* where Claude recommends one. No task is written from an open option.
 
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md` and `00B_SYLANTRO_GUARDRAILS.md`.
@@ -37,7 +37,9 @@ given the issues." and "Dedup of clear otherwise ask the user what to do").
 - **Where:** a Share button on the recipe screen; the system share sheet does the rest.
 - **What goes:** the recipe as `recipe.json` describes it (`01` §4), with its `schemaVersion`, the
   id of the recipe it came from (the source id, which §4 needs), and its page photos. Whether dish
-  photos go too is `05`'s P-6 *(rec.: yes)*.
+  photos go too is `05`'s P-6 *(rec.: yes)*. Photos are HEIC inside Sylantro and JPEG when a
+  recipe is exported (SLT-054); whether a file sent to another Sylantro is an export, and so
+  JPEG, is open *(rec.: no, HEIC, since both ends are Sylantro)*.
 - **What never goes:** anything about her other recipes, her nutrition settings, or her review
   history beyond the recipe's own `reviewState`.
 - **How it is built** *(rec.)*: a `ShareLink` with a `Transferable` that writes the file;
@@ -161,4 +163,5 @@ When Pops reopens it, the questions are:
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.2 | §2: SLT-054's photo format; HEIC or JPEG in a Sylantro-to-Sylantro file left open | Pops, 22 Nov 2026: "I decide on heic instead of jpg, this will only be an apple apple, if we need to export a recipe it can be jpg." |
 | 0.1 | First version, from `01` §5.6 and `02` §5.6 and SLT-100 to SLT-103, with the open details laid out as options | Pops, 21 Nov 2026: "Write up docs for sharing and image storage" |
