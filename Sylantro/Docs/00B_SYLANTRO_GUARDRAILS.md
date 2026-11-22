@@ -1,7 +1,7 @@
 # Sylantro — Project Guard Rails
 
 **Project-level. Sylantro only.** Companion to `00A_STUDIO_CONVENTIONS.md`.
-Version 0.15 · 22 November 2026 · Ships in every agent prompt, alongside `00A`,
+Version 0.16 · 22 November 2026 · Ships in every agent prompt, alongside `00A`,
 `00_DECISION_LEDGER.md` and the task's own documents.
 
 ---
@@ -69,6 +69,7 @@ These are in addition to `00A` §4. Halt and ask; do not resolve inline.
 | A change to any SwiftData `@Model` that the task does not name | Once a CloudKit Production schema is deployed it is additive-only (SLT-015) |
 | A synced model property that is non-optional with no default value, or a non-optional relationship | CloudKit refuses to load the store, and the app traps on launch (SLT-014) |
 | Nested recipe data (ingredient groups, steps, OCR words) stored as its own `@Model` rather than as JSON `Data` | SLT-061 |
+| **Image bytes in either store**: a photo, page scan, crop or thumbnail as `Data` or `[UInt8]` on any `@Model`, with or without `@Attribute(.externalStorage)`, or inside a JSON `Data` property. A photo's record holds only metadata and a file reference | No image data in the database (SLT-053) |
 | Turning on CloudKit sync for the store (`cloudKitDatabase`), or a change to the container, entitlements or capabilities | Sync stays off until the real models exist (SLT-014); entitlements are Pops's |
 | A change to the bundle ID, display name, team or signing | Each matches a registered record (SLT-011) |
 | Anything under `Domain/` importing SwiftUI, SwiftData, UIKit, Vision, VisionKit or FoundationModels | SLT-081 |
@@ -331,6 +332,7 @@ The test target is already at the floor (`"26.5"` for both targets), so no build
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.16 | §2: image bytes in either store are a stop condition | SLT-053 (Pops, 22 Nov 2026: "looks good. can you make sure we are storing no image data in the database") |
 | 0.15 | §6: the spike flag goes off once App Store copy starts for RC0; on through the TestFlight beta | SLT-093 (Pops, 22 Nov 2026: "my partner will only be using testflight builds, and i want to keep this on during beta test. just need to be reinded to turn it off once we start writing app store copy headed to RC0.") |
 | 0.14 | §6: the spike flag line removed; it stays on in every build | SLT-093 (Pops, 22 Nov 2026 (decision card, "Leave it on everywhere")) |
 | 0.13 | §6: the spike flag is `false` for an App Store submission | SLT-093 (Pops, 22 Nov 2026: "I want to leave the accuracy spike in the app for now, so just put it behind a appconfig flag and no if DEBUG") |

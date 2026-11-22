@@ -2,7 +2,7 @@
 
 **A Syzygy Softwerks task document · the recipe types and the ingredient-line parser, before any
 screen**
-Version 0.8 · 22 November 2026 · Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`,
+Version 1.0 · 22 November 2026 · **Closed** (SLT-156) · Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`,
 `00B_SYLANTRO_GUARDRAILS.md` and `02_ARCHITECTURE.md` §2 and §3.
 
 ---
@@ -375,6 +375,7 @@ read wrongly is reported, not fixed); change M1-1's types beyond the `UnitRef` f
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 1.0 | Closed with Milestone 1; its rulings are in the ledger | SLT-156 (Pops, 22 Nov 2026: "close out milestone 1"; "ok we will finish the spike") |
 | 0.8 | §1: "a few" and "-inch" ruled; built by `11` M1-14 | SLT-155 (Pops, 22 Nov 2026 (decision card, "All four, SP-15 to SP-18")) |
 | 0.7 | §1: the lines M1-2 reads oddly listed, with a recommendation, open for Pops | M1-2 Results, note (e) |
 | 0.6 | M1-2 also fixes `UnitRef`'s decoding so an unknown canonical unit reads as nil (M1-1 Results, note (e)); test 9 added | SLT-067 (Pops, 22 Nov 2026 (decision card, "Yes, fold it into M1-2")) |

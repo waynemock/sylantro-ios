@@ -3,7 +3,7 @@
 *One row per locked design decision, always showing the **current** ruling. Sylantro's documents
 are rewritten in place (`00A` §1); this ledger is where a reversal survives. This file is HEAD.*
 
-**Version 0.46** · 22 November 2026 · Companion to all numbered Sylantro documents
+**Version 0.49** · 22 November 2026 · Companion to all numbered Sylantro documents
 
 ---
 
@@ -102,6 +102,8 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | SLT-050 | **SwiftData on the CloudKit private database, plus an automatic open-format mirror.** After every save the app writes `recipe.json`, `recipe.md` and the original page photos into a Sylantro folder in her iCloud Drive. | Pops, 21 Nov 2026 (decision card) |
 | SLT-051 | **Two stores** *(rec.)*: a synced store for recipes, pages and scan sessions, and a device-only store for the extraction queue and device state, as SydeTwo's `syncedModels` and `SydeTwoLocal` do. | `02` §5.1 |
 | SLT-052 | **The mirror is written, never read back as the source of truth.** The database is the source of truth; the mirror is the copy that survives it. Restoring from the mirror is a recovery feature, not a sync path. | `01` §5.3 *(rec.)* |
+| SLT-053 | **No image data in the database.** Neither store (synced or device-only) holds image bytes in any form: no photo `Data`, no `@Attribute(.externalStorage)` blob, no thumbnail. A photo's record holds only its metadata and a reference to its file; the image itself is a file. Where the files live and how they reach her other devices is `05` IS-4. Thumbnails are rebuilt on each device in `ImageCache`. | Pops, 22 Nov 2026: "looks good. can you make sure we are storing no image data in the database" → `02` §5.1, §5.7, `05` §2, §4, §7, `00B` §2 |
+| SLT-054 | **Photos are HEIC everywhere inside Sylantro, the Files copy included.** Sylantro is Apple-only, so page and dish photos are kept, synced and mirrored as HEIC. **JPEG only when a recipe is exported** out of Sylantro; whether a recipe file sent to another Sylantro (`04`) counts as an export is `04`'s to settle. | Pops, 22 Nov 2026: "I decide on heic instead of jpg, this will only be an apple apple, if we need to export a recipe it can be jpg." → `05` P-5, §6, `02` §5.4, §5.7, `01` §5.7 |
 
 ## Schema
 
@@ -182,6 +184,7 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | SLT-153 | **A refusal while Sylantro is in front is retried after a short wait** (30 seconds, up to three times) before the page waits for her to come back to the app. Extends SLT-144; shapes `ExtractionQueue` (`02` §4). | Pops, 22 Nov 2026 (decision card, "M1-6: all three fixes") (spike run 3, `10` §7) → `11` M1-6 |
 | SLT-154 | **The spike loads its test set in one tap** (Debug only): Pops picks the folder of test photos in Files once, it is remembered, and captures are grouped by page ID (the joined pairs from `10` §1 together). Photos never pass through the build or the project (SLT-092). | Pops, 22 Nov 2026: "can this just be setup without me adding all those damn files?"; decision card, "Pick the folder once (Files)" → `11` M1-6 |
 | SLT-155 | **"A few" is not a quantity, and "1-inch" is a size.** The parser reads a line starting "a few", "a couple (of)" or "several" with no quantity, the words kept in the line; an amount joined to "-inch" or "-in." is a size, so "1-inch piece ginger" has no quantity, while "2 1-inch pieces ginger" is 2. Settles `06` §1's two open readings. | Pops, 22 Nov 2026 (decision card, "All four, SP-15 to SP-18") (spike run 4, `10` §7; `06` §1) → `11` M1-14 |
+| SLT-156 | **Milestone 1 closes: on-device reading and structuring are good enough to go on.** After six spike runs (`10` §7): print read near perfect; 91% of printed ingredient lines found, 95% of quantities and 90% of units right; titles 14 of 22, each shown in review with its warning; every capture finished in runs 3 to 6. No cloud engine (SLT-040 stays closed). Title fixes found in run 6, several recipes on a page and handwriting go to Milestone 3. | Pops, 22 Nov 2026: "close out milestone 1"; "ok we will finish the spike" → `10` §7, `11`, `12` |
 
 ## Implementation plan
 
@@ -214,8 +217,8 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | Phe shown in mg or exchanges, whose exchange size, and the rounding of protein and phe | `03` §13, N-6 and N-7 (Pops, with the clinic) |
 | The nutrition caveat's wording and placement, and whether the clinic reviews the method before release | `03` §1, N-8 and N-10 (Pops) |
 | A phenylalanine warning on recipes containing aspartame *(proposed)* | `03` §8, N-9 (Pops) |
-| Dish photos, a `PhotoModel` for every photo, HEIC sizes, device-only thumbnails, JPEG copies in the mirror, dish photos in a shared file, and iCloud use shown in Settings *(proposed)* | `05` §9, P-1 to P-7 and IS-1, IS-2 (Pops) |
-| Whether photos sync as CloudKit assets or as costlier bytes in the record | `05` §7, measured in the spike; IS-3 |
+| Dish photos in a shared file (P-6); everything else in `05` is ruled in `05` (P-1 to P-5, P-7, IS-1, IS-2, IS-4) and filed at its close-out; SLT-053 and SLT-054 already filed | `05` §9, P-6 (Pops, at M6's start) |
+| *(Settled by SLT-053: no photo bytes in the store, so the asset-or-bytes question no longer applies)* | `05` IS-3 |
 | Apple News import (the way in is SLT-120): any website or Apple News only; when; what stands in for the original; the schema's web source and address; unreadable pages; a spike first | `08` §9, NI-2 to NI-7 (Pops) |
 | Meals (a meal made of recipes, like Thanksgiving): whether to take it forward and how far; meal, tag or collection; sections; a deleted recipe in a meal; which extensions (reuse, shopping list, PKU totals, timeline) and when; the writer; the mirror | `09` §5, ML-1 to ML-8 (Pops) |
 | The implementation plan's proposals: a thin slice first, milestone documents, numbers as names with the order kept in `12` §2, placing new feature documents, accepting designs at their milestone, sync from M2, the order after M3 (what 1.0 holds is ruled in `12` IP-7: everything designed so far, M1 to M8, Ship last; filed at close-out), when NI-5 and P-1, P-2 are settled | `12` §6, IP-1 to IP-9 (Pops); filed as SLT-094 onward |
@@ -226,6 +229,9 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.49 | SLT-054 added: HEIC everywhere in the app and the Files copy; JPEG only when a recipe is exported | Pops, 22 Nov 2026: "I decide on heic instead of jpg, this will only be an apple apple, if we need to export a recipe it can be jpg." |
+| 0.48 | SLT-053 added: no image data in either store, only file references | Pops, 22 Nov 2026: "looks good. can you make sure we are storing no image data in the database" |
+| 0.47 | SLT-156 added: Milestone 1 closes on six spike runs; on-device stays | Pops, 22 Nov 2026: "close out milestone 1"; "ok we will finish the spike" |
 | 0.46 | SLT-148 rewritten: the title starts at the model's first line; site-name and author lines dropped; the size trim replaced | Pops, 22 Nov 2026 (decision card, "SP-19, then run 6") |
 | 0.45 | SLT-146 and SLT-148 rewritten (lines used once, group names by rule; no title, trimmed and unchecked titles); SLT-155 added ("a few", "-inch") | Pops, 22 Nov 2026 (decision card, "All four, SP-15 to SP-18") |
 | 0.44 | SLT-072: the parser's four edge-case readings from M1-2's notes (a) to (d), accepted as built | Pops, 22 Nov 2026 |

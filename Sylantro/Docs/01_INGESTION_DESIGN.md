@@ -2,7 +2,7 @@
 
 **Design document · printed recipe pages to structured recipes, on the device, without losing
 anything**
-Version 0.18 · 22 November 2026 · **Rulings in from the design conversation (SLT-020 to SLT-090);
+Version 0.19 · 22 November 2026 · **Rulings in from the design conversation (SLT-020 to SLT-090);
 not for the agent until a task names it**
 
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md` and `00B_SYLANTRO_GUARDRAILS.md`.
@@ -203,8 +203,8 @@ design is `04_SHARING_DESIGN.md`.
 
 ### 5.7 Photos and image storage *(proposed)*
 
-Page scans and dish photos: one photo model, HEIC sizes, device-only thumbnails, JPEG copies in
-the mirror, and what CloudKit does with them. The design, and what the spike measures, is
+Page scans and dish photos: no image data in the database (SLT-053), one photo model, HEIC
+everywhere including the mirror, JPEG only on export (SLT-054), device-only thumbnails. The design, and what the spike measures, is
 `05_IMAGE_STORAGE_DESIGN.md`.
 
 ---
@@ -254,6 +254,7 @@ The spike's real pages and results never enter the repository (`00B` §2); fixtu
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.19 | §5.7: SLT-053 and SLT-054 | Pops, 22 Nov 2026 |
 | 0.18 | §1, §8: the spike runs on Pops's iPhone 18 Pro | SLT-017 |
 | 0.17 | §4: `Yield`, `IngredientGroup` and `Step` fields matched to `06` M1-1 as built (`foodMatch` stays here as a later nutrition field) | `06` M1-1 Results, note (d) |
 | 0.16 | §3.3: unreadable handwriting called out, with the cropped image in place proposed; §4: isUnreadable, unreadableAreas | SLT-066 (Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view.") |

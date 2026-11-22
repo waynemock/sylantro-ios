@@ -38,42 +38,136 @@ nonisolated enum HeaderArea {
         }
     }
 
-    /// A run's first or last line smaller than this share of its largest line is trimmed (a
-    /// site name beside the title, SLT-148).
-    private static let titleTrimShare = 0.85
+    /// The size band, against the title's first line, in which the model's next line joins it.
+    private static let sameSizeRange = 0.8...1.25
+    /// A title takes in at most this many area lines.
+    private static let maximumTitleLines = 3
+    /// A site-name line needs at least this many letters and digits to match the host.
+    private static let minimumSiteNameLength = 4
 
-    /// The model's title snapped to the page (SLT-148). An empty answer is no title: `("", false)`.
-    /// Otherwise the first run of 1 to 3 consecutive area lines whose joined text normalizes to
-    /// `text` is the title, as read, with `snapped` true; a run of 2 or 3 first drops its first
-    /// lines, then its last, while they are smaller than 0.85 of the run's largest, keeping at
-    /// least one. A non-empty answer that matches nothing gives the largest line (the first of
-    /// equal ones), with `snapped` false; an empty area gives `""`.
-    static func snappedTitle(_ text: String, area: [HeaderLine]) -> (title: String, snapped: Bool) {
+    /// The host of a printed URL: lowercased, any scheme and `://` removed, up to the first `/`.
+    /// Nil for nil or empty.
+    static func host(of url: String?) -> String? {
+        guard var text = url?.lowercased(), !text.isEmpty else {
+            return nil
+        }
+        if let scheme = text.range(of: "://") {
+            text = String(text[scheme.upperBound...])
+        }
+        return String(text.prefix { $0 != "/" })
+    }
+
+    /// The model's title snapped to the page (SLT-148), in order: an empty answer is no title,
+    /// `("", false)`. The answer's lines, less side lines (the site's name or the author's), give
+    /// the start: the first area line equal to the first of them, else the first run of 2 or 3
+    /// lines matching it. The title takes in the following area lines, up to 3 in all, while each
+    /// isn't a side line and either starts lowercase or is the model's next line at 0.8 to 1.25
+    /// times the start's size. A title starting with a step number is no title. An answer with no
+    /// line left, or none found, gives the largest line (the first of equal ones), with `snapped`
+    /// false; an empty area gives `""`.
+    static func snappedTitle(_ text: String, area: [HeaderLine], author: String? = nil,
+                             sourceHost: String? = nil) -> (title: String, snapped: Bool) {
+        // 1. Empty.
         guard !TextMatch.isEmptyAnswer(text) else {
             return ("", false)
         }
-        let wanted = TextMatch.normalize(text)
+
+        // 2. The model's lines, less side lines.
+        let modelLines = text.split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty && !isSideLine($0, author: author, sourceHost: sourceHost) }
+            .map(TextMatch.normalize)
+
+        // 3. The start: one area line, else a run of 2 or 3.
+        guard let firstModelLine = modelLines.first, let start = startRun(of: firstModelLine, in: area) else {
+            return (largestLine(area), false)
+        }
+
+        // 4. The next lines.
+        var titleLines = Array(area[start])
+        var nextModelLine = 1
+        let startSize = area[start.lowerBound].size
+        var index = start.upperBound
+        while titleLines.count < maximumTitleLines, index < area.count {
+            let line = area[index]
+            guard !isSideLine(line.text, author: author, sourceHost: sourceHost) else {
+                break
+            }
+            let normalized = TextMatch.normalize(line.text)
+            let isModelsNext = nextModelLine < modelLines.count && normalized == modelLines[nextModelLine]
+            let continues = line.text.first?.isLowercase ?? false
+            let sameSize = startSize == 0 || sameSizeRange.contains(line.size / startSize)
+            guard continues || (isModelsNext && sameSize) else {
+                break
+            }
+            titleLines.append(line)
+            if isModelsNext {
+                nextModelLine += 1
+            }
+            index += 1
+        }
+
+        // 5. A step is no title.
+        let title = titleLines.map(\.text).joined(separator: " ")
+        if startsWithStepNumber(title) {
+            return ("", false)
+        }
+
+        // 6. The lines as read.
+        return (title, true)
+    }
+
+    /// The area range the title starts at: the first line equal to `modelLine`, else the first
+    /// run of 2 or 3 lines whose joined text normalizes to it.
+    private static func startRun(of modelLine: String, in area: [HeaderLine]) -> Range<Int>? {
+        if let index = area.firstIndex(where: { TextMatch.normalize($0.text) == modelLine }) {
+            return index..<(index + 1)
+        }
         for start in area.indices {
-            for count in 1...3 where start + count <= area.count {
-                var run = Array(area[start..<(start + count)])
-                guard TextMatch.normalize(run.map(\.text).joined(separator: " ")) == wanted else {
-                    continue
+            for count in 2...3 where start + count <= area.count {
+                if TextMatch.normalize(area[start..<(start + count)].map(\.text).joined(separator: " ")) == modelLine {
+                    return start..<(start + count)
                 }
-                let threshold = (run.map(\.size).max() ?? 0) * titleTrimShare
-                while run.count > 1, let first = run.first, first.size < threshold {
-                    run.removeFirst()
-                }
-                while run.count > 1, let last = run.last, last.size < threshold {
-                    run.removeLast()
-                }
-                return (run.map(\.text).joined(separator: " "), true)
             }
         }
+        return nil
+    }
+
+    /// A line that is the site's name (its letters and digits, at least 4, found in the host
+    /// without dots) or holds the author's name.
+    private static func isSideLine(_ line: String, author: String?, sourceHost: String?) -> Bool {
+        if let sourceHost {
+            let letters = String(line.lowercased().filter { $0.isLetter || ("0"..."9").contains($0) })
+            if letters.count >= minimumSiteNameLength, sourceHost.replacingOccurrences(of: ".", with: "").contains(letters) {
+                return true
+            }
+        }
+        if !TextMatch.isEmptyAnswer(author), let author {
+            let name = TextMatch.normalize(author)
+            if !name.isEmpty, TextMatch.normalize(line).contains(name) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /// One or more digits, then `.` or `)`, then a space.
+    private static func startsWithStepNumber(_ text: String) -> Bool {
+        let digits = text.prefix { ("0"..."9").contains($0) }
+        let rest = text.dropFirst(digits.count)
+        guard !digits.isEmpty, let mark = rest.first, mark == "." || mark == ")" else {
+            return false
+        }
+        return rest.dropFirst().first == " "
+    }
+
+    /// The largest line (the first of equal ones), or `""` for an empty area.
+    private static func largestLine(_ area: [HeaderLine]) -> String {
         var largest: HeaderLine?
         for line in area where line.size > (largest?.size ?? -.infinity) {
             largest = line
         }
-        return (largest?.text ?? "", false)
+        return largest?.text ?? ""
     }
 
     /// The median of the heights, or nil when none is above 0.

@@ -70,14 +70,48 @@ struct StructuringRulesTests {
         #expect(!none.snapped)
     }
 
-    @Test("a smaller line is trimmed from the title")
-    func smallerLineIsTrimmedFromTitle() {
-        let area = [("Example Kitchen", 1.0), ("Test Soup", 2.0), ("Serves 2", 1.0)]
-            .map { HeaderArea.HeaderLine(text: $0.0, size: $0.1) }
+    static func area(_ lines: [(String, Double)]) -> [HeaderArea.HeaderLine] {
+        lines.map { HeaderArea.HeaderLine(text: $0.0, size: $0.1) }
+    }
 
-        let snapped = HeaderArea.snappedTitle("example kitchen test soup", area: area)
+    @Test("the title starts at the model's first line")
+    func titleStartsAtModelsFirstLine() {
+        let area = Self.area([("Example Kitchen", 1.0), ("Test Soup", 2.0), ("Recipe by Pat Example", 1.0), ("Serves 2", 1.0)])
+
+        let snapped = HeaderArea.snappedTitle("Example Kitchen\nTest Soup\nRecipe by Pat Example", area: area,
+                                              author: "Pat Example", sourceHost: "www.examplekitchen.com")
 
         #expect(snapped.title == "Test Soup")
         #expect(snapped.snapped)
+    }
+
+    @Test("a title's next line joins when it continues")
+    func nextLineJoinsWhenItContinues() {
+        let area = Self.area([("Test", 1.0), ("soup with beans", 2.0), ("Serves 2", 1.0)])
+
+        let snapped = HeaderArea.snappedTitle("Test", area: area)
+
+        #expect(snapped.title == "Test soup with beans")
+        #expect(snapped.snapped)
+    }
+
+    @Test("a same-size next line joins, a larger one doesn't")
+    func sameSizeLineJoinsLargerDoesNot() {
+        let area = Self.area([("Test Soup", 2.0), ("With Beans", 1.8), ("Example blurb text", 2.6)])
+
+        let snapped = HeaderArea.snappedTitle("Test Soup\nWith Beans\nExample blurb text", area: area)
+
+        #expect(snapped.title == "Test Soup With Beans")
+        #expect(snapped.snapped)
+    }
+
+    @Test("a step is no title")
+    func stepIsNoTitle() {
+        let area = Self.area([("4. Bake the test soup", 3.0)])
+
+        let snapped = HeaderArea.snappedTitle("4. Bake the test soup", area: area)
+
+        #expect(snapped.title == "")
+        #expect(!snapped.snapped)
     }
 }

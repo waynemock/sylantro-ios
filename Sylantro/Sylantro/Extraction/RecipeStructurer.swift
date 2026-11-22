@@ -152,7 +152,8 @@ nonisolated struct RecipeStructurer: Sendable {
                                     cap: TokenCap.header, outcome: &outcome)
         }
         // The model's title, snapped to the page's lines; else the largest line, flagged (SLT-148).
-        let snapped = HeaderArea.snappedTitle(header?.title ?? "", area: area)
+        let snapped = HeaderArea.snappedTitle(header?.title ?? "", area: area, author: header?.author,
+                                              sourceHost: HeaderArea.host(of: rules.sourceURL))
         let title = snapped.title
         if title.isEmpty {
             warnings.append("no title")

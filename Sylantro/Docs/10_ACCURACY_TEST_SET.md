@@ -2,7 +2,7 @@
 
 **Design document · the spike's 25 real binder pages: how they are scored, what makes them hard,
 and the design questions they raise**
-Version 0.24 · 22 November 2026 · **Draft, not accepted; proposals TS-5, TS-10, TS-11 and TS-15 are
+Version 0.25 · 22 November 2026 · **Draft, not accepted; proposals TS-5, TS-10, TS-11 and TS-15 are
 Pops's to decide; the rest are settled (SLT-045 to SLT-048, SLT-062 to SLT-065, SLT-070, SLT-071) and TS-12 is
 done.** Not for the agent until a task names it.
 
@@ -475,6 +475,52 @@ Why:
 Pops chose SP-19, then run 6 (decision card, "SP-19, then run 6", 22 Nov 2026), recorded by
 rewriting SLT-148; built by `11` Task M1-15. After run 6 he decides whether Milestone 1 closes.
 
+### Run 6 · 22 November 2026
+
+On `11` M1-15's build (the title starts at the model's first line; site-name and author lines
+dropped). Per-page table outside git (`SPIKE_6_SCORING.md`).
+
+**The best run: titles up to 14 of 22, ingredients unchanged at run 4's level.**
+
+| Measure | Run 4 | Run 5 | Run 6 |
+|---|---|---|---|
+| Captures finished | 22 of 22, no errors | 22 of 22, no errors | 22 of 22, no part errors, retries, fallbacks or rate limits |
+| Titles right | 11 of 22 | 12 of 22 | 14 of 22 |
+| Ingredient lines found, printed pages | 151 of 166 | 151 of 166 | 151 of 166 |
+| Quantity right / unit right | 139 / 132 of 146 | 139 / 132 of 146 | 139 / 132 of 146 |
+| Non-ingredients in the ingredient list | 34 | 30 | 30 |
+| Ingredient groups (named after an ingredient line) | 161 (84) | 24 (0) | 24 (0) |
+
+Why:
+- **Fixed:** the page that starts with the site's name, the page whose blurb is printed larger,
+  and the page whose second line is the author. Three more titles now snap instead of coming from
+  the fallback.
+- **One regression:** on one page the model's author answer is a single word that is also in the
+  title line, so the title line was dropped as a side line.
+- **The page with no title still gets a step:** the model's step text doesn't match the page, so
+  the largest-line fallback runs, and the step-number check runs only on a snapped title.
+- **Left to the model's choice:** a magazine deck, a section label, a prize label and breadcrumbs
+  (four pages), plus one handwriting misread. Review (Milestone 3) is where these get corrected.
+
+### Milestone 1's verdict · 22 November 2026
+
+Pops closes Milestone 1 after run 6 (Pops, 22 Nov 2026: "close out milestone 1"; "ok we will
+finish the spike"), recorded as SLT-156. **On-device reading and structuring are good enough to
+go on**, so no cloud engine (SLT-040 stays closed):
+- **Reading:** print is near perfect, at 93 to 386 ms a page. Handwriting is weak, and is a
+  secondary case.
+- **Ingredients:** 91% of printed lines found, with 95% of quantities and 90% of units right, and
+  groups as printed.
+- **Titles:** 14 of 22. Review shows each one with its warning (`title from layout`, `no title`),
+  so a wrong title is fixed in review, not saved silently.
+- **Reliability:** every capture finished in runs 3 to 6, with no errors, retries or rate limits,
+  at 4.5 to 37 s of structuring a recipe.
+
+**Carried to Milestone 3** (`11` §1): two title fixes found in run 6 (SP-20: an author answer of
+one word doesn't make a line a side line; the step-number check also applies to the fallback);
+pages with several recipes (SLT-047); handwriting; and the open proposals TS-5, TS-10, TS-11 and
+TS-15.
+
 ---
 
 
@@ -482,6 +528,7 @@ rewriting SLT-148; built by `11` Task M1-15. After run 6 he decides whether Mile
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.25 | §7: run 6's results and Milestone 1's verdict; SP-20 carried to Milestone 3 | SLT-156 (Pops, 22 Nov 2026: "close out milestone 1"; "ok we will finish the spike") |
 | 0.24 | §7: SP-19 accepted | Pops, 22 Nov 2026 (decision card, "SP-19, then run 6") |
 | 0.23 | §7: run 5's results (no recipe content) and proposal SP-19 | Pops, 22 Nov 2026: "ok next results ready" |
 | 0.22 | §7: SP-15 to SP-18 accepted | Pops, 22 Nov 2026 (decision card, "All four, SP-15 to SP-18") |
