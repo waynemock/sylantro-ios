@@ -56,6 +56,9 @@
       ],
       "package-product-members": [
         {
+          "product-name": "SyLibCache",
+          "build-phase": { "build-phase": "frameworks" },
+        }, {
           "product-name": "SyLibCloud",
           "build-phase": { "build-phase": "frameworks" },
         }, {

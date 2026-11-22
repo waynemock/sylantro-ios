@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import SyLibCore
 import SyLibUI
 import SyLibCloud
@@ -14,6 +15,15 @@ struct RootView: View {
     @State private var cloudStatus = CloudAccountStatus(containerIdentifier: SylantroApp.cloudKitContainerID)
     /// Whether the App Store has a newer version, for the ⋯ badge and Update Available.
     @State private var updateState = AppUpdateState()
+
+    @Environment(\.modelContext) private var modelContext
+    /// The photo folder and the two writers (`02` §5.2), made once at launch; nil until then, so the
+    /// Let's cook. capsule waits for them.
+    @State private var photoFiles: PhotoFiles?
+    @State private var recipeEditor: RecipeEditor?
+    @State private var captureRecorder: CaptureRecorder?
+    /// The selected recipe's id.
+    @State private var selection: UUID?
 
     // Forest and System by default (SLT-085).
     @AppStorage(SettingsKey.appPalette.rawValue) private var appPalette = AppPalette.defaultType.rawValue
@@ -45,9 +55,21 @@ struct RootView: View {
 
     var body: some View {
         NavigationSplitView {
-            LibraryView(present: { sheet = $0 })
+            LibraryView(present: { sheet = $0 },
+                        selection: $selection,
+                        photoFiles: photoFiles,
+                        captureRecorder: captureRecorder)
         } detail: {
-            NoRecipeSelectedView()
+            if let selection {
+                RecipeView(recipeID: selection,
+                           photoFiles: photoFiles,
+                           recipeEditor: recipeEditor,
+                           captureRecorder: captureRecorder,
+                           onDeleted: { self.selection = nil })
+                    .id(selection)
+            } else {
+                NoRecipeSelectedView()
+            }
         }
         .sheet(item: $sheet) { sheet in
             // A presented sheet doesn't take the root's cap. Each sheet opens its own web links,
@@ -67,6 +89,12 @@ struct RootView: View {
             // Previews never ask CloudKit or the App Store; the app asks once at launch, then SyLib
             // keeps both current.
             guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+            // The photo folder, then the writers on this window's store (`14` M2-4).
+            let files = await PhotoFiles.live()
+            let editor = RecipeEditor(context: modelContext)
+            photoFiles = files
+            recipeEditor = editor
+            captureRecorder = CaptureRecorder(context: modelContext, photoFiles: files, recipeEditor: editor)
             await cloudStatus.refresh()
             await updateState.check()
             log.info(self, "update check: available \(updateState.isUpdateAvailable) storeVersion \(updateState.storeVersion ?? "none") showsBadge \(updateState.showsBadge)")
@@ -110,5 +138,6 @@ struct RootView: View {
 
 #Preview {
     RootView()
+        .modelContainer(for: SylantroApp.syncedModels, inMemory: true)
         .environment(\.syTheme, SyTheme(type: .forest, colorScheme: .light))
 }

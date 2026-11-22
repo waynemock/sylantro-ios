@@ -1,7 +1,7 @@
 # Sylantro — Image Storage Design
 
 **Design document · page scans and dish photos: how they are stored, synced, mirrored and shared**
-Version 0.11 · 22 November 2026 · **Draft: not accepted.** Only the rulings in §1 are decided; every
+Version 0.13 · 22 November 2026 · **Draft: not accepted.** Only the rulings in §1 are decided; every
 proposal (P-1 to P-7) and option is Pops's to decide, marked *(rec.)* where Claude recommends one.
 No task is written from an open proposal.
 
@@ -81,14 +81,14 @@ Read on Apple's developer forums and its archived CloudKit limits page, 21 Nov 2
 |---|---|---|
 | `id` | `UUID` | |
 | `kindRaw` | `String` | `pageOriginal`, `pageCropped` or `dish`; a raw string, so an unknown future kind survives |
-| `sourcePage` | `SourcePageModel?` | For a page photo; the inverse on `SourcePageModel` |
-| `recipe` | `RecipeModel?` | For a dish photo; the inverse on `RecipeModel` |
+| `sourcePageID` | `UUID?` | For a page photo: its page's id (no relationship, `14` MT-4) |
+| `recipeID` | `UUID?` | For a dish photo: its recipe's id |
 | `sortIndex` | `Int` | Dish photo order; 0 is the cover |
 | `pixelWidth`, `pixelHeight` | `Int` | For layout before the image loads |
 | `takenAt` | `Date` | |
 | `fileName` | `String?` | The image file's name, `<id>.heic`, in the photo folder (§4.1). Never the bytes (SLT-053) |
 
-Every property is optional or defaulted and both relationships are optional (SLT-014). The record
+Every property is optional or defaulted (SLT-014), and there are no relationships. The record
 is a few hundred bytes, so lists and sync never carry an image. Writes go through the writers (SLT-082): `CaptureRecorder` adds page photos and
 never removes one (SLT-030); `RecipeEditor` adds, orders and removes dish photos.
 
@@ -185,7 +185,7 @@ his iPhone and iPad:
 |---|---|
 | P-6 | Accept, change or drop (§3), at M6's start; P-1 to P-5 and P-7 are ruled |
 | IS-1 | *Ruled:* one `PhotoModel` for all photos (§4) |
-| IS-2 | *Ruled: A,* HEIC at full resolution, plus a separate cropped copy (§5) |
+| IS-2 | *Ruled: A,* HEIC at full resolution. **For scans, one image per page** (`14` MT-7): VisionKit's document camera returns only its flattened, cropped page, so a scan keeps that image as `pageCropped` and has no separate original |
 | IS-3 | *Settled by SLT-053:* no photo bytes in the store, so none can sync as bytes |
 | IS-4 | *Ruled: A,* an app-only photo folder in her iCloud Drive (§4.1) |
 
@@ -210,6 +210,8 @@ his iPhone and iPad:
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.13 | IS-2 refined: a scanned page keeps one image, the camera's cropped page; VisionKit gives no uncropped original | `14` MT-7, Pops, 22 Nov 2026 (decision card, "One cropped photo per page") |
+| 0.12 | §4: the photo links by ids, not relationships | `14` MT-4, Pops, 22 Nov 2026 (decision card, "By ids") |
 | 0.11 | §6: SLT-054, HEIC in the app and the mirror, JPEG only on export | Pops, 22 Nov 2026: "I decide on heic instead of jpg, this will only be an apple apple, if we need to export a recipe it can be jpg." |
 | 0.10 | P-7 ruled: Settings shows Sylantro's iCloud photo use, built after M2 | Pops, 22 Nov 2026 (decision card, "Yes, but after M2") |
 | 0.9 | P-3 and P-4 ruled: §5's sizes as starting points; thumbnails on each device only | Pops, 22 Nov 2026 (decision card, "Accept as starting points") |

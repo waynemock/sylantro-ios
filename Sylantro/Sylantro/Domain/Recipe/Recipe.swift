@@ -24,6 +24,8 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
     var unreadableAreas: [SourceBox]
     /// The `SourcePage`s it was read from (SLT-060).
     var sourcePageIDs: [UUID]
+    /// Set when she answers Save Without It at "Is there a page 2?" (SLT-046); cleared by Add Page.
+    var continuesOnUnscannedPage: Bool
     var reviewState: ReviewState
     var extraction: Extraction?
     var createdAt: Date
@@ -46,6 +48,7 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
         equipment: [String] = [],
         unreadableAreas: [SourceBox] = [],
         sourcePageIDs: [UUID] = [],
+        continuesOnUnscannedPage: Bool = false,
         reviewState: ReviewState = .needsReview,
         extraction: Extraction? = nil,
         createdAt: Date = Date(),
@@ -66,6 +69,7 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
         self.equipment = equipment
         self.unreadableAreas = unreadableAreas
         self.sourcePageIDs = sourcePageIDs
+        self.continuesOnUnscannedPage = continuesOnUnscannedPage
         self.reviewState = reviewState
         self.extraction = extraction
         self.createdAt = createdAt
@@ -90,6 +94,7 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
         equipment = try container.decodeIfPresent([String].self, forKey: .equipment) ?? []
         unreadableAreas = try container.decodeIfPresent([SourceBox].self, forKey: .unreadableAreas) ?? []
         sourcePageIDs = try container.decodeIfPresent([UUID].self, forKey: .sourcePageIDs) ?? []
+        continuesOnUnscannedPage = try container.decodeIfPresent(Bool.self, forKey: .continuesOnUnscannedPage) ?? false
         reviewState = try container.decodeIfPresent(ReviewState.self, forKey: .reviewState) ?? .needsReview
         extraction = try container.decodeIfPresent(Extraction.self, forKey: .extraction)
         createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()

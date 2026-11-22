@@ -1,7 +1,7 @@
 # Sylantro — Implementation Plan
 
 **The build, in milestones, and where every feature document lands**
-Version 0.11 · 22 November 2026 · **Draft: the order is Claude's proposal for Pops, except 1.0's
+Version 0.12 · 22 November 2026 · **Draft: the order is Claude's proposal for Pops, except 1.0's
 contents (IP-7, ruled: everything designed so far, M1 to M8).** Otherwise only what a ledger row already rules is decided (SLT-021,
 SLT-090, SLT-093, SLT-100); every proposal is marked
 *(rec.)* and listed in §6. M0 done; M1 done (SLT-156; six spike runs scored)
@@ -47,14 +47,14 @@ documents it names.
 
 ## 1. The SyLib queue
 
-None known. New ground (the iCloud Drive mirror, Vision reading, Foundation Models structuring)
-stays in Sylantro until a second app needs it (SLT-083). `SyLibCache` is linked, not changed, when
-thumbnails are built (SLT-084, in M2). A milestone that finds a gap in SyLib adds a row here before
+One, below. New ground (the iCloud Drive mirror, Vision reading, Foundation Models structuring)
+stays in Sylantro until a second app needs it (SLT-083). `SyLibCache` is linked when
+thumbnails are built (SLT-084, in M2), after the one additive change below. A milestone that finds a gap in SyLib adds a row here before
 its task is written.
 
 | Order | Change | Designed in | Needed by |
 |---|---|---|---|
-| — | *(none yet)* | | |
+| 1 ✓ | `SyLibCache`: `ImageCache.store(_:for:toDisk:)`, a memory-only store (no JPEG written) | `14A` (task M2-4a) | M2-4's thumbnails |
 
 ---
 
@@ -203,6 +203,7 @@ this document's close-out.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.12 | §1's SyLib queue gains its first row, `ImageCache`'s memory-only store (`14A`, task M2-4a) | M2-4 run 1 found the gap; Pops, 22 Nov 2026 (decision card, "Add memory-only to SyLib first") |
 | 0.11 | §3: `14_MILESTONE_2_CAPTURE.md` added, M2's tasks | IP-2; Pops, 22 Nov 2026: "make it so" (prep Milestone 2) |
 | 0.10 | §3: `13_SCREENS.md` added, the Screens document M2 waits on | IP-4; Pops, 22 Nov 2026: "make it so" (prep Milestone 2) |
 | 0.9 | SLT-053: no image data in the database; the photo measurement becomes a sync check after the photo task; IS-4 joins M2's gate | Pops, 22 Nov 2026: "looks good. can you make sure we are storing no image data in the database" |

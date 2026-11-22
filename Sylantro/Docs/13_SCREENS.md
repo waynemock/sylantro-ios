@@ -2,7 +2,7 @@
 
 **Design document · the library, the camera, a recipe and the recovery screen, with every word
 she reads**
-Version 0.6 · 22 November 2026 · **Draft: screen choices ruled (SC-1 to SC-7); the copy (§6, SC-8) waits for Pops.** Every
+Version 0.10 · 22 November 2026 · **Accepted for M2: screen choices (SC-1 to SC-7) and all copy (§6, SC-8) ruled.** Every
 string in §6 is Claude's proposal. The layout
 and the copy are Pops's (`02` §7, `00B` §2). No task is written from an open proposal.
 
@@ -155,9 +155,12 @@ Every string she reads in M2. Pops approves or rewrites each; the agent pastes t
 | S-12 | Page 2 alert, button | Add Page |
 | S-13 | Page 2 alert, button | Save Without It |
 | S-14 | Save failed, title | Couldn't Save |
-| S-15 | Save failed, message | Your pages are still here. Free up some space on your iPhone and tap Save again. |
+| S-15 | Save failed, message | Your pages are still here. Free up some space on this device and tap Save again. |
+| S-18 | Save failed, button: try again | Save *(approved, Pops, 22 Nov 2026 (decision card, "Use Save, Cancel, OK"))* |
+| S-19 | Save failed, button: give up | Cancel *(approved; drops the unsaved pages and closes the camera)* |
 | S-16 | No camera, title | Camera Not Available |
 | S-17 | No camera, message | Scanning needs an iPhone or iPad camera. |
+| S-28 | No camera, button | OK *(approved)* |
 | S-20 | Recipe, not read yet | Waiting to be read |
 | S-21 | Recipe, page-2 warning | Continues on a page not scanned |
 | S-22 | Recipe toolbar | Add Page |
@@ -168,7 +171,7 @@ Every string she reads in M2. Pops approves or rewrites each; the agent pastes t
 | S-27 | Photo still downloading | Downloading from iCloud… (VoiceOver label on the placeholder) |
 | S-30 | Recovery, title | Sylantro Can't Open Your Recipes |
 | S-31 | Recovery, message | Something went wrong opening your recipe library. Nothing has been deleted. |
-| S-32 | Recovery, reassurance | A copy of every recipe and photo is safe in Files, in the Sylantro folder. |
+| S-32 | Recovery, reassurance (from M2-5 only) | A copy of every recipe and photo is safe in Files, in the Sylantro folder. |
 | S-33 | Recovery, button | Try Again |
 | S-34 | Recovery, button | Start Fresh |
 | S-35 | Start Fresh alert, title | Start Fresh? |
@@ -189,7 +192,7 @@ Every string she reads in M2. Pops approves or rewrites each; the agent pastes t
 | SC-5 | Delete Recipe in M2 | **Ruled:** yes, keeping its pages as pages without a recipe. Pops, 22 Nov 2026 (decision card, "Yes, keep its page photos") |
 | SC-6 | A photo that hasn't downloaded yet | **Ruled:** a placeholder with a small download icon, filled in when it lands. Pops, 22 Nov 2026 (decision card, "Accept all three") |
 | SC-7 | The recovery screen's choices | **Ruled: A**, Try Again or Start Fresh (§5). Pops, 22 Nov 2026 (decision card, "Try Again or Start Fresh") |
-| SC-8 | The copy | §6, string by string |
+| SC-8 | The copy | §6, string by string. **Approved:** S-30, S-31 and S-33 to S-38 as drafted; S-32 as drafted, shown only from M2-5, once the Files copy exists. Pops, 22 Nov 2026 (decision card, "As drafted, S-32 waits for M2-5"). S-0 to S-27 approved as drafted, S-15 saying "this device". Pops, 22 Nov 2026 (decision card, "As drafted, with 'this device'"). **All copy approved.** |
 
 When Pops rules, the rulings are filed in the ledger at this document's close-out.
 
@@ -199,6 +202,10 @@ When Pops rules, the rulings are filed in the ledger at this document's close-ou
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.10 | S-18, S-19 and S-28 approved | Pops, 22 Nov 2026 (decision card, "Use Save, Cancel, OK") |
+| 0.9 | S-18, S-19 and S-28 proposed: the Save-failed and No-camera alerts' buttons, which §6 had left out | `14` M2-4 |
+| 0.8 | S-0 to S-27 approved; S-15 says "this device", not "your iPhone"; all of §6 approved | Pops, 22 Nov 2026 (decision card, "As drafted, with 'this device'") |
+| 0.7 | The recovery screen's copy approved (S-30 to S-38); S-32 shown only once the Files copy exists (M2-5) | Pops, 22 Nov 2026 (decision card, "As drafted, S-32 waits for M2-5") |
 | 0.6 | SC-3, SC-4 and SC-6 ruled as proposed; only the copy (SC-8) is open | Pops, 22 Nov 2026 (decision card, "Accept all three") |
 | 0.5 | SC-7 ruled: the recovery screen offers Try Again or Start Fresh; Start Fresh sets the old store aside in a dated folder | Pops, 22 Nov 2026 (decision card, "Try Again or Start Fresh") |
 | 0.4 | SC-5 ruled: Delete Recipe in M2, its pages kept as pages without a recipe | Pops, 22 Nov 2026 (decision card, "Yes, keep its page photos") |
