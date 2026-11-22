@@ -1,8 +1,10 @@
 import Foundation
 import FoundationModels
 
-/// What Foundation Models fills for each part of a recipe (SLT-140, `11` M1-4): the header, the
-/// ingredient lines, the steps, and line labels for a page with no headings.
+/// What Foundation Models fills for each part of a recipe (SLT-140, `11` M1-4 and M1-5): the
+/// header, the ingredient lines, the steps, and line labels for a page with no headings. The
+/// ingredient lines are answered as line numbers, so their words come from the page (SLT-146); the
+/// title is snapped to the page's lines (SLT-148).
 @Generable
 nonisolated struct GeneratedHeader {
     @Guide(description: "The recipe's title exactly as printed, all of its lines. Empty if none.")
@@ -14,15 +16,47 @@ nonisolated struct GeneratedHeader {
     @Guide(description: "The website or magazine, if printed.")
     var publisher: String?
 
-    @Guide(description: "Titles of any other separate recipes on these pages. Usually empty.")
-    var otherTitles: [String]
+    @Guide(description: "Titles of any other separate recipes printed on these lines. Leave it empty when there is only one recipe.")
+    var otherTitles: [String]?
 }
 
-/// The ingredient lines, in groups.
+/// The ingredients, in groups, as numbers of the lines they were read from.
 @Generable
-nonisolated struct GeneratedIngredientPart {
-    @Guide(description: "The ingredient lines in printed order, grouped under their printed subheadings. Join a line that wraps onto the next line.")
-    var groups: [GeneratedGroup]
+nonisolated struct GeneratedIngredientLines {
+    @Guide(description: "The ingredients in printed order, grouped under their printed subheadings.")
+    var groups: [GeneratedLineGroup]
+}
+
+/// One group of ingredients.
+@Generable
+nonisolated struct GeneratedLineGroup {
+    @Guide(description: "The number of the group's printed subheading line, such as 'For the sauce'. 0 if none.")
+    var nameLine: Int
+
+    @Guide(description: "The ingredients under it.")
+    var items: [GeneratedLineItem]
+}
+
+/// One ingredient, by its line numbers.
+@Generable
+nonisolated struct GeneratedLineItem {
+    @Guide(description: "The number of the ingredient's first line.")
+    var firstLine: Int
+
+    @Guide(description: "The number of its last line, the same as the first unless the ingredient wraps onto the next line.")
+    var lastLine: Int
+
+    @Guide(description: "The food itself, such as 'flour'.")
+    var item: String?
+
+    @Guide(description: "How it is prepared, such as 'sifted' or 'chopped'.")
+    var preparation: String?
+
+    @Guide(description: "Any other note on the line, such as 'plus more to taste'.")
+    var note: String?
+
+    @Guide(description: "True only if the line says it is optional.")
+    var isOptional: Bool?
 }
 
 /// The steps.

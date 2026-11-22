@@ -1,25 +1,70 @@
-#if DEBUG
 import SwiftUI
+import SyLibUI
 import UniformTypeIdentifiers
 
 /// The hidden accuracy-spike screen (`11` M1-3, SLT-093): add captures, run them through the
-/// reader and the structurer, and export the results. Saves nothing. Debug builds only; reached
-/// from Settings.
+/// reader and the structurer, and export the results. Saves nothing. Shown when SLT-093's `AppConfig.AccuracySpike.isEnabled` is on; reached
+/// from Settings as a sheet that closes only from Done, after a confirmation (`11` M1-7).
 struct SpikeView: View {
+    /// What the one file importer is picking. Two importers on one view don't both present.
+    private enum ImportMode {
+        case photos
+        case testSetFolder
+    }
+
     @State private var runner = SpikeRunner()
     @State private var isImporting = false
+    @State private var importMode = ImportMode.photos
     @State private var isExporting = false
+    @State private var isConfirmingClose = false
+    /// The task Run All started, kept so Close can cancel it.
+    @State private var runTask: Task<Void, Never>?
     @Environment(\.scenePhase) private var scenePhase
+
+    /// The spike's hold on `ScreenAwake`, so Auto-Lock doesn't pause a run (`11` M1-10).
+    private static let screenAwakeHolder = "accuracySpike"
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         List {
+            Section {
+                // Wraps on a narrow screen (`11` M1-11).
+                FlowLayout {
+                    // The remembered test folder in one tap; the folder picker only when there
+                    // is none (SLT-154).
+                    CapsuleButton("Load Test Set") {
+                        if !runner.loadSavedTestSet() {
+                            importMode = .testSetFolder
+                            isImporting = true
+                        }
+                    }
+                    .disabled(runner.isRunning)
+                    CapsuleButton("Run All", style: .accent) {
+                        runTask = Task { await runner.runAll() }
+                    }
+                    .disabled(runner.isRunning || runner.captures.isEmpty)
+                    // Works mid-run and after failures (M1-9).
+                    CapsuleButton("Export Results") {
+                        isExporting = true
+                    }
+                    .disabled(runner.report == nil)
+                }
+            }
+            // How many captures are done or failed (`11` M1-13).
+            if !runner.captures.isEmpty {
+                Section {
+                    ProgressView(value: Double(runner.processedCount), total: Double(runner.captures.count))
+                    Text("\(runner.processedCount) / \(runner.captures.count)")
+                        .monospacedDigit()
+                }
+            }
             if !RecipeStructurer.isAvailable {
                 Section {
                     Text("Apple Intelligence isn't available on this device. Pages will be read but not structured.")
                 }
             }
             if runner.captures.isEmpty {
-                Text("Add a capture: pick the photos of one recipe's pages.")
+                Text("Tap Load Test Set to load the test pages.")
             } else {
                 ForEach(runner.captures) { capture in
                     VStack(alignment: .leading) {
@@ -34,32 +79,62 @@ struct SpikeView: View {
         }
         .navigationTitle("Accuracy Spike")
         .toolbar {
-            Button("Add Capture") {
-                isImporting = true
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Done") {
+                    isConfirmingClose = true
+                }
             }
-            Button("Run All") {
-                Task { await runner.runAll() }
+            ToolbarItem(placement: .topBarLeading) {
+                Menu {
+                    Button("Add Capture") {
+                        importMode = .photos
+                        isImporting = true
+                    }
+                    Button("Clear") {
+                        runner.clear()
+                    }
+                    // Enabled whenever there is a capture or a report to clear.
+                    .disabled(runner.captures.isEmpty && runner.report == nil)
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
             }
-            .disabled(runner.isRunning || runner.captures.isEmpty)
-            Button("Export Results") {
-                isExporting = true
+        }
+        // Closes only from Done, after the confirmation.
+        .interactiveDismissDisabled()
+        // A plain centered alert, never one anchored to a button (SLT-088).
+        .alert("Close the accuracy spike?", isPresented: $isConfirmingClose) {
+            Button("Close", role: .destructive) {
+                runTask?.cancel()
+                ScreenAwake.shared.update(awake: false, holder: Self.screenAwakeHolder)
+                dismiss()
             }
-            .disabled(runner.report == nil)
-            Button("Clear") {
-                runner.clear()
-            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Captures and results that weren't exported are cleared. A run in progress stops.")
         }
         // Structuring runs only while Sylantro is in front (SLT-144).
         .onChange(of: scenePhase, initial: true) { _, phase in
+            // The screen stays awake while the sheet is open and in front.
+            ScreenAwake.shared.update(awake: phase == .active, holder: Self.screenAwakeHolder)
             if phase == .active {
                 runner.sceneBecameActive()
             } else {
                 runner.sceneLeftActive()
             }
         }
-        .fileImporter(isPresented: $isImporting, allowedContentTypes: [.image], allowsMultipleSelection: true) { result in
-            if case .success(let urls) = result, !urls.isEmpty {
-                runner.addCapture(urls)
+        .onDisappear {
+            ScreenAwake.shared.update(awake: false, holder: Self.screenAwakeHolder)
+        }
+        .fileImporter(isPresented: $isImporting,
+                      allowedContentTypes: importMode == .photos ? [.image] : [.folder],
+                      allowsMultipleSelection: importMode == .photos) { result in
+            guard case .success(let urls) = result, !urls.isEmpty else {
+                return
+            }
+            switch importMode {
+            case .photos: runner.addCapture(urls)
+            case .testSetFolder: runner.loadTestSet(folder: urls[0])
             }
         }
         .fileExporter(isPresented: $isExporting,
@@ -116,4 +191,3 @@ private struct SpikeReportDocument: FileDocument {
         FileWrapper(regularFileWithContents: try report.encoded())
     }
 }
-#endif

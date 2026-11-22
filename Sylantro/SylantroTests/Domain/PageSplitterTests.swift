@@ -42,4 +42,24 @@ struct PageSplitterTests {
         #expect(split.equipment == ["Pot"])
         #expect(split.nutrition == ["100 calories"])
     }
+
+    @Test("clutter lines belong to no section")
+    func clutterBelongsToNoSection() {
+        let split = PageSplitter.split([["Ingredients", "1 cup water", "ps://example.com/r/1", "Page 1 of 2", "Directions", "Boil it.", "1/2/24, 9:00 AM"]])
+        #expect(split.ingredients == ["1 cup water"])
+        #expect(split.steps == ["Boil it."])
+    }
+
+    @Test("equipment ends at a step")
+    func equipmentEndsAtAStep() {
+        let split = PageSplitter.split([["Equipment", "• Pot", "Spoon", "1. Boil the water in the pot.", "Ingredients", "1 cup water", "Directions", "Boil it."]])
+        #expect(split.equipment == ["Pot", "Spoon"])
+        #expect(split.unsectioned == ["1. Boil the water in the pot."])
+    }
+
+    @Test("an empty section is not found")
+    func emptySectionIsNotFound() {
+        let split = PageSplitter.split([["Ingredients", "Directions", "1 cup water", "Boil it."]])
+        #expect(!split.hasIngredientsAndSteps)
+    }
 }

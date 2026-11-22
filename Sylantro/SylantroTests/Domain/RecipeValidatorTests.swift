@@ -35,4 +35,13 @@ struct RecipeValidatorTests {
         #expect(checked.ingredientGroups[0].ingredients.isEmpty)
         #expect(checked.extraction?.warnings.contains("ingredient 1 is a step") == true)
     }
+
+    @Test("the title isn't checked")
+    func titleIsNotChecked() {
+        let recipe = Recipe(title: "Made-up Title")
+        let checked = RecipeValidator.check(recipe, pageText: "Test Soup\nUse a pot.")
+        #expect(checked.title == "Made-up Title")
+        let warnings = checked.extraction?.warnings ?? []
+        #expect(!warnings.contains("not on page: title"))
+    }
 }

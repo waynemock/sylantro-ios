@@ -1,7 +1,7 @@
 # Sylantro — Implementation Plan
 
 **The build, in milestones, and where every feature document lands**
-Version 0.5 · 22 November 2026 · **Draft: the order is Claude's proposal for Pops, except 1.0's
+Version 0.6 · 22 November 2026 · **Draft: the order is Claude's proposal for Pops, except 1.0's
 contents (IP-7, ruled: everything designed so far, M1 to M8).** Otherwise only what a ledger row already rules is decided (SLT-021,
 SLT-090, SLT-093, SLT-100); every proposal is marked
 *(rec.)* and listed in §6. M0 nearly done (Task A-4 open); M1 in progress (M1-1, M1-2 and M1-3
@@ -75,7 +75,7 @@ order (IP-3).
 | 7 | 5 | PKU tools | A phenylalanine budget view; low-protein substitutions that make variant recipes, before and after per serving | its own document(s); a substitutions design, not yet written (`03` §11) | M4 |
 | 8 | 7 | Web and Apple News import | Share a recipe from Apple News (or any site, NI-2) and find it in the review inbox; screenshots when the page can't be read (SLT-120) | its own document; design `08` | M3; `08` accepted, NI-2 to NI-7; its spike (`08` §7); a share extension and App Group (Pops, entitlements) |
 | 9 | 8 | Meals | Gather recipes into a named meal (Thanksgiving) and reuse it next year; the shopping list and meal totals later | its own document; design `09` | M3 (basic meal); M4 (totals, shopping-list unit math); ML-1 to ML-8 |
-| 10 | 9 | Ship 1.0 | App Store listing, the Production schema deployed (SLT-015), the pre-archive checklist (`00B` §6), About's copy checked against what was built (SLT-087), TestFlight, then the App Store | its own document | M1 to M8: 1.0 holds everything designed so far (IP-7, Pops, 22 Nov 2026) |
+| 10 | 9 | Ship 1.0 | App Store listing (**when its copy starts, on the way to RC0, turn the accuracy spike's flag off**, SLT-093), the Production schema deployed (SLT-015), the pre-archive checklist (`00B` §6), About's copy checked against what was built (SLT-087), TestFlight, then the App Store | its own document | M1 to M8: 1.0 holds everything designed so far (IP-7, Pops, 22 Nov 2026) |
 
 **Alongside, not milestones** (desk work that needs no code):
 
@@ -216,6 +216,7 @@ this document's close-out.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.6 | M9: turn the accuracy spike's flag off when App Store copy starts, on the way to RC0 | SLT-093 (Pops, 22 Nov 2026: "my partner will only be using testflight builds, and i want to keep this on during beta test. just need to be reinded to turn it off once we start writing app store copy headed to RC0.") |
 | 0.5 | M1 brought up to date: M1-3 done, spike run 1 scored, SLT-140 to SLT-145 in; M1-4 and run 2 left; §4's M1 gate rewritten | `11` v0.3, `10` v0.14, ledger v0.35 |
 | 0.4 | §0: no schedule or release pressure; Pops may cut 1.0's scope and release at any point | Pops, 22 Nov 2026: "it something gets to hard, or I just wanna stop and release we will cross that bridge when we get there...there are no schedules or pressure to release..." |
 | 0.3 | IP-7 re-ruled: 1.0 holds everything designed so far, M1 to M8, with Ship (M9) last; §2's order moves M9 to the end; IP-8 restated | Pops, 22 Nov 2026: "i want all of what we talked about to be in 1.0...I thought that was a multiple choice question before..." |

@@ -2,7 +2,7 @@
 
 **Design document · the spike's 25 real binder pages: how they are scored, what makes them hard,
 and the design questions they raise**
-Version 0.16 · 22 November 2026 · **Draft, not accepted; proposals TS-5, TS-10, TS-11 and TS-15 are
+Version 0.24 · 22 November 2026 · **Draft, not accepted; proposals TS-5, TS-10, TS-11 and TS-15 are
 Pops's to decide; the rest are settled (SLT-045 to SLT-048, SLT-062 to SLT-065, SLT-070, SLT-071) and TS-12 is
 done.** Not for the agent until a task names it.
 
@@ -322,6 +322,159 @@ repeats the captures. One finding changes SP-8's detail: the three unreadable an
 cut off at the end, so they look like answers that reached their length cap, and the retry doubles
 the cap.
 
+### Run 3 · 22 November 2026 (stopped)
+
+On `11` M1-5's build. Pops stopped it partway because failing captures took too long, and no
+results file was exported. From his screenshots:
+- TP-01 and TP-03 failed. Both took the several-recipes (one-shot) path, which should run only on a
+  page like TP-24. The header answer's other-titles list most likely held the word "none" (the model
+  wrote "none" into empty fields), which counted as another recipe. The one-shot answer copied the
+  method into the ingredients, reached its cap, was retried at double the cap, and failed again.
+  The fault is in M1-5's text: it made that list optional.
+- TP-05+06 sat at "Waiting for Sylantro to be open" with the app in front: a rate limit, which
+  waits for the app to come back to the front (`11` §1). The extra calls from retries make a
+  refusal more likely.
+- TP-07+08 was added twice.
+- TP-02, TP-04 and TP-07+08 finished, in about 12 seconds each. Their content isn't scored, so
+  M1-5's real changes (lines and titles from the page, sections) are not measured yet.
+
+Pops chose all three fixes (decision card, "M1-6: all three fixes"): SLT-151 to SLT-153, built by
+`11` Task M1-6, then run 3 again.
+
+### Run 3 again · 22 November 2026 (not exported)
+
+On M1-8's build with Load Test Set. TP-03 and TP-23 failed again in the one-call path for several
+recipes: both pages have real lines that read as titles, so M1-6's gate passed. Export stayed off
+because the report was built only at the end of the run. Pops chose to retire the one-call path
+(SLT-151, rewritten; decision card, "Always use parts; flag it") and to make the export work at
+any time, failures included: `11` Task M1-9.
+
+### Run 3 · 22 November 2026
+
+On `11` M1-5 to M1-10's build (ingredient lines and the title by line number, parts only, Load
+Test Set, screen kept awake). Per-page table outside git (`SPIKE_3_SCORING.md`).
+
+**Reliability is solved; the line-number changes cost accuracy.**
+
+| Measure | Run 2 | Run 3 |
+|---|---|---|
+| Captures finished | 22 of 22, 4 with a lost part | 22 of 22, no part errors, retries, fallbacks or rate limits |
+| Titles right | 13 of 22 | 7 of 22 |
+| Ingredient lines found, printed pages | 118 of 166 | 121 of 166 |
+| Quantity right / unit right | 105 / 100 of 115 | 92 / 89 of 118 |
+| Non-ingredients in the ingredient list | 14 | 38 |
+| Non-Latin lines | 3 read as text | 3 taken out and marked unreadable |
+| Structure time | 2.5 to 34 s | 4.5 to 32 s |
+
+Why:
+- **Titles by line range** take neighboring lines (a byline, the yield, a blurb, the site's
+  name). On 13 pages the model's other-titles answer holds the right title as text: it writes the
+  title well and picks line numbers badly. The wrong title also made "may hold other recipes" fire
+  on 8 pages, all false.
+- **Ingredients by line number** aren't joined across a wrap: the model gives one line per item, so
+  wrapped ingredients split in two (four pages), and on one page it joined different ingredients.
+- **The line-labels path keeps bullets and the Ingredients heading** in the lines, so the parser
+  finds no quantity there (two pages). `PageSplitter` strips them; the labels path doesn't.
+
+### Proposals from run 3 (SP-12 to SP-14): all accepted
+
+| # | Proposal | Fixes |
+|---|---|---|
+| SP-12 | **Title as text, snapped to the page**: the model writes the title (as in run 2); it is kept only if it matches one line of the header area or two or three lines in a row, and those lines as read become the title; otherwise the largest line near the top | The wrong titles and the false "other recipes" warnings |
+| SP-13 | **Wrapped lines joined by rule before numbering**: a line joins the one above when it starts lowercase or with `(`, or the line above ends with `,`, `-`, or a joining word (and, or, such as, plus, of, with, to); then each ingredient is one numbered line | The split and merged ingredients |
+| SP-14 | **The line-labels path cleans lines as the splitter does**: bullets removed, heading lines and clutter dropped | The lost quantities on bulleted pages |
+
+Pops accepted all three ("all", 22 Nov 2026), recorded by rewriting SLT-146, SLT-148 and SLT-149;
+built by `11` Task M1-11, then run 4.
+
+### Run 4 · 22 November 2026
+
+On `11` M1-11 to M1-13's build (title as text snapped to the page, wrapped lines joined by rule,
+labelled lines cleaned). Per-page table outside git (`SPIKE_4_SCORING.md`).
+
+**The best run so far on ingredients; titles are back near run 2 but still the weak spot.**
+
+| Measure | Run 2 | Run 3 | Run 4 |
+|---|---|---|---|
+| Captures finished | 22 of 22, 4 with a lost part | 22 of 22, no errors | 22 of 22, no part errors, retries, fallbacks or rate limits |
+| Titles right | 13 of 22 | 7 of 22 | 11 of 22 |
+| Ingredient lines found, printed pages | 118 of 166 | 121 of 166 | 151 of 166 |
+| Quantity right / unit right | 105 / 100 of 115 | 92 / 89 of 118 | 139 / 131 of 146 |
+| Non-ingredients in the ingredient list | 14 | 38 | 34 (20 on one page) |
+| Non-Latin lines | 3 read as text | 3 marked unreadable | 3 marked unreadable |
+| Structure time | 2.5 to 34 s | 4.5 to 32 s | 4.5 to 37 s |
+
+Why:
+- **Wraps and bullets are fixed.** The pages that lost lines to wrapping or bullets in run 3 are
+  whole or nearly whole now.
+- **Titles.** Four right titles came only from the largest-line fallback ("title from layout"),
+  and the report doesn't hold the model's own title text, so why those didn't snap is unknown.
+  Of the 11 wrong, three are a blurb or the magazine's deck chosen over the title, one is the
+  first word only, one is a section label, one is a prefix on the title's own line, and one is
+  missing the second line of a two-line title. Two more were snapped with the site's name or
+  breadcrumbs, then dropped as "not on page: title", because the checker's page text has that
+  clutter taken out. The page with no title got its largest line, a step, because an empty answer
+  falls back too (`11` M1-11's rule, Claude's spec fault).
+- **Ingredient groups.** The model now names most groups after one of their own ingredient lines:
+  84 of 161 groups (run 3: 62 of 141; run 2: 0 of 24). The scorer doesn't count groups, but
+  review would show one group per ingredient.
+- **Repeated lines.** On two pages the model maps the same line up to five times, most of the 34
+  non-ingredients.
+- **Parser readings** (`06` §1, which Pops asked about): no ingredient line on the 25 pages has the
+  shape "A few sprigs mint" or "1-inch piece ginger"; "a few" and "-inch" appear only in steps. The
+  test set can't measure them, so a fix would be tested with made-up lines.
+
+### Proposals from run 4 (SP-15 to SP-18): all accepted
+
+| # | Proposal | Fixes |
+|---|---|---|
+| SP-15 | **Title fixes**: (a) an empty answer means no title, with the warning `no title`, not the largest line; (b) a snapped title is the page's own lines, so the checker doesn't drop it; (c) a snapped run loses its first or last line when that line is clearly smaller than the run's largest (a site name above the title); (d) the report keeps the model's own title text, to show why a title doesn't snap | The page with no title, the two dropped titles, the site name; and what to fix next |
+| SP-16 | **Group names by rule**: a group's name is kept only when its line isn't one of the ingredient lines and doesn't start with a number, fraction or bullet; a group that loses its name joins the group before it | One group per ingredient in review |
+| SP-17 | **Each line used once**: an ingredient line number already used is skipped | The repeated lines |
+| SP-18 | **Parser readings from `06` §1**: "a few" (and "a couple", "several") is not a quantity, and its words stay in the item; a number joined to "-inch" is a size, so "1-inch piece ginger" has no quantity and its item is the whole line | Two lines read oddly, measured only with made-up lines |
+
+Pops accepted all four (decision card, "All four, SP-15 to SP-18", 22 Nov 2026), recorded by
+rewriting SLT-146 and SLT-148 and adding SLT-155; built by `11` Task M1-14, then run 5.
+
+### Run 5 · 22 November 2026
+
+On `11` M1-14's build (no title, trimmed and unchecked titles, group names by rule, each line used
+once, "a few" and "-inch"). Per-page table outside git (`SPIKE_5_SCORING.md`).
+
+**Ingredients hold at run 4's level and the groups are fixed; titles are the one thing left.**
+
+| Measure | Run 3 | Run 4 | Run 5 |
+|---|---|---|---|
+| Captures finished | 22 of 22, no errors | 22 of 22, no errors | 22 of 22, no part errors, retries, fallbacks or rate limits |
+| Titles right | 7 of 22 | 11 of 22 | 12 of 22 |
+| Ingredient lines found, printed pages | 121 of 166 | 151 of 166 | 151 of 166 |
+| Quantity right / unit right | 92 / 89 of 118 | 139 / 132 of 146 | 139 / 132 of 146 |
+| Non-ingredients in the ingredient list | 38 | 34 | 30 |
+| Ingredient groups (named after an ingredient line) | 141 (62) | 161 (84) | 24 (0) |
+
+Why:
+- **Groups and repeated lines are fixed.** Each recipe now has the groups the page prints, and
+  repeated lines are skipped and flagged (two pages).
+- **The model's title text**, now in the report, is usually the whole top of the page, one line
+  per printed line: the title, then the byline, the show, the site, the yield. A many-line answer
+  can't snap, so three right titles still come from the largest-line fallback.
+- **M1-14's size trim cut one right title**: on one typed page the blurb under the title is
+  printed larger, so the title line was trimmed off. It did fix the page that starts with the
+  site's name.
+- **What the model's first line is:** the title on 15 pages; the site's name on two (it matches
+  the source URL's host); the first word of a three-line title on one, whose other lines start
+  lowercase; a step on the page with no title; and a deck, section label, prize label or
+  breadcrumbs on four.
+
+### Proposal from run 5 (SP-19): accepted
+
+| # | Proposal | Fixes |
+|---|---|---|
+| SP-19 | **The title starts at the model's first line**, in place of M1-14's size trim: (a) the model's answer is split into its lines, and a line that is the site's name (its letters found in the source URL's host) or holds the author's name is dropped; (b) the title starts at the first line left, found on the page; (c) it takes in the next page line, up to three in all, when that line starts lowercase, or when it is the model's next line and printed at nearly the same size (0.8 to 1.25 times); (d) a title that starts with a step number ("4. ") is no title | Expected 17 of 22: the two site-name pages, the larger blurb, the three-line title, the byline pages, the step |
+
+Pops chose SP-19, then run 6 (decision card, "SP-19, then run 6", 22 Nov 2026), recorded by
+rewriting SLT-148; built by `11` Task M1-15. After run 6 he decides whether Milestone 1 closes.
+
 ---
 
 
@@ -329,6 +482,14 @@ the cap.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.24 | §7: SP-19 accepted | Pops, 22 Nov 2026 (decision card, "SP-19, then run 6") |
+| 0.23 | §7: run 5's results (no recipe content) and proposal SP-19 | Pops, 22 Nov 2026: "ok next results ready" |
+| 0.22 | §7: SP-15 to SP-18 accepted | Pops, 22 Nov 2026 (decision card, "All four, SP-15 to SP-18") |
+| 0.21 | §7: run 4's results (no recipe content) and proposals SP-15 to SP-18 | Pops, 22 Nov 2026: "ok next run done" |
+| 0.20 | §7: SP-12 to SP-14 accepted | Pops, 22 Nov 2026: "all" |
+| 0.19 | §7: run 3's results (no recipe content) and proposals SP-12 to SP-14 | Pops, 22 Nov 2026: "latest results done" |
+| 0.18 | §7: run 3 again (not exported); the one-call path retired | SLT-151 (Pops, 22 Nov 2026 (decision card, "Always use parts; flag it")) |
+| 0.17 | §7: run 3 stopped, its faults and SLT-151 to SLT-153 | Pops, 22 Nov 2026: "Got worse. Stopped it taking too long on the failing ones."; decision card, "M1-6: all three fixes" |
 | 0.16 | §7: SP-7 to SP-11 accepted | SLT-146 to SLT-150 (Pops, 22 Nov 2026: "All" (spike run 2, `10` §7)) |
 | 0.15 | §7: run 2's results (no recipe content) and proposals SP-7 to SP-11 | Pops, 22 Nov 2026: "ok run 2 better" |
 | 0.14 | §7: SP-1 to SP-6 accepted | SLT-140 to SLT-145 (Pops, 22 Nov 2026: "all six" (spike run 1, `10` §7)) |

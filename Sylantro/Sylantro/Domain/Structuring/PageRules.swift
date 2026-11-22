@@ -6,7 +6,7 @@ nonisolated enum PageRules {
     private static let urlPrefixes = ["http://", "https://", "www."]
     private static let urlTrailing: Set<Character> = [".", ",", ")"]
     private static let yieldWords = ["serves", "makes", "yield", "yields", "servings"]
-    private static let timeWords = ["prep", "cook", "total", "active", "hands-on"]
+    private static let timeWords = ["prep", "cook", "cooking", "total", "active", "inactive", "hands-on"]
 
     static func find(in lines: [String]) -> RuleFields {
         var fields = RuleFields()
@@ -16,7 +16,7 @@ nonisolated enum PageRules {
             fields.pageCount = page.count
         }
         fields.yieldText = yieldText(in: lines)
-        let timeLines = lines.filter(holdsTime).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        let timeLines = lines.compactMap(timeText)
         fields.timesText = timeLines.isEmpty ? nil : timeLines.joined(separator: "; ")
         return fields
     }
@@ -46,8 +46,8 @@ nonisolated enum PageRules {
 
     // MARK: Page n of m
 
-    /// `Page <n> of <m>`, case-insensitive, anywhere in the line.
-    private static func pageOf(_ line: String) -> (number: Int, count: Int)? {
+    /// `Page <n> of <m>`, case-insensitive, anywhere in the line. Shared with `PageClutter`.
+    static func pageOf(_ line: String) -> (number: Int, count: Int)? {
         let chars = Array(line.lowercased())
         var start = 0
         while start + 4 <= chars.count {
@@ -100,22 +100,34 @@ nonisolated enum PageRules {
 
     // MARK: Times
 
-    /// A time word, optionally ` time`, then optional `:` and spaces, then a digit.
+    /// A labelled time line, trimmed (SLT-149). A line holding `|` keeps only its parts that hold a
+    /// time, joined with ` | `. Nil when the line holds no time.
+    private static func timeText(_ line: String) -> String? {
+        let parts = line.split(separator: "|", omittingEmptySubsequences: false).map {
+            $0.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        let timed = parts.filter(holdsTime)
+        return timed.isEmpty ? nil : timed.joined(separator: " | ")
+    }
+
+    /// A time word at the line's start or after a character that isn't a letter, followed by
+    /// ` time` (then an optional `:`) or by `:`, then optional spaces, then a digit.
     private static func holdsTime(_ line: String) -> Bool {
         let chars = Array(line.lowercased())
         for word in timeWords {
             let wordChars = Array(word)
             var start = 0
             while start + wordChars.count <= chars.count {
-                if Array(chars[start..<(start + wordChars.count)]) == wordChars {
+                if Array(chars[start..<(start + wordChars.count)]) == wordChars,
+                   start == 0 || !chars[start - 1].isLetter {
                     let afterWord = start + wordChars.count
-                    if digitFollows(chars, from: afterWord) {
-                        return true
-                    }
                     let time = Array(" time")
                     if afterWord + time.count <= chars.count,
                        Array(chars[afterWord..<(afterWord + time.count)]) == time,
                        digitFollows(chars, from: afterWord + time.count) {
+                        return true
+                    }
+                    if afterWord < chars.count, chars[afterWord] == ":", digitFollows(chars, from: afterWord) {
                         return true
                     }
                 }

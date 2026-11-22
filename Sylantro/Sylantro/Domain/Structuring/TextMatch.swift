@@ -51,6 +51,19 @@ nonisolated enum TextMatch {
         return result
     }
 
+    /// The model's ways of writing "no value" (SLT-152), compared trimmed and lowercased.
+    private static let emptyAnswers: Set<String> = [
+        "", "none", "n/a", "na", "null", "nil", "-", "empty", "not specified", "not applicable",
+    ]
+
+    /// Whether a model answer is no value: nil, empty, or "none" and the like (SLT-152).
+    static func isEmptyAnswer(_ text: String?) -> Bool {
+        guard let text else {
+            return true
+        }
+        return emptyAnswers.contains(text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
+    }
+
     /// Whether `value`, normalized, appears in `text`, normalized. An empty normalized value is
     /// never contained.
     static func contains(_ value: String, in text: String) -> Bool {

@@ -57,6 +57,12 @@ struct IngredientLineParserTests {
         Row(number: 29, line: "3/4 c. sugar", quantity: q(0.75, nil, false), unit: u(.cup, "c."), rest: "sugar"),
         Row(number: 30, line: "about a dozen eggs", quantity: q(12, nil, true), unit: nil, rest: "eggs"),
         Row(number: 31, line: "Dozen eggs", quantity: q(12, nil, false), unit: nil, rest: "eggs"),
+        // SLT-155 (`11` M1-14).
+        Row(number: 32, line: "A few sprigs mint", quantity: nil, unit: nil, rest: "A few sprigs mint"),
+        Row(number: 33, line: "a couple of eggs", quantity: nil, unit: nil, rest: "a couple of eggs"),
+        Row(number: 34, line: "several sprigs thyme", quantity: nil, unit: nil, rest: "several sprigs thyme"),
+        Row(number: 35, line: "1-inch piece ginger", quantity: nil, unit: nil, rest: "1-inch piece ginger"),
+        Row(number: 36, line: "2 1-inch pieces ginger", quantity: q(2, nil, false), unit: nil, rest: "1-inch pieces ginger"),
     ]
 
     @Test("each line parses as the table says", arguments: rows)

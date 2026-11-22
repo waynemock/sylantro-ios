@@ -34,19 +34,19 @@ Score It \* as its template (SLT-080).
 |---|---|---|---|
 | 00 | `00_DECISION_LEDGER.md` | Every locked ruling, and the open decisions | **Ships with every task** · v0.23 |
 | 00A | `00A_STUDIO_CONVENTIONS.md` | Studio conventions — canonical; cited, never restated | v1.15 — studio-wide, verbatim from SyWords |
-| 00B | `00B_SYLANTRO_GUARDRAILS.md` | Sylantro's stop conditions, prohibitions, commands, checklist; Tasks A-1 to A-4 | v0.11 — capture-path exception for Save's page-2 check (SLT-046); Task A-4 (About's full-size icon test) ready; Pops's steps 1 to 4 done (§7); tests pinned to the iPhone SE (3rd generation) at iOS 26.5 |
+| 00B | `00B_SYLANTRO_GUARDRAILS.md` | Sylantro's stop conditions, prohibitions, commands, checklist; Tasks A-1 to A-4 | v0.15 — the spike flag goes off when App Store copy starts for RC0 (SLT-093); alerts are plain centered alerts (SLT-088); capture-path exception for Save's page-2 check (SLT-046); Task A-4 (About's full-size icon test) ready; Pops's steps 1 to 4 done (§7); tests pinned to the iPhone SE (3rd generation) at iOS 26.5 |
 | 01 | `01_INGESTION_DESIGN.md` | The camera ingestion engine: pipeline, on-device reading and structuring, the data, storage, the mirror, nutrition slots, milestones | v0.10 — rulings in (SLT-020 to SLT-103); one capture is one recipe, Save asks for a page 2 when unfinished (SLT-045, SLT-046); sharing in `04`, photos in `05` |
 | 02 | `02_ARCHITECTURE.md` | The architecture contract: layers, Domain, capture and extraction, the two stores, the writers, recovery, the mirror's layout, file map | v0.8 — **draft, not accepted** |
 | 03 | `03_NUTRITION_DESIGN.md` | Nutrition for recipes that don't print it: USDA FoodData Central (SR Legacy), a trimmed bundled copy, food matching with her confirmation, grams from portions, protein and phenylalanine per serving, the flagged phe estimate, custom foods, substitutions | v0.1 — **draft, not accepted**; open decisions N-1 to N-10 |
 | 04 | `04_SHARING_DESIGN.md` | Sending one recipe as a file, importing it, duplicates; a shared family binder parked, no public database | v0.1 — SLT-100 to SLT-103 in; open details SH-1 to SH-6 |
 | 05 | `05_IMAGE_STORAGE_DESIGN.md` | Page scans and dish photos: the photo model, HEIC sizes, thumbnails, the mirror's copies, what iCloud does with them, the spike's check | v0.2 — **draft, not accepted**; proposals P-1 to P-7, IS-1 to IS-3 |
-| 06 | `06_MILESTONE_1_DOMAIN.md` | Milestone 1's Domain tasks: M1-1, the recipe value types and their JSON; M1-2, the ingredient-line parser | v0.6 — names accepted (SLT-091); schema additions SLT-062 to SLT-066; dozen and `T`/`t` ruled (SLT-048, SLT-049); **M1-1 and M1-2 complete** (16 tests; the `UnitRef` fix, SLT-067, in) |
+| 06 | `06_MILESTONE_1_DOMAIN.md` | Milestone 1's Domain tasks: M1-1, the recipe value types and their JSON; M1-2, the ingredient-line parser | v0.8 — "a few" and "-inch" ruled (SLT-155, built in `11` M1-14); names accepted (SLT-091); schema additions SLT-062 to SLT-066; dozen and `T`/`t` ruled (SLT-048, SLT-049); **M1-1 and M1-2 complete** (16 tests; the `UnitRef` fix, SLT-067, in) |
 | 07 | `07_APP_ICON.md` | The app icon: four concepts drawn in code, a paste-ready ChatGPT prompt for each, the field, palette, appearances, process, rulings; its files in `AppIcon/` | v0.4 — **locked and placed** (SLT-110 to SLT-115); About's full-size copy is `00B` Task A-4; on-device check open |
 | 08 | `08_APPLE_NEWS_IMPORT.md` | Importing recipes saved in Apple News: what its share sheet gives (a link; no export), the ways in (the publisher's recipe data, screenshots, copied text), fetching the shared page, duplicates, what stands in for the original, a spike | v0.2 — draft; SLT-120 in (link first, screenshots fallback); open decisions NI-2 to NI-7 |
 | 09 | `09_MEALS.md` | Meals: a named meal (Thanksgiving) made of recipes from the library, how it maps to the model, and later a combined shopping list, scaling, meal-level protein and phe, a cooking timeline, yearly reuse | v0.1 — idea, nothing ruled; open decisions ML-1 to ML-8 |
-| 10 | `10_ACCURACY_TEST_SET.md` | The spike's test set: 25 real binder pages by ID, how each is scored, 42 hard cases (recipes across two pages, several recipes on one page, handwriting, bleed-through, shorthand, odd yields, damage), the design questions they raise; the pages and answer key live outside git in `~/GIT/Syzygy/sylantro-testpages/` (SLT-092) | v0.16 — runs 1 and 2 scored (§7), SP-1 to SP-11 accepted; draft, not accepted; proposals TS-5, TS-10, TS-11, TS-15 (the rest settled; TS-12 done) |
-| 11 | `11_MILESTONE_1_SPIKE.md` | Milestone 1's spike task: M1-3, the reader, the structurer and a hidden debug-only screen that runs the test pages on Pops's iPhone 18 Pro and exports results (SLT-093) | v0.5 — M1-3 and M1-4 complete (31 tests), runs 1 and 2 scored; **M1-5 ready for the agent** (43 tests expected; SLT-146 to SLT-150), then run 3 |
-| 12 | `12_IMPLEMENTATION_PLAN.md` | The build order: how the build runs, the SyLib queue, the milestones M0 to M9 in build order, every document mapped to the milestone that builds it, each milestone's gates, and the proposals for Pops | v0.5 — **draft**; IP-7 ruled (1.0 holds M1 to M8); proposals IP-1 to IP-6, IP-8, IP-9; **build order is read only from its §2** |
+| 10 | `10_ACCURACY_TEST_SET.md` | The spike's test set: 25 real binder pages by ID, how each is scored, 42 hard cases (recipes across two pages, several recipes on one page, handwriting, bleed-through, shorthand, odd yields, damage), the design questions they raise; the pages and answer key live outside git in `~/GIT/Syzygy/sylantro-testpages/` (SLT-092) | v0.24 — runs 1 to 5 scored in §7; SP-19 accepted (`11` M1-15), run 6 next |
+| 11 | `11_MILESTONE_1_SPIKE.md` | Milestone 1's spike task: M1-3, the reader, the structurer and a hidden spike screen, behind an AppConfig flag, that runs the test pages on Pops's iPhone 18 Pro and exports results (SLT-093) | v0.29 — M1-3 to M1-14 complete (57 tests), runs 1 to 5 scored; **M1-15 ready for the agent** (60 tests expected), then run 6 |
+| 12 | `12_IMPLEMENTATION_PLAN.md` | The build order: how the build runs, the SyLib queue, the milestones M0 to M9 in build order, every document mapped to the milestone that builds it, each milestone's gates, and the proposals for Pops | v0.6 — **draft**; M9 turns the spike flag off (SLT-093); IP-7 ruled (1.0 holds M1 to M8); proposals IP-1 to IP-6, IP-8, IP-9; **build order is read only from its §2** |
 
 ---
 
@@ -79,3 +79,28 @@ Score It \* as its template (SLT-080).
 | 0.23 | Row 11: M1-4 complete | `11` Results log |
 | 0.24 | Row 10: spike run 2 scored | `10` v0.15 |
 | 0.25 | Rows 10 and 11: SP-7 to SP-11 accepted; M1-5 added | SLT-146 to SLT-150 |
+| 0.26 | Row 11: M1-5 complete | `11` Results log |
+| 0.27 | Rows 10 and 11: run 3 stopped; M1-6 added | SLT-151 to SLT-153 |
+| 0.28 | Row 11: M1-6 complete | `11` Results log |
+| 0.29 | Row 11: M1-7 added | Pops, 22 Nov 2026 (spike screen layout) |
+| 0.30 | Row 11: M1-7 complete | `11` Results log |
+| 0.31 | Rows 00B and 11: SLT-088, alerts are plain; M1-8 added | SLT-088 |
+| 0.32 | Row 11: M1-8 complete | `11` Results log |
+| 0.33 | Rows 10 and 11: run 3 again; M1-9 added | SLT-151 |
+| 0.34 | Row 11: M1-9 complete | `11` Results log |
+| 0.35 | Row 11: M1-10 added | Pops, 22 Nov 2026 |
+| 0.36 | Row 11: M1-10 complete | `11` Results log |
+| 0.37 | Row 10: spike run 3 scored | `10` v0.19 |
+| 0.38 | Rows 10 and 11: SP-12 to SP-14 accepted; M1-11 added | SLT-146, SLT-148, SLT-149 |
+| 0.39 | Row 11 at v0.18: M1-11 adds the Export Results capsule and `FlowLayout` | Pops, 22 Nov 2026 |
+| 0.40 | Rows 00B and 11: M1-11 complete; SLT-093, the spike behind an AppConfig flag; M1-12 added | SLT-093 |
+| 0.41 | Row 11 at v0.21: M1-12 also disables Clear with nothing to clear | Pops, 22 Nov 2026 |
+| 0.42 | Rows 00B and 11: the spike flag stays on in every build | SLT-093 |
+| 0.43 | Rows 00B, 11 and 12: the spike flag stays on through the TestFlight beta, off when App Store copy starts for RC0 | SLT-093 |
+| 0.44 | Row 11: M1-12 complete; M1-13 added | Pops, 22 Nov 2026 |
+| 0.45 | Row 11: M1-13 complete; run 4 next | `11` Results log |
+| 0.46 | Rows 10 and 11: run 4 scored, SP-15 to SP-18 proposed | `10` v0.21 |
+| 0.47 | Rows 06, 10 and 11: SP-15 to SP-18 accepted; SLT-155; M1-14 added | SLT-146, SLT-148, SLT-155 |
+| 0.48 | Row 11: M1-14 complete; run 5 next | `11` Results log |
+| 0.49 | Rows 10 and 11: run 5 scored, SP-19 proposed | `10` v0.23 |
+| 0.50 | Rows 10 and 11: SP-19 accepted; M1-15 added | SLT-148 |

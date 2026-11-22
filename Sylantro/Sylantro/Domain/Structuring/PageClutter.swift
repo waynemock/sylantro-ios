@@ -1,0 +1,44 @@
+import Foundation
+
+/// Lines that belong to no section of a recipe (SLT-149): a web address line, "Page n of m", or a
+/// printed date, as a browser prints them at a page's top and foot.
+nonisolated enum PageClutter {
+    static func isClutter(_ line: String) -> Bool {
+        let text = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let firstToken = text.split(whereSeparator: \.isWhitespace).first {
+            let token = firstToken.lowercased()
+            if token.contains("://") || token.hasPrefix("www.") {
+                return true
+            }
+        }
+        if PageRules.pageOf(text) != nil {
+            return true
+        }
+        return startsWithDate(text)
+    }
+
+    /// 1 or 2 digits, `/`, 1 or 2 digits, `/`, 2 or 4 digits.
+    private static func startsWithDate(_ text: String) -> Bool {
+        let chars = Array(text)
+        var index = 0
+
+        func digitRun() -> Int {
+            let start = index
+            while index < chars.count, ("0"..."9").contains(chars[index]) {
+                index += 1
+            }
+            return index - start
+        }
+
+        guard (1...2).contains(digitRun()), index < chars.count, chars[index] == "/" else {
+            return false
+        }
+        index += 1
+        guard (1...2).contains(digitRun()), index < chars.count, chars[index] == "/" else {
+            return false
+        }
+        index += 1
+        let year = digitRun()
+        return year == 2 || year == 4
+    }
+}

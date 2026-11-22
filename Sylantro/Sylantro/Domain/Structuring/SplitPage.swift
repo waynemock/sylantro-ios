@@ -9,6 +9,8 @@ nonisolated struct SplitPage: Equatable, Sendable {
     var notes: [String] = []
     var equipment: [String] = []
     var nutrition: [String] = []
-    /// Both an ingredients heading and a steps heading were found.
+    /// Lines after the equipment section ended, up to the next heading (SLT-149).
+    var unsectioned: [String] = []
+    /// Both an ingredients heading and a steps heading were found, and both sections hold a line.
     var hasIngredientsAndSteps = false
 }

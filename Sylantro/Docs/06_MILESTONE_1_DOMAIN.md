@@ -2,7 +2,7 @@
 
 **A Syzygy Softwerks task document · the recipe types and the ingredient-line parser, before any
 screen**
-Version 0.7 · 22 November 2026 · Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`,
+Version 0.8 · 22 November 2026 · Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`,
 `00B_SYLANTRO_GUARDRAILS.md` and `02_ARCHITECTURE.md` §2 and §3.
 
 ---
@@ -356,8 +356,9 @@ read wrongly is reported, not fixed); change M1-1's types beyond the `UnitRef` f
 - `T` and `t` were already case-sensitive in M1-2; SLT-048 confirms it (rows 12 and 13).
 - **Lines the rules read oddly** (M1-2 Results, note (e), reported not fixed): `A few sprigs mint`
   reads Q(1) (the number word `a`); `1-inch piece ginger` reads Q(1) with rest `-inch piece ginger`.
-  Claude's recommendation for a later revision: `a few` is not a quantity, and a number joined to
-  `-inch` is a size, not a quantity. Not changed until Pops rules; the spike shows how often they occur.
+  **Ruled (SLT-155):** `a few` is not a quantity, and a number joined to `-inch` is a size, not a
+  quantity. Neither shape is an ingredient line on the test pages (`10` §7, run 4). Built by `11`
+  Task M1-14, which adds parser rows 32 to 36.
 
 ---
 
@@ -374,6 +375,7 @@ read wrongly is reported, not fixed); change M1-1's types beyond the `UnitRef` f
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.8 | §1: "a few" and "-inch" ruled; built by `11` M1-14 | SLT-155 (Pops, 22 Nov 2026 (decision card, "All four, SP-15 to SP-18")) |
 | 0.7 | §1: the lines M1-2 reads oddly listed, with a recommendation, open for Pops | M1-2 Results, note (e) |
 | 0.6 | M1-2 also fixes `UnitRef`'s decoding so an unknown canonical unit reads as nil (M1-1 Results, note (e)); test 9 added | SLT-067 (Pops, 22 Nov 2026 (decision card, "Yes, fold it into M1-2")) |
 | 0.5 | M1-1: `isUnreadable` on `Ingredient` and `Step`, `unreadableAreas` on `Recipe` | SLT-066 (Pops, 21 Nov 2026: "Handwritten that cannot be decoded should be called out and maybe inlined as an image in the recipe view.") |

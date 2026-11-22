@@ -30,4 +30,10 @@ struct PageRulesTests {
         let fields = PageRules.find(in: ["Prep Time: 10 mins", "Cook time 20 minutes", "Cook until done."])
         #expect(fields.timesText == "Prep Time: 10 mins; Cook time 20 minutes")
     }
+
+    @Test("times need a label")
+    func timesNeedALabel() {
+        let fields = PageRules.find(in: ["Prep: 10 min | Serves 4", "Cook 3 to 4 hours on low.", "Cook Time 20 minutes"])
+        #expect(fields.timesText == "Prep: 10 min; Cook Time 20 minutes")
+    }
 }

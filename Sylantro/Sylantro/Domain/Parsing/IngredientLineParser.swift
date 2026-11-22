@@ -24,6 +24,12 @@ nonisolated enum IngredientLineParser {
         ("eleven", 11), ("twelve", 12),
     ]
 
+    /// Words that start a line with no quantity, checked before rule 3 (SLT-155).
+    private static let vagueAmounts = ["a few ", "a couple of ", "a couple ", "several "]
+
+    /// What follows an amount, after a dash, to make it a size rather than a quantity (SLT-155).
+    private static let sizeWords = ["inch", "in."]
+
     /// Rule 3's range marks; the word `to` is handled separately.
     private static let rangeDashes: Set<Character> = ["-", "\u{2013}", "\u{2014}"]
 
@@ -41,10 +47,19 @@ nonisolated enum IngredientLineParser {
             break
         }
 
+        // "A few", "a couple (of)" and "several" are no quantity (SLT-155).
+        if vagueAmounts.contains(where: { hasPrefix(trimmed, at: position, $0) }) {
+            return unparsed
+        }
+
         // Rule 3: an amount, then optionally a range end.
         var zeroDenominator = false
         guard let first = amount(trimmed, at: position, zeroDenominator: &zeroDenominator),
               !zeroDenominator else {
+            return unparsed
+        }
+        // An amount joined to "-inch" or "-in." is a size, so the line has no quantity (SLT-155).
+        if isSize(trimmed, at: first.end) {
             return unparsed
         }
         position = first.end
@@ -178,6 +193,17 @@ nonisolated enum IngredientLineParser {
             return nil
         }
         return (numerator / denominator, denominatorEnd)
+    }
+
+    /// A dash (`-`, `–` or `—`), then `inch` or `in.` in any case, then a space or the end.
+    private static func isSize(_ chars: [Character], at start: Int) -> Bool {
+        guard start < chars.count, rangeDashes.contains(chars[start]) else {
+            return false
+        }
+        return sizeWords.contains { word in
+            let end = start + 1 + word.count
+            return hasPrefix(chars, at: start + 1, word) && (end == chars.count || chars[end] == " ")
+        }
     }
 
     /// Where a range end's amount starts: optional spaces, then `-`, `–` or `—`, or the word `to`

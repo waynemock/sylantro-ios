@@ -1,7 +1,7 @@
 # Sylantro — Project Guard Rails
 
 **Project-level. Sylantro only.** Companion to `00A_STUDIO_CONVENTIONS.md`.
-Version 0.11 · 21 November 2026 · Ships in every agent prompt, alongside `00A`,
+Version 0.15 · 22 November 2026 · Ships in every agent prompt, alongside `00A`,
 `00_DECISION_LEDGER.md` and the task's own documents.
 
 ---
@@ -95,6 +95,9 @@ In addition to `00A`. These apply to every task, in perpetuity.
   change Task A-1 names.
 - **Logging goes through SyLibCore's `AppLogger`, never `print()`.** Log no recipe text or OCR
   text above debug level.
+- **Alerts are plain and centered** (SLT-088): every confirmation or message uses SwiftUI's
+  `.alert`, never `.confirmationDialog`, an action sheet or a popover anchored to a button. *Why:*
+  Pops, 22 Nov 2026: "all alerts should be normal alerts and not try to point to anything. swfitui still is furbar with this."
 - **Unit tests use Swift Testing** (`@Test`, `#expect`), never XCTest. Sylantro has no UI test
   target (SLT-016).
 - **Build through `Sylantro.xcworkspace`**, never the bare project.
@@ -173,6 +176,9 @@ Before any archive, TestFlight or App Store build:
 - `MARKETING_VERSION` is the release version in **both** of the app target's configurations.
 - **`AppConfig.DebugCloudKit.runSchemaExercise` is `false`**: the CloudKit Development schema push
   (SLT-015).
+- **The spike flag, on the way to RC0:** once App Store copy is being written, set
+  `AppConfig.AccuracySpike.isEnabled` to `false` (SLT-093). Through the TestFlight beta it stays
+  `true`.
 - Every other debug flag is `false` in Release.
 - No real binder page, photo or recipe is in the bundle.
 - CloudKit Production matches Development for `iCloud.com.syzygysoftwerksllc.Sylantro`, once sync
@@ -325,6 +331,10 @@ The test target is already at the floor (`"26.5"` for both targets), so no build
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.15 | §6: the spike flag goes off once App Store copy starts for RC0; on through the TestFlight beta | SLT-093 (Pops, 22 Nov 2026: "my partner will only be using testflight builds, and i want to keep this on during beta test. just need to be reinded to turn it off once we start writing app store copy headed to RC0.") |
+| 0.14 | §6: the spike flag line removed; it stays on in every build | SLT-093 (Pops, 22 Nov 2026 (decision card, "Leave it on everywhere")) |
+| 0.13 | §6: the spike flag is `false` for an App Store submission | SLT-093 (Pops, 22 Nov 2026: "I want to leave the accuracy spike in the app for now, so just put it behind a appconfig flag and no if DEBUG") |
+| 0.12 | §3: alerts are plain centered `.alert`s | SLT-088 (Pops, 22 Nov 2026: "all alerts should be normal alerts and not try to point to anything. swfitui still is furbar with this.") |
 | 0.11 | §2: the capture-path stop condition names its one exception, Save's bottom-lines read | SLT-046 (Pops, 21 Nov 2026 (decision card, "Only when the page looks unfinished")) |
 | 0.10 | Task A-4 trimmed to the test: Claude placed `AppIconFull.imageset` | Pops, 21 Nov 2026: "you can do this one, these kinds of changes are ok for you to make, but do ask first." |
 | 0.9 | Task A-4 added: `AppIconFull` for About's icon, with a test | SLT-115 (Pops, 21 Nov 2026) |

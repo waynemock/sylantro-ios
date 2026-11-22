@@ -27,8 +27,8 @@ nonisolated enum RecipeValidator {
             return nil
         }
 
-        recipe.title = checked(recipe.title, field: "title") ?? ""
-
+        // The title isn't checked: a snapped title is the page's own lines, and this page text has
+        // clutter taken out, so a title printed there could be dropped (SLT-148).
         let stepTexts = recipe.steps.map { TextMatch.normalize($0.text) }
         var ingredientNumber = 0
         for groupIndex in recipe.ingredientGroups.indices {
