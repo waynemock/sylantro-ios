@@ -1,10 +1,13 @@
 import SwiftUI
 import UIKit
 import SyLibCache
+import SyLibCore
 
 /// One recipe in the library (`13` §2): its cover's thumbnail, its title ("New recipe" until it is
 /// read), and when it was scanned with its page count.
 struct RecipeRow: View {
+    private let log = AppLogger(category: "Library")
+
     let title: String
     let createdAt: Date
     let pageCount: Int
@@ -27,7 +30,9 @@ struct RecipeRow: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .task(id: coverFileName) { await loadThumbnail() }
+        // Runs again when `photoFiles` arrives after launch, not only when the cover changes
+        // (`14` M2-4g).
+        .task(id: [coverFileName, photoFiles?.root.path]) { await loadThumbnail() }
     }
 
     private var pagesText: String {
@@ -60,8 +65,11 @@ struct RecipeRow: View {
             return
         }
         let url = photoFiles.url(for: coverFileName)
+        let clock = ContinuousClock()
+        let start = clock.now
         if let cached = await ImageCache.shared.memoryImage(for: url) {
             thumbnail = cached
+            logShown(coverFileName, after: start.duration(to: clock.now))
             return
         }
         while !Task.isCancelled {
@@ -71,9 +79,17 @@ struct RecipeRow: View {
             if let image {
                 await ImageCache.shared.store(image, for: url, toDisk: false)
                 thumbnail = image
+                logShown(coverFileName, after: start.duration(to: clock.now))
                 return
             }
             try? await Task.sleep(for: .seconds(2))
         }
+    }
+
+    /// Debug only: how long the thumbnail took, by the file name's first 8 characters (no titles,
+    /// `00B` §3).
+    private func logShown(_ fileName: String, after elapsed: Duration) {
+        let milliseconds = Int(elapsed.components.seconds * 1_000 + elapsed.components.attoseconds / 1_000_000_000_000_000)
+        log.debug(self, "thumbnail \(fileName.prefix(8)): \(milliseconds) ms")
     }
 }

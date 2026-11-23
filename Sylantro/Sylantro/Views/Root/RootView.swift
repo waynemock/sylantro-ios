@@ -92,9 +92,10 @@ struct RootView: View {
             // The photo folder, the copy in Files, then the writers on this window's store (`14`
             // M2-4, M2-5).
             let files = await PhotoFiles.live()
+            // The views get the photo folder as soon as it is known (`14` M2-4g).
+            photoFiles = files
             let mirror = await MirrorWriter.live(photoFiles: files)
             let editor = RecipeEditor(context: modelContext, mirror: mirror, photoFiles: files)
-            photoFiles = files
             recipeEditor = editor
             captureRecorder = CaptureRecorder(context: modelContext, photoFiles: files, recipeEditor: editor, mirror: mirror)
             catchUpMirror(mirror)
