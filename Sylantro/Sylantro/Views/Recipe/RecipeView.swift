@@ -80,14 +80,16 @@ struct RecipeView: View {
         .navigationTitle(recipe.title.isEmpty ? "New recipe" : recipe.title)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                Button("Add Page") { addPage() }
+                // SyLib's toolbar buttons (SLT-089); Add Page reads as S-22 (MT-26).
+                IconButton("doc.badge.plus", context: .toolbar) { addPage() }
+                    .accessibilityLabel("Add Page")
                     .disabled(captureRecorder == nil)
                 // The ⋯ symbol alone: iOS gives it its own label (MT-11).
                 Menu {
                     Button("Delete Recipe", role: .destructive) { isConfirmingDelete = true }
                         .disabled(recipeEditor == nil)
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    IconButton("ellipsis.circle", context: .toolbar)
                 }
                 .appTextSizeCap()
             }
@@ -97,7 +99,7 @@ struct RecipeView: View {
             Button("Delete", role: .destructive) { delete() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Its page photos are kept, so nothing from your binder is lost.")
+            Text("This deletes the recipe and its page photos from all your devices. This can't be undone.")
         }
         .alert("Camera Not Available", isPresented: $isShowingNoCamera) {
             Button("OK") {}

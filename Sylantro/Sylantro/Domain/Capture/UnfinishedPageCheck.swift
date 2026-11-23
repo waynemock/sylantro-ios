@@ -1,29 +1,44 @@
 import Foundation
 
-/// Whether a capture's last page looks unfinished, so Save asks "Is there a page 2?" (SLT-046,
-/// `14` MT-10). Given the bottom lines of the page, top to bottom. A wrong "yes" only asks her a
-/// question; a wrong "no" is fixed later with Add Page (SLT-045).
+/// Whether a capture's last page looks unfinished, so Save asks "Is there another page?" (SLT-046,
+/// `14` MT-10, MT-27). Given the bottom lines of the page, top to bottom. A wrong "yes" only asks her
+/// a question; a wrong "no" is fixed later with Add Page (SLT-045).
 nonisolated enum UnfinishedPageCheck {
+    /// The rule that made a page look unfinished, for the log (MT-27).
+    enum Reason: Sendable, Equatable {
+        /// A footer's "Page n of m", "n of m" or "n/m" with n < m.
+        case pageNOfM
+        /// The last line that isn't a footer ends mid-sentence.
+        case endsMidSentence
+        /// A word ending in `*` with no line starting with `*`.
+        case footnoteAsterisk
+    }
+
     static func looksUnfinished(_ lines: [String]) -> Bool {
+        reason(lines) != nil
+    }
+
+    /// The rule that fired, or nil when the page looks finished.
+    static func reason(_ lines: [String]) -> Reason? {
         let trimmed = lines
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
-        guard !trimmed.isEmpty else { return false }
+        guard !trimmed.isEmpty else { return nil }
 
         // 1. Footer lines are set aside: read for rule 2, ignored by rules 3 and 4.
         let footers = trimmed.filter(isFooter)
         let body = trimmed.filter { !isFooter($0) }
 
-        // 2. "Page n of m", or a footer's "n/m" or "n of m", with n < m.
+        // 2. "Page n of m", or a footer's "n/m" or "n of m", with n < m, alone or ending the line.
         for footer in footers {
-            if let (n, m) = pageNumbers(in: footer), n < m {
-                return true
+            if let (n, m) = trailingPageNumbers(in: footer), n < m {
+                return .pageNOfM
             }
         }
 
         // 3. The last line that isn't a footer ends mid-sentence.
         if let last = body.last, endsMidSentence(last) {
-            return true
+            return .endsMidSentence
         }
 
         // 4. A footnote asterisk with no footnote.
@@ -32,24 +47,24 @@ nonisolated enum UnfinishedPageCheck {
         }
         let hasFootnote = body.contains { $0.hasPrefix("*") }
         if hasAsteriskWord && !hasFootnote {
-            return true
+            return .footnoteAsterisk
         }
 
-        // 5. Otherwise, false.
-        return false
+        // 5. Otherwise, finished.
+        return nil
     }
 
     // MARK: Footers
 
-    /// Only a web address, a date or time, "Page n of m", "n/m" or "n of m", or only digits.
+    /// A line containing a web address anywhere, a line that is or ends with "Page n of m", "n/m" or
+    /// "n of m", only a date or time, or only digits (MT-27 widened the first two).
     static func isFooter(_ line: String) -> Bool {
-        isWebAddress(line) || pageNumbers(in: line) != nil || isOnlyDigits(line) || isDateOrTime(line)
+        containsWebAddress(line) || trailingPageNumbers(in: line) != nil || isOnlyDigits(line) || isDateOrTime(line)
     }
 
-    private static func isWebAddress(_ line: String) -> Bool {
+    private static func containsWebAddress(_ line: String) -> Bool {
         let lower = line.lowercased()
-        let startsLikeAddress = lower.hasPrefix("http://") || lower.hasPrefix("https://") || lower.hasPrefix("www.")
-        return startsLikeAddress && !line.contains(" ")
+        return lower.contains("http://") || lower.contains("https://") || lower.contains("www.")
     }
 
     private static func isOnlyDigits(_ line: String) -> Bool {
@@ -88,13 +103,26 @@ nonisolated enum UnfinishedPageCheck {
         return nil
     }
 
+    /// n and m from a line that is, or ends after other text with, "Page n of m", "n of m" or
+    /// "n/m".
+    static func trailingPageNumbers(in line: String) -> (Int, Int)? {
+        if let numbers = pageNumbers(in: line) { return numbers }
+        let words = line.split(separator: " ")
+        for count in [4, 3, 1] where words.count > count {
+            if let numbers = pageNumbers(in: words.suffix(count).joined(separator: " ")) {
+                return numbers
+            }
+        }
+        return nil
+    }
+
     // MARK: Sentences
 
-    /// Ends with a letter, a digit, a comma or a hyphen ("and" and "or" end with a letter). A
-    /// full stop, `!`, `?`, `:`, `)` or a closing quote is a finished line.
+    /// Ends with a letter, a comma or a hyphen ("and" and "or" end with a letter). A digit
+    /// ("Serves 4", MT-27), a full stop, `!`, `?`, `:`, `)` or a closing quote is a finished line.
     private static func endsMidSentence(_ line: String) -> Bool {
         guard let last = line.last else { return false }
-        return last.isLetter || last.isNumber || last == "," || last == "-"
+        return last.isLetter || last == "," || last == "-"
     }
 }
 

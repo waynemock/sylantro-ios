@@ -1,7 +1,7 @@
 # Sylantro — Image Storage Design
 
 **Design document · page scans and dish photos: how they are stored, synced, mirrored and shared**
-Version 0.13 · 22 November 2026 · **Draft: not accepted.** Only the rulings in §1 are decided; every
+Version 0.15 · 23 November 2026 · **Draft: not accepted.** Only the rulings in §1 are decided; every
 proposal (P-1 to P-7) and option is Pops's to decide, marked *(rec.)* where Claude recommends one.
 No task is written from an open proposal.
 
@@ -24,7 +24,7 @@ library feels and how much of her iCloud plan Sylantro uses.
 
 | ID | Ruling | What it means for images |
 |---|---|---|
-| SLT-030 | Her data outlives the app | The original page photo is never thrown away |
+| SLT-030 | Her data outlives the app | The original page photo is never thrown away on its own; Delete Recipe removes it (SLT-157) |
 | SLT-050 | SwiftData on the CloudKit private database, plus a mirror in Files | Photos sync through her iCloud and are copied into the mirror |
 | SLT-014 | Every synced property optional or defaulted | So is every photo field |
 | SLT-084 | SyLibCache is added when thumbnails are built | `ImageCache` is the thumbnail cache |
@@ -66,6 +66,7 @@ Read on Apple's developer forums and its archived CloudKit limits page, 21 Nov 2
 | P-3 | **HEIC, sized sensibly** (§5) *(ruled: §5's figures as starting points, tuned after the sync check)* | Fast sync and less of her iCloud plan, while staying sharp enough to read a page |
 | P-4 | **Thumbnails made on each device, never synced**, cached with `ImageCache` *(ruled; also required by SLT-053)* | They can always be rebuilt |
 | P-5 | **HEIC copies in the mirror** *(ruled)*, beside each recipe's plain file (§6): the same files the app keeps | Smaller, and identical to the app's own; some older PCs and websites can't open HEIC. Pops, 22 Nov 2026 (decision card, "HEIC copies") |
+| P-8 | **A Settings switch for the Files photo copies** *(open, later)*: off would keep one photo set (the hidden folder) and a text-only Files copy, halving iCloud use | Pops, 23 Nov 2026: keep both sets during development and until Family iCloud storage is a concern |
 | P-6 | **A shared recipe file includes its dish photos** as well as its page photos | The receiver gets the whole recipe (`04` SH-5) |
 | P-7 | **Settings shows how much iCloud storage Sylantro's photos use**, with a note that it counts against her plan *(ruled: yes, built after M2)* | Photos are the bulk of her data |
 
@@ -210,6 +211,8 @@ his iPhone and iPad:
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.15 | §1: SLT-030 narrowed by SLT-157 (Delete Recipe removes its photos) | Pops, 23 Nov 2026 |
+| 0.14 | P-5 reaffirmed (two photo sets kept, ~100 MB of iCloud per 100 pages); P-8 opened, a later Settings switch for the Files photo copies | Pops, 23 Nov 2026: "ok, I'm good with this model. at some point we may have a setting to enable/disable the extra copy. for now, during dev and until my Family cloud storage takes a hit, we will keep it as implemented." |
 | 0.13 | IS-2 refined: a scanned page keeps one image, the camera's cropped page; VisionKit gives no uncropped original | `14` MT-7, Pops, 22 Nov 2026 (decision card, "One cropped photo per page") |
 | 0.12 | §4: the photo links by ids, not relationships | `14` MT-4, Pops, 22 Nov 2026 (decision card, "By ids") |
 | 0.11 | §6: SLT-054, HEIC in the app and the mirror, JPEG only on export | Pops, 22 Nov 2026: "I decide on heic instead of jpg, this will only be an apple apple, if we need to export a recipe it can be jpg." |

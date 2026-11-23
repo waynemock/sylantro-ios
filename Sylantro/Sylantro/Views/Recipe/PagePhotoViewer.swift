@@ -1,8 +1,9 @@
 import SwiftUI
 import UIKit
+import SyLibUI
 
-/// A page photo full screen, pinch to zoom (`13` §4.1). Closed with the system's close button,
-/// which iOS labels (MT-11); the image keeps the system's default label.
+/// A page photo full screen, pinch to zoom (`13` §4.1). Closed with SyLib's `xmark` toolbar button
+/// (SLT-089), which iOS labels; the image keeps the system's default label (MT-11).
 struct PagePhotoViewer: View {
     let fileName: String
     let photoFiles: PhotoFiles?
@@ -39,7 +40,9 @@ struct PagePhotoViewer: View {
             .background(Color.black)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(role: .close) { dismiss() }
+                    // SyLib's toolbar button (SLT-089, replacing MT-11's system close button); iOS
+                    // labels the xmark symbol.
+                    IconButton("xmark", context: .toolbar) { dismiss() }
                 }
             }
         }

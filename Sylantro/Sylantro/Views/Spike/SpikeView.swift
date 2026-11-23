@@ -96,7 +96,7 @@ struct SpikeView: View {
                     // Enabled whenever there is a capture or a report to clear.
                     .disabled(runner.captures.isEmpty && runner.report == nil)
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    IconButton("ellipsis.circle", context: .toolbar)
                 }
             }
         }

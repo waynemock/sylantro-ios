@@ -2,7 +2,7 @@
 
 **A Syzygy Softwerks engineering contract · how the app is put together, and the rules every task
 follows**
-Version 0.15 · 22 November 2026 · **Accepted** (Pops, 22 Nov 2026), including the App-layer names in §2
+Version 0.16 · 23 November 2026 · **Accepted** (Pops, 22 Nov 2026), including the App-layer names in §2
 and §8 (`RecipeEditor`, `CaptureRecorder`, `ExtractionQueue`, `MirrorWriter`) and §5.1, §5.2, §5.4 and
 §5.5 as written; §3's Domain names by SLT-091. **Still open:** the recovery screen's copy
 (§5.3, `13` §6), and the photo details §5.7 points to (`05`). No app code is written from those until Pops rules.
@@ -174,8 +174,7 @@ Sylantro/
         page-2.heic
       photos/            (dish photos, if P-1 is accepted)
         dish-1.heic
-  Pages without a recipe/
-    <session date>/page-<n>.heic
+  (Pages without a recipe/ is no longer written: Delete Recipe removes the folder, SLT-157)
 ```
 
 Written with `NSFileCoordinator` into the ubiquity container's `Documents` folder, which shows in
@@ -266,6 +265,7 @@ SylantroTests/    Domain tests first; fixtures are made up
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.16 | §5.4: Pages without a recipe no longer written; a deleted recipe's folder is removed (SLT-157) | Pops, 23 Nov 2026 |
 | 0.15 | §8: `Domain/Capture/` (built by M2-1), and M2-2's recovery folders | `14` v0.4 |
 | 0.14 | §5.4, §5.7: the mirror's photos are HEIC copies | `05` P-5, Pops, 22 Nov 2026 (decision card, "HEIC copies") |
 | 0.13 | §5.3: the recovery screen offers Try Again or Start Fresh (`13` SC-7) | Pops, 22 Nov 2026 (decision card, "Try Again or Start Fresh") |

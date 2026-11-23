@@ -25,8 +25,8 @@ nonisolated enum PhotoFilesError: Error, Equatable {
 
 /// The photo files (`05` §4.1, IS-4, `14` MT-3): HEIC files in the app's iCloud container, outside
 /// `Documents` so Files never shows them, or in Application Support with iCloud off. The store holds
-/// only their names (SLT-053). Files are only ever added: nothing here deletes, moves or overwrites
-/// one (SLT-030).
+/// only their names (SLT-053). Files are added, and removed only by `remove`, which only Delete
+/// Recipe calls (SLT-157); nothing ever overwrites or moves one (SLT-030).
 nonisolated struct PhotoFiles: Sendable {
     private static let log = AppLogger(category: "Photos")
 
@@ -96,6 +96,32 @@ nonisolated struct PhotoFiles: Sendable {
         }
         Self.log.debug(PhotoFiles.self, "wrote \(fileName) (\(image.width) × \(image.height))")
         return (image.width, image.height)
+    }
+
+    /// Deletes `fileName` with a coordinated write, which also removes an iCloud file not downloaded
+    /// on this device. Only Delete Recipe calls it (SLT-157). With neither the file nor its
+    /// `.<name>.icloud` placeholder there, it does nothing.
+    func remove(_ fileName: String) throws {
+        let fileURL = url(for: fileName)
+        let placeholder = root.appending(path: ".\(fileName).icloud")
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: fileURL.path(percentEncoded: false))
+                || fileManager.fileExists(atPath: placeholder.path(percentEncoded: false)) else {
+            return
+        }
+        var coordinationError: NSError?
+        var removeError: (any Error)?
+        NSFileCoordinator().coordinate(writingItemAt: fileURL, options: .forDeleting, error: &coordinationError) { url in
+            do {
+                try FileManager.default.removeItem(at: url)
+            } catch {
+                removeError = error
+            }
+        }
+        if let error = coordinationError ?? removeError {
+            throw error
+        }
+        Self.log.debug(PhotoFiles.self, "removed \(fileName)")
     }
 
     /// A thumbnail of `fileName` no longer than `longEdge` pixels, made by ImageIO, or nil if the

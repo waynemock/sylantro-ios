@@ -4,15 +4,15 @@ import SyLibCore
 
 /// What a sitting of the camera is for.
 enum CaptureMode: Equatable {
-    /// Let's cook.: each Save is a new recipe, and the camera reopens for the next (SLT-045).
+    /// The library's +: each Save is a new recipe, and the camera reopens for the next (SLT-045).
     case newRecipes
     /// A recipe's Add Page: the pages go to that recipe, with no page-2 question.
     case addPages(recipeID: UUID)
 }
 
-/// One sitting of the document camera, full screen (`13` §3, `14` M2-4 §6): Save asks "Is there a
-/// page 2?" when the last page looks unfinished (SLT-046), saves through `CaptureRecorder`, shows
-/// the saved line and reopens the camera. Pages not yet saved are the pending capture; nothing in
+/// One sitting of the document camera, full screen (`13` §3, `14` M2-4 §6): Save asks "Is there
+/// another page?" when the last page looks unfinished (SLT-046), saves through `CaptureRecorder`, then
+/// pauses on `SavedPauseView` until Next Recipe or Done (SC-4, MT-30). Pages not yet saved are the pending capture; nothing in
 /// it is dropped except by Cancel at "Couldn't Save".
 struct CaptureFlowView: View {
     private let log = AppLogger(category: "Capture")
@@ -36,25 +36,21 @@ struct CaptureFlowView: View {
     @State private var isShowingSaveFailed = false
     /// The page-2 flag of the save that failed, for Save at "Couldn't Save".
     @State private var failedSaveFlag = false
-    @State private var isShowingSaved = false
+    /// A recipe was just saved: the pause shows in place of the camera, so nothing is scanned until
+    /// Next Recipe (MT-30).
+    @State private var isPaused = false
 
     var body: some View {
         ZStack(alignment: .top) {
-            DocumentCameraView(onFinish: finished, onCancel: cancelled, onError: failed)
-                .id(cameraGeneration)
-                .ignoresSafeArea()
-                .allowsHitTesting(!isChecking)
-
-            if isShowingSaved {
-                // SC-4: the saved line, over the camera's top edge for 2 seconds.
-                Text("Saved. Ready for the next one.")
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(.regularMaterial, in: Capsule())
-                    .padding(.top, 8)
-                    .transition(.opacity)
-                    .allowsHitTesting(false)
+            if isPaused {
+                // SC-4: the pause after Save. The camera is gone while it shows, so auto-capture
+                // can't take the same page again.
+                SavedPauseView(onNextRecipe: nextRecipe, onDone: { dismiss() })
+            } else {
+                DocumentCameraView(onFinish: finished, onCancel: cancelled, onError: failed)
+                    .id(cameraGeneration)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(!isChecking)
             }
 
             if isChecking {
@@ -66,7 +62,7 @@ struct CaptureFlowView: View {
             }
         }
         // Plain centered alerts (SLT-088).
-        .alert("Is there a page 2?", isPresented: $isAskingPageTwo) {
+        .alert("Is there another page?", isPresented: $isAskingPageTwo) {
             Button("Add Page") { addPage() }
             Button("Save Without It") { save(continuesOnUnscannedPage: true) }
         } message: {
@@ -118,27 +114,31 @@ struct CaptureFlowView: View {
         cancelled()
     }
 
-    // MARK: Is there a page 2?
+    // MARK: Is there another page?
 
     /// Save's one read (SLT-046): the bottom lines of the pending last page, top to bottom. A
-    /// failed read counts as finished.
+    /// failed read counts as finished. The reason, line count and duration are logged at info; the
+    /// lines themselves only at debug (`00B` §3, `14` M2-4d).
     private func askAboutPageTwo() async {
         guard let lastPage = pending.last else { return }
         isChecking = true
         let clock = ContinuousClock()
         let start = clock.now
-        var looksUnfinished = false
+        var reason: UnfinishedPageCheck.Reason?
+        var lineCount = 0
         do {
             let reading = try await TextReader().readBottom(lastPage)
             let lines = reading.lines.sorted { $0.box.y < $1.box.y }.map(\.text)
-            looksUnfinished = UnfinishedPageCheck.looksUnfinished(lines)
+            lineCount = lines.count
+            reason = UnfinishedPageCheck.reason(lines)
+            log.debug(self, "bottom lines read: \(lines)")
         } catch {
             log.error(self, "bottom-lines read failed: \(error)")
         }
         let elapsed = start.duration(to: clock.now)
-        log.info(self, "bottom-lines read: \(elapsed.formatted(.units(allowed: [.milliseconds]))), looks unfinished: \(looksUnfinished)")
+        log.info(self, "bottom-lines read: \(elapsed.formatted(.units(allowed: [.milliseconds]))), \(lineCount) lines, reason: \(reason.map { "\($0)" } ?? "none")")
         isChecking = false
-        if looksUnfinished {
+        if reason != nil {
             isAskingPageTwo = true
         } else {
             save(continuesOnUnscannedPage: false)
@@ -170,7 +170,7 @@ struct CaptureFlowView: View {
         return started
     }
 
-    /// Saves the pending pages as one new recipe, then reopens the camera with the saved line.
+    /// Saves the pending pages as one new recipe, then pauses until Next Recipe or Done (MT-30).
     private func save(continuesOnUnscannedPage: Bool) {
         guard !pending.isEmpty else { return }
         do {
@@ -178,8 +178,7 @@ struct CaptureFlowView: View {
             _ = try captureRecorder.saveCapture(pending, sessionID: session,
                                                 continuesOnUnscannedPage: continuesOnUnscannedPage)
             pending = []
-            cameraGeneration += 1
-            showSavedLine()
+            isPaused = true
         } catch {
             log.error(self, "save failed: \(error)")
             failedSaveFlag = continuesOnUnscannedPage
@@ -218,11 +217,9 @@ struct CaptureFlowView: View {
         dismiss()
     }
 
-    private func showSavedLine() {
-        withAnimation { isShowingSaved = true }
-        Task {
-            try? await Task.sleep(for: .seconds(2))
-            withAnimation { isShowingSaved = false }
-        }
+    /// Next Recipe at the pause: a fresh camera in the same session.
+    private func nextRecipe() {
+        cameraGeneration += 1
+        isPaused = false
     }
 }

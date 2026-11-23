@@ -1,6 +1,6 @@
 import Foundation
 
-/// One sitting of scanning: the pages captured between tapping "Let's cook." and leaving the camera.
+/// One sitting of scanning: the pages captured between tapping + and leaving the camera.
 nonisolated struct ScanSession: Codable, Sendable, Equatable {
     var id: UUID
     var startedAt: Date

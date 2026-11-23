@@ -101,8 +101,8 @@ struct CaptureRecorderTests {
         #expect(recipe.continuesOnUnscannedPage == false)
     }
 
-    @Test("deleting a recipe keeps its pages and photos")
-    func deletingRecipeKeepsPagesAndPhotos() throws {
+    @Test("deleting a recipe removes its pages, photos and files")
+    func deletingRecipeRemovesEverything() async throws {
         let folder = try Self.makeFolder()
         defer { try? FileManager.default.removeItem(at: folder) }
         let (recorder, context, container) = try Self.makeRecorder(photoRoot: folder)
@@ -111,18 +111,54 @@ struct CaptureRecorderTests {
         let wide = try #require(PhotoFilesTests.makeImage(width: 60, height: 40))
         let sessionID = try recorder.startSession(now: Self.now)
         let recipeID = try recorder.saveCapture([tall, wide], sessionID: sessionID, continuesOnUnscannedPage: false, now: Self.now)
+        let photoFiles = PhotoFiles(root: folder)
+        let fileNames = try context.fetch(FetchDescriptor<PhotoModel>()).compactMap(\.fileName)
+        #expect(fileNames.count == 2)
 
-        try RecipeEditor(context: context).delete(recipeID)
+        let removal = try RecipeEditor(context: context, photoFiles: photoFiles).delete(recipeID)
+        await removal?.value
 
         #expect(try context.fetch(FetchDescriptor<RecipeModel>()).isEmpty)
-        #expect(try context.fetch(FetchDescriptor<SourcePageModel>()).count == 2)
-        let photos = try context.fetch(FetchDescriptor<PhotoModel>())
-        #expect(photos.count == 2)
-        let photoFiles = PhotoFiles(root: folder)
-        for photo in photos {
-            let fileName = try #require(photo.fileName)
-            #expect(FileManager.default.fileExists(atPath: photoFiles.url(for: fileName).path(percentEncoded: false)))
+        #expect(try context.fetch(FetchDescriptor<SourcePageModel>()).isEmpty)
+        #expect(try context.fetch(FetchDescriptor<PhotoModel>()).isEmpty)
+        #expect(try context.fetch(FetchDescriptor<ScanSessionModel>()).isEmpty)
+        for fileName in fileNames {
+            #expect(!FileManager.default.fileExists(atPath: photoFiles.url(for: fileName).path(percentEncoded: false)))
         }
+    }
+
+    @Test("a page another recipe uses is kept")
+    func pageAnotherRecipeUsesIsKept() async throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (recorder, context, container) = try Self.makeRecorder(photoRoot: folder)
+        _ = container
+        let tall = try #require(PhotoFilesTests.makeImage(width: 40, height: 60))
+        let wide = try #require(PhotoFilesTests.makeImage(width: 60, height: 40))
+        let sessionID = try recorder.startSession(now: Self.now)
+        let firstID = try recorder.saveCapture([tall], sessionID: sessionID, continuesOnUnscannedPage: false, now: Self.now)
+        let secondID = try recorder.saveCapture([wide], sessionID: sessionID, continuesOnUnscannedPage: false, now: Self.now)
+        let photoFiles = PhotoFiles(root: folder)
+        let editor = RecipeEditor(context: context, photoFiles: photoFiles)
+
+        // The first recipe's page is also listed by the second (SLT-047, M3).
+        let firstModel = try #require(try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == firstID })).first)
+        let sharedPageID = try #require(firstModel.toDomain()?.sourcePageIDs.first)
+        try editor.appendPages([sharedPageID], to: secondID, now: Self.now)
+        try context.save()
+        let secondBefore = try #require(try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == secondID })).first?.toDomain())
+        let sharedPhoto = try #require(try context.fetch(FetchDescriptor<PhotoModel>()).first { $0.sourcePageID == sharedPageID })
+        let sharedFileName = try #require(sharedPhoto.fileName)
+
+        let removal = try editor.delete(firstID)
+        await removal?.value
+
+        #expect(try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == firstID })).isEmpty)
+        #expect(try context.fetch(FetchDescriptor<SourcePageModel>()).contains { $0.id == sharedPageID })
+        #expect(try context.fetch(FetchDescriptor<PhotoModel>()).contains { $0.sourcePageID == sharedPageID })
+        #expect(FileManager.default.fileExists(atPath: photoFiles.url(for: sharedFileName).path(percentEncoded: false)))
+        let secondAfter = try #require(try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == secondID })).first?.toDomain())
+        #expect(secondAfter == secondBefore)
     }
 
     @Test("a failed photo write saves nothing")

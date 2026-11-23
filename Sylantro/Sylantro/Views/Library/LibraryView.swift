@@ -5,10 +5,10 @@ import SyLibCore
 import SyLibUI
 import SyLibCloud
 
-/// The library (`02` §7, `13` §2), the sidebar: her recipes, newest scan first, one row per id, and
-/// the Let's cook. capsule at the bottom (SC-2). Its toolbar is Score It *'s Games list's: the
-/// iCloud button while iCloud is not available, and ⋯ with Update Available (while there is one),
-/// Settings, About and App Store. From Score It *'s `GameListView.swift`, without its games, + and
+/// The library (`02` §7, `13` §2), the sidebar: her recipes, newest scan first, one row per id. Its
+/// toolbar is Score It *'s Games list's: the iCloud button while iCloud is not available, the +
+/// that starts a scan (SC-2, MT-21), and ⋯ with Update Available (while there is one), Settings,
+/// About and App Store. From Score It *'s `GameListView.swift`, without its games, + and
 /// Players, Teams, External Display and import items.
 struct LibraryView: View {
     private let log = AppLogger(category: "Library")
@@ -19,7 +19,7 @@ struct LibraryView: View {
     @Binding var selection: UUID?
     /// The photo folder, for the rows' thumbnails; nil until the root has it.
     let photoFiles: PhotoFiles?
-    /// The capture writer; nil until the root has it, and the capsule waits for it.
+    /// The capture writer; nil until the root has it, and the + waits for it.
     let captureRecorder: CaptureRecorder?
 
     @Environment(\.syTheme) private var syTheme
@@ -84,16 +84,7 @@ struct LibraryView: View {
             if rows.isEmpty {
                 EmptyStateView(systemImage: "book.closed",
                                title: "No recipes yet",
-                               message: "Tap Let's cook. and photograph a recipe from your binder.")
-            }
-        }
-        .safeAreaInset(edge: .bottom) {
-            // The Mac has no document camera (SC-2).
-            if !ProcessInfo.processInfo.isiOSAppOnMac {
-                CapsuleButton("Let's cook.", fillsWidth: true) { letsCook() }
-                    .disabled(captureRecorder == nil)
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
+                               message: "Tap + to photograph a recipe from your binder.")
             }
         }
         .tint(syTheme.primaryAccent)
@@ -106,6 +97,12 @@ struct LibraryView: View {
             ToolbarItemGroup(placement: .primaryAction) {
                 // Draws itself only while iCloud is not available (SyLibCloud); no pulse in a toolbar.
                 ICloudStatusButton(tint: syTheme.primaryAccent, pulses: false) { present(.iCloud) }
+                // The + starts a scan (SC-2, MT-21), SyLib's toolbar button (SLT-089); iOS labels
+                // the symbol. The Mac has no document camera.
+                if !ProcessInfo.processInfo.isiOSAppOnMac {
+                    IconButton("plus", context: .toolbar) { startScan() }
+                        .disabled(captureRecorder == nil)
+                }
                 MoreMenu(look: .toolbar, showsBadge: updateState?.showsBadge == true,
                          badgeColor: syTheme.successColor, accessibilityLabel: "More",
                          badgedAccessibilityLabel: "Menu, update available") {
@@ -148,9 +145,9 @@ struct LibraryView: View {
     }
 
     /// Opens the document camera, or says it isn't there.
-    private func letsCook() {
+    private func startScan() {
         guard VNDocumentCameraViewController.isSupported else {
-            log.info(self, "Let's cook.: no document camera")
+            log.info(self, "scan: no document camera")
             isShowingNoCamera = true
             return
         }

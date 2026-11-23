@@ -94,6 +94,19 @@ struct PhotoFilesTests {
         #expect(thumbnail.height == 30)
     }
 
+    @Test("removing a photo deletes its file")
+    func removingPhotoDeletesFile() throws {
+        let (photoFiles, folder) = try Self.makePhotoFiles()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let image = try #require(Self.makeImage(width: 40, height: 60))
+        try photoFiles.write(image, fileName: "page.heic")
+
+        try photoFiles.remove("page.heic")
+
+        #expect(photoFiles.availability(of: "page.heic") == .missing)
+        try photoFiles.remove("page.heic")
+    }
+
     @Test("a missing photo is missing, not an error")
     func missingPhotoIsMissing() throws {
         let (photoFiles, folder) = try Self.makePhotoFiles()

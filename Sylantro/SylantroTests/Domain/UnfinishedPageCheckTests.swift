@@ -44,4 +44,23 @@ struct UnfinishedPageCheckTests {
     func noLinesDoNotAsk() {
         #expect(!UnfinishedPageCheck.looksUnfinished([]))
     }
+
+    @Test("a web address with a page number is a footer")
+    func webAddressWithPageNumberIsFooter() {
+        #expect(UnfinishedPageCheck.reason(["Serve warm.", "https://www.example.com/recipes/soup 1/1"]) == nil)
+        #expect(UnfinishedPageCheck.reason(["Serve warm.", "https://www.example.com/recipes/soup 1/2"]) == .pageNOfM)
+    }
+
+    @Test("a line ending in a number doesn't ask")
+    func lineEndingInNumberDoesNotAsk() {
+        #expect(UnfinishedPageCheck.reason(["Serves 4"]) == nil)
+        #expect(UnfinishedPageCheck.reason(["Calories 250"]) == nil)
+    }
+
+    @Test("the reason is the rule that fired")
+    func reasonIsTheRuleThatFired() {
+        #expect(UnfinishedPageCheck.reason(["Stir in the flour and"]) == .endsMidSentence)
+        #expect(UnfinishedPageCheck.reason(["Bake until golden.", "Page 1 of 2"]) == .pageNOfM)
+        #expect(UnfinishedPageCheck.reason(["2 cups oats*", "Bake 20 minutes."]) == .footnoteAsterisk)
+    }
 }

@@ -2,7 +2,7 @@
 
 **Design document · printed recipe pages to structured recipes, on the device, without losing
 anything**
-Version 0.19 · 22 November 2026 · **Rulings in from the design conversation (SLT-020 to SLT-090);
+Version 0.21 · 23 November 2026 · **Rulings in from the design conversation (SLT-020 to SLT-090);
 not for the agent until a task names it**
 
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md` and `00B_SYLANTRO_GUARDRAILS.md`.
@@ -19,13 +19,14 @@ design draft "LetsCook ingestion engine: architecture and schema" (21 Nov 2026),
 the specification.
 
 **Who it is for.** Pops's partner, on iPhone, with a binder of printed recipes (typed pages,
-magazine clippings, some handwritten notes). She lost a previous recipe app's data in an iPhone
-upgrade, so durability outranks everything (SLT-030).
+magazine clippings, some handwritten notes). She lost a previous recipe app's data when that app
+was pulled from the App Store and couldn't be reinstalled after an iPhone update, so her recipes
+must outlive the app itself, and durability outranks everything (SLT-030).
 
 **Principles, in priority order:**
 
-1. **Her data outlives the app** (SLT-030). The original photo is never thrown away; an
-   open-format copy of every recipe sits in Files; the store is never wiped (SLT-031).
+1. **Her data outlives the app** (SLT-030). The original photo is never thrown away on its own (a recipe she deletes goes
+   entirely, SLT-157); an open-format copy of every recipe sits in Files; the store is never wiped (SLT-031).
 2. **Scanning never waits on processing** (SLT-041). She can shoot 30 pages in a row; reading and
    structuring fill a review inbox behind her.
 3. **Nothing is guessed silently** (SLT-042). Every ingredient keeps its verbatim line, a response
@@ -48,7 +49,7 @@ upgrade, so durability outranks everything (SLT-030).
 
 | Step | What happens | Where | She waits? |
 |---|---|---|---|
-| 1. Scan | VisionKit's document camera: auto-capture, crop and flatten. **One capture is one recipe** (SLT-045): she taps **"Let's cook."** (SLT-043), photographs that recipe's page or pages, and taps Save; the camera reopens for the next recipe | Capture | Yes |
+| 1. Scan | VisionKit's document camera: auto-capture, crop and flatten. **One capture is one recipe** (SLT-045): she taps **+** (SLT-043), photographs that recipe's page or pages, and taps Save; the camera reopens for the next recipe | Capture | Yes |
 | 2. Save the page | The original photo and the cropped image are saved as a `SourcePage` in a `ScanSession`, then mirrored to Files. From here the page is safe | Capture | Yes, about a second a page with step 1 |
 | 3. Read the text | Vision's text recognition: words, positions, confidence | Background queue | No |
 | 4. Structure the recipe | Foundation Models, guided generation into the schema (§3) | Background queue | No |
@@ -254,6 +255,8 @@ The spike's real pages and results never enter the repository (`00B` §2); fixtu
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.21 | Principle 1: a recipe she deletes goes entirely (SLT-157) | Pops, 23 Nov 2026 |
+| 0.20 | Who it is for: the earlier data loss corrected (the app was pulled from the App Store, not an upgrade fault) | Pops, 23 Nov 2026: "the app itself disappeared from the app store, she updated her device, could not reinstall the app, and was not able to recover that data… it wasnt a data corruption problem." |
 | 0.19 | §5.7: SLT-053 and SLT-054 | Pops, 22 Nov 2026 |
 | 0.18 | §1, §8: the spike runs on Pops's iPhone 18 Pro | SLT-017 |
 | 0.17 | §4: `Yield`, `IngredientGroup` and `Step` fields matched to `06` M1-1 as built (`foodMatch` stays here as a later nutrition field) | `06` M1-1 Results, note (d) |

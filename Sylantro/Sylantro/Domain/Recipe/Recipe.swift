@@ -24,7 +24,7 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
     var unreadableAreas: [SourceBox]
     /// The `SourcePage`s it was read from (SLT-060).
     var sourcePageIDs: [UUID]
-    /// Set when she answers Save Without It at "Is there a page 2?" (SLT-046); cleared by Add Page.
+    /// Set when she answers Save Without It at "Is there another page?" (SLT-046); cleared by Add Page.
     var continuesOnUnscannedPage: Bool
     var reviewState: ReviewState
     var extraction: Extraction?

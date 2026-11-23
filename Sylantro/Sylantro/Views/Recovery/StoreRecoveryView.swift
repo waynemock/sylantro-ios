@@ -4,7 +4,7 @@ import SyLibUI
 
 /// Shown instead of the library when the store won't open (`02` §5.3, `13` §5, SC-7). Nothing has
 /// been deleted: Try Again retries, and Start Fresh, after a plain alert (SLT-088), sets the old
-/// store aside untouched and opens a new one. S-32 waits for the Files copy (M2-5). Copy is `13` §6.
+/// store aside untouched and opens a new one. S-32 says the copy in Files is safe (M2-5). Copy is `13` §6.
 struct StoreRecoveryView: View {
     private let log = AppLogger(category: "StoreRecovery")
     @Binding var store: StoreState
@@ -27,6 +27,7 @@ struct StoreRecoveryView: View {
                 Text("Sylantro Can't Open Your Recipes")
                     .font(.title2.bold())
                 Text("Something went wrong opening your recipe library. Nothing has been deleted.")
+                Text("A copy of every recipe and photo is safe in Files, in the Sylantro folder.")
 
                 VStack(spacing: 12) {
                     Button(action: tryAgain) {
