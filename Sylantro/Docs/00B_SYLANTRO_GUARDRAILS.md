@@ -1,7 +1,7 @@
 # Sylantro — Project Guard Rails
 
 **Project-level. Sylantro only.** Companion to `00A_STUDIO_CONVENTIONS.md`.
-Version 0.16 · 22 November 2026 · Ships in every agent prompt, alongside `00A`,
+Version 0.19 · 23 November 2026 · Ships in every agent prompt, alongside `00A`,
 `00_DECISION_LEDGER.md` and the task's own documents.
 
 ---
@@ -14,8 +14,8 @@ prohibitions, its build and test commands, its pre-archive checklist, and its fi
 
 **What Sylantro is.** A recipe app that turns a binder of printed recipes into structured
 recipes, one camera page at a time, for Pops's partner on iPhone (SLT-020). Reading and
-structuring happen on the device (SLT-040). **Her data outlives the app** (SLT-030): the page
-photo is never thrown away, an open-format copy of every recipe lives in Files, and the store is
+structuring happen on the device (SLT-040). **Her data outlives the app** (SLT-030): no page
+photo is thrown away on its own (a recipe she deletes goes entirely, SLT-157), an open-format copy of every recipe lives in Files, and the store is
 never wiped (SLT-031). Nutrition, protein and phenylalanine per serving, comes later (SLT-022).
 
 **Authority, in order:**
@@ -59,8 +59,9 @@ These are in addition to `00A` §4. Halt and ask; do not resolve inline.
 
 | Condition | Why |
 |---|---|
+| **A task that uses the camera, photo library, microphone, location or another permission without naming its `Info.plist` usage-description key and Pops's approved string** | The app crashes on first use, and only on a device (M2-4 missed `NSCameraUsageDescription`, 23 Nov 2026). The key is Pops's or Claude's at his request, never the agent's |
 | App code no task names, or structure `02_ARCHITECTURE.md` doesn't specify | The structure is designed upstream (§0) |
-| **Any code path that deletes, truncates, overwrites or moves aside the store's files**, or deletes a `SourcePage`'s original photo, other than a task that names it | Her data outlives the app (SLT-030, SLT-031) |
+| **Any code path that deletes, truncates, overwrites or moves aside the store's files**, or deletes a `SourcePage`'s original photo, other than a task that names it (Delete Recipe, M2-4f, SLT-157) | Her data outlives the app (SLT-030, SLT-031) |
 | **A store that fails to open handled by anything but `02` §5.3's recovery screen**: no `fatalError`, no wipe, no silent fresh store | SLT-031 |
 | A network call of any kind in the reading or structuring path, or any page image, text or recipe sent off the device | Extraction is on-device only (SLT-040) |
 | A structuring result saved without passing the schema check | Nothing is guessed silently (SLT-042) |
@@ -96,6 +97,9 @@ In addition to `00A`. These apply to every task, in perpetuity.
   change Task A-1 names.
 - **Logging goes through SyLibCore's `AppLogger`, never `print()`.** Log no recipe text or OCR
   text above debug level.
+- **Toolbar symbol buttons are SyLib's `IconButton`** (SLT-089), with `context: .toolbar`, both
+  as a button and as a `Menu`'s label; never a bare `Button` or `Image(systemName:)`. Text buttons
+  such as Done stay text.
 - **Alerts are plain and centered** (SLT-088): every confirmation or message uses SwiftUI's
   `.alert`, never `.confirmationDialog`, an action sheet or a popover anchored to a button. *Why:*
   Pops, 22 Nov 2026: "all alerts should be normal alerts and not try to point to anything. swfitui still is furbar with this."
@@ -332,6 +336,9 @@ The test target is already at the floor (`"26.5"` for both targets), so no build
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.19 | §0 and §2: a recipe she deletes goes entirely (SLT-157); M2-4f is the task that names photo deletion | Pops, 23 Nov 2026: "Delete should mean all gone." |
+| 0.18 | §3: toolbar symbol buttons are SyLib's `IconButton` | SLT-089 (Pops, 23 Nov 2026: "always use the SyLib IconButton for ToolBar buttons") |
+| 0.17 | §2: a permission without its usage-description key and approved string is a stop condition | M2-4 shipped the camera without `NSCameraUsageDescription`; Pops, 23 Nov 2026: "seems like we missed one" |
 | 0.16 | §2: image bytes in either store are a stop condition | SLT-053 (Pops, 22 Nov 2026: "looks good. can you make sure we are storing no image data in the database") |
 | 0.15 | §6: the spike flag goes off once App Store copy starts for RC0; on through the TestFlight beta | SLT-093 (Pops, 22 Nov 2026: "my partner will only be using testflight builds, and i want to keep this on during beta test. just need to be reinded to turn it off once we start writing app store copy headed to RC0.") |
 | 0.14 | §6: the spike flag line removed; it stays on in every build | SLT-093 (Pops, 22 Nov 2026 (decision card, "Leave it on everywhere")) |

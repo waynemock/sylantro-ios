@@ -48,7 +48,8 @@ Score It \* as its template (SLT-080).
 | 11 | `11_MILESTONE_1_SPIKE.md` | Milestone 1's spike task: M1-3, the reader, the structurer and a hidden spike screen, behind an AppConfig flag, that runs the test pages on Pops's iPhone 18 Pro and exports results (SLT-093) | v1.0 — **closed** (SLT-156): M1-3 to M1-15 complete, 60 tests, six runs scored |
 | 12 | `12_IMPLEMENTATION_PLAN.md` | The build order: how the build runs, the SyLib queue, the milestones M0 to M9 in build order, every document mapped to the milestone that builds it, each milestone's gates, and the proposals for Pops | v0.8 — **draft**; M0 and M1 done (SLT-156); M9 turns the spike flag off (SLT-093); IP-7 ruled (1.0 holds M1 to M8); proposals IP-1 to IP-6, IP-8, IP-9; **build order is read only from its §2** |
 | 13 | `13_SCREENS.md` | Milestone 2's screens: the library, the camera, a recipe before it is read, and the recovery screen, with every string she reads (S-0 to S-38) | v0.6 — **draft**; SC-1 to SC-7 ruled; the copy (SC-8) waits for Pops |
-| 14 | `14_MILESTONE_2_CAPTURE.md` | Milestone 2's tasks: the plan M2-1 to M2-6 (capture types, store and recovery screen, photo files and `CaptureRecorder`, screens, mirror, device check), M2-1 written in full | v0.2 — **draft**; plan ruled; **M2-1 ready** |
+| 14 | `14_MILESTONE_2_CAPTURE.md` | Milestone 2's tasks: the plan M2-1 to M2-6 (capture types, store and recovery screen, photo files and `CaptureRecorder`, screens, mirror, device check), M2-1 to M2-5 written in full | v0.23 — **draft**; **M2-1 to M2-5 complete** (102 tests); **M2-6 ready** (Pops's device check) |
+| 14A | `14A_SYLIB_IMAGE_CACHE_MEMORY.md` | One SyLib task (M2-4a): `ImageCache` keeps an image in memory without writing a JPEG, for M2-4's thumbnails | v0.3 — **M2-4a complete** |
 
 ---
 
@@ -112,3 +113,4 @@ Score It \* as its template (SLT-080).
 | 0.54 | `13_SCREENS.md` added, as a draft | Pops, 22 Nov 2026: "make it so" (prep Milestone 2) |
 | 0.55 | Rows 13 and 14: `13` brought up to date; `14_MILESTONE_2_CAPTURE.md` added, as a draft | Pops, 22 Nov 2026 |
 | 0.56 | Row 14: M2's plan ruled, M2-1 ready | Pops, 22 Nov 2026 |
+| 0.57 | Row 14A: `14A_SYLIB_IMAGE_CACHE_MEMORY.md` added, as a draft | M2-4 run 1's blocker; Pops, 22 Nov 2026 (decision card, "Add memory-only to SyLib first") |

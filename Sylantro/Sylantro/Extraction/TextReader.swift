@@ -11,11 +11,12 @@ nonisolated struct TextReader: Sendable {
         return try await perform(request, on: image)
     }
 
-    /// The bottom `fraction` of the page at the fast level: Save's quick read (SLT-046), timed in
-    /// the spike only.
+    /// The bottom `fraction` of the page at the accurate level: Save's quick read (SLT-046). The
+    /// fast level often dropped a line's final period, so a finished step looked cut off (`14`
+    /// M2-4d).
     func readBottom(_ image: CGImage, fraction: Double = 0.2) async throws -> PageReading {
         var request = RecognizeTextRequest()
-        request.recognitionLevel = .fast
+        request.recognitionLevel = .accurate
         // Vision's region of interest has its origin at the lower left, so the bottom is y 0.
         request.regionOfInterest = NormalizedRect(x: 0, y: 0, width: 1, height: fraction)
         return try await perform(request, on: image)

@@ -109,6 +109,7 @@ struct RecipeJSONTests {
         equipment: ["9-inch tart pan", "rolling pin"],
         unreadableAreas: [SourceBox(pageID: pageTwoID, x: 0.875, y: 0.125, width: 0.0625, height: 0.25)],
         sourcePageIDs: [pageOneID, pageTwoID],
+        continuesOnUnscannedPage: true,
         reviewState: .reviewed,
         extraction: Extraction(
             engine: "testEngine",
