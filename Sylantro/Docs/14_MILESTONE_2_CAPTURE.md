@@ -2,9 +2,10 @@
 
 **A Syzygy Softwerks task document · her pages photographed, saved, synced and copied to Files,
 before anything is read**
-Version 0.41 · 23 November 2026 · **Draft.** §1's task plan is ruled (MT-1); **M2-1 complete** (68
-tests, 22 Nov 2026); **M2-2 complete** (76 tests; Pops's CloudKit check done); **M2-3 complete** (84 tests); **M2-4a complete** (SyLib, `14A`); **M2-4 complete** (run 2, 93 tests; Pops's device check open); **M2-5 complete** (102 tests; Pops's check open). **M2-6 ready** (Pops's device check). M2-4 onward are outlines,
-each written in full against what was built before it, when its gates (§1) are cleared.
+Version 1.0 · 23 November 2026 · **Closed** (SLT-160). M2-1 to M2-5 and fixes M2-4a to M2-4g
+complete (107 tests; SyLib 1659); every device check passed (§2). Carried forward: page
+reordering and removal to M3 (MT-29, MT-31); the Files photo switch (`05` P-8) and Hide or Archive
+(SLT-157) later.
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`, `00B_SYLANTRO_GUARDRAILS.md`,
 `02_ARCHITECTURE.md`, `05_IMAGE_STORAGE_DESIGN.md` and `13_SCREENS.md`.
 
@@ -28,7 +29,7 @@ Files, and the recovery screen if the store won't open (`12` §2). Nothing is re
   (P-5).
 - A web original is a kind of `SourcePage` (`08` NI-5).
 - `13`'s screen choices SC-1 to SC-7: a capture is a recipe at once ("New recipe"); scanning starts
-  from a + in the toolbar (SC-2 as rewritten, MT-21); Delete Recipe keeps its pages; the recovery screen offers
+  from a + in the toolbar (SC-2 as rewritten, MT-21); Delete Recipe keeps its pages (rewritten by SLT-157: Delete removes everything); the recovery screen offers
   Try Again or Start Fresh.
 
 ---
@@ -881,6 +882,53 @@ Pages without a recipe folder; change `CaptureRecorder`, the camera flow, SyLib,
 
 ---
 
+### Task M2-4g · Sylantro · Thumbnails fill in at launch
+
+**Status: ready** (a fault from Pops's device use, 23 Nov 2026; no ruling needed).
+
+**Inputs:** `00`, `00A`, `00B`, `13` §2 and SC-6, and the built `RootView`, `RecipeRow`,
+`PagePhotoView` and `PagePhotoViewer`.
+
+**The fault:** after launch, rows show the download placeholder for a long time, and a row only
+gets its thumbnail when it is scrolled off and back on (Pops, 23 Nov 2026).
+
+**The cause (Claude, from the code):** `RootView` starts with `photoFiles == nil` and sets it only
+after `PhotoFiles.live()` **and** `MirrorWriter.live` finish. `RecipeRow` loads in
+`.task(id: coverFileName)`; when it first runs, `photoFiles` is nil, so `loadThumbnail()` returns
+at once. When `photoFiles` arrives, `coverFileName` hasn't changed, so the task never runs again
+until the row is rebuilt by scrolling. `PagePhotoView` (`.task(id: photo.fileName)`) and
+`PagePhotoViewer` (`.task`) have the same gap when a recipe is open at launch (iPad and Mac keep a
+selection).
+
+1. **`RecipeRow`, `PagePhotoView`, `PagePhotoViewer`:** the load task's id includes whether
+   `photoFiles` is ready, so it runs again when `photoFiles` goes from nil to set: for example
+   `.task(id: [coverFileName, photoFiles?.root.path])` (any equatable key holding both is fine).
+   Nothing else in the load changes (memory cache first, then a thumbnail off the main actor,
+   retried every 2 seconds until the file is here).
+2. **`RootView`:** set `photoFiles = files` straight after `PhotoFiles.live()` returns, before
+   `MirrorWriter.live`, so the views get it as early as possible. The editor, recorder and catch-up
+   are built as now.
+3. A debug log line in `RecipeRow` when a thumbnail is shown: "thumbnail ‹first 8 of file name›:
+   ‹ms› ms" (no titles, `00B` §3), so a slow one can be seen in Console.
+
+**Tests:** none added (view wiring); the suite stays **107**.
+
+**Done when:**
+
+1. Sylantro builds with no new warnings, and the suite passes on the pinned destination with
+   107, with the destination string and the run's own total.
+2. No other file changes except those named and this document's Results log (`00A` §6).
+3. `git status` before and after is reported, and every git command run (`00A` §9).
+4. **Pops's check** (listed, not done): quit Sylantro fully and launch it with 9 or more recipes;
+   every visible row's thumbnail fills in within a few seconds with no scrolling. On the iPad with
+   a recipe open at launch, its pages fill in too. A photo still downloading keeps its
+   placeholder until it lands (SC-6).
+
+**Do not:** cache thumbnails on disk (SLT-054, M2-4a); change `PhotoFiles`, `ImageCache`, SyLib,
+`CaptureRecorder` or `MirrorWriter`; make the library wait for `photoFiles` before it shows.
+
+---
+
 ### Task M2-5 · Sylantro · The copy in Files
 
 **Status: complete** (102 tests, 22 Nov 2026; checked by Claude; Done-when 7 is Pops's).
@@ -1083,6 +1131,10 @@ becomes a fix task before Milestone 2 closes.
 
 | Task | Date | Status | Summary |
 |---|---|---|---|
+| M2-6 | 23 Nov 2026 | **Pops: passed** | Pops, 23 Nov 2026: "m2-6 pass too". With the earlier rows (CloudKit 1.4, timings 1.1 and 1.2), every step passes: 1.3 placeholders on the iPad, then the pages, none missing; 1.5 every recipe's folder in iCloud Drive › Sylantro › Recipes on the Mac, `recipe.md` and `page-1.heic` open; 2 the recovery screen forced on the simulator, Try Again, Start Fresh, and the store set aside, not deleted. **Every M2 check has passed.** |
+| Device check (part 3) | 23 Nov 2026 | **Pops: passed** | Pops, 23 Nov 2026: "M2-4d, 4e, 4f, fg pass" ("fg" is M2-4g). M2-4d: the page question asks only when it should. M2-4e: the pause after Save, Next Recipe and Done. M2-4f: Delete removes the recipe everywhere. M2-4g: thumbnails fill in at launch. Left for M2-6: 1.3 placeholders on the iPad, 1.5 the Files copy on the Mac, and 2 the recovery screen on the simulator. |
+| M2-4g (checked by Claude) | 23 Nov 2026 | **checked** | Claude read the row below: 107 tests, no new warnings, only the named files changed, and the task ids now hold both the file name and `photoFiles`' root, so the load runs again once the folder is ready. The extra `AppLogger` and `SyLibCore` import in `RecipeRow` are what clause 3's log line needs. Pops's check passed (part 3). |
+| M2-4g | 23 Nov 2026 | **complete** (clause 4 is Pops's, not yet done) | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 107 tests in 19 suites passed after 0.260 seconds."; `** TEST SUCCEEDED **` (no tests added). **Clauses:** ✅ 1 builds and passes with 107. The only warnings are the existing appintentsmetadataprocessor "Metadata extraction skipped" (×2), so there are no new warnings. ✅ 2 only the named files changed, plus this row: `Views/Library/RecipeRow.swift`, `Views/Recipe/PagePhotoView.swift`, `Views/Recipe/PagePhotoViewer.swift` and `Views/Root/RootView.swift`. ✅ 3 git status is below. ⚠️ 4 Pops's check is not done; the agent doesn't do it. Quit Sylantro fully and launch it with 9 or more recipes: every visible row's thumbnail fills in within a few seconds, with no scrolling. On the iPad with a recipe open at launch, its pages fill in too. A photo still downloading keeps its placeholder until it lands (SC-6). **What changed:** (1) `RecipeRow`'s load is `.task(id: [coverFileName, photoFiles?.root.path])`, so it runs again when `photoFiles` goes from nil to set. The load itself is unchanged: memory cache first, then a thumbnail made off the main actor, stored `toDisk: false`, and retried every 2 seconds until the file is here. `PagePhotoView`'s is `.task(id: [photo.fileName, photoFiles?.root.path])`, and `PagePhotoViewer`'s `.task` is now `.task(id: photoFiles?.root.path)`; their loads are unchanged too. (2) `RootView`'s launch `.task` sets `photoFiles = files` straight after `PhotoFiles.live()` returns, before `MirrorWriter.live`. The editor, recorder and catch-up are built as before; the library never waits for `photoFiles`. (3) `RecipeRow` logs at debug, when a thumbnail is shown from memory or newly made, "thumbnail ‹first 8 of file name›: ‹ms› ms", timed from the start of the load (no titles, `00B` §3). This needs `AppLogger(category: "Library")` and `import SyLibCore` in `RecipeRow`. **Files:** as clause 2; and this row. **Fixes:** none needed. **Git status before** (branch `milestone-2`, head `a142f7c`): everything through M2-4f staged by Pops, with `MM` on `Docs/14` only. **After:** the same, plus ` M` on `RecipeRow.swift` and `PagePhotoView.swift`, and `MM` on `PagePhotoViewer.swift` and `RootView.swift`. This row is in `14`'s change. **Git:** `git status --short` (×2), `git branch --list`, `git log --oneline -3`, `git diff --stat -- Sylantro/Docs/`. **Notes:** (a) The debug time runs from the load's start, so a row that waited on the file includes its 2-second retries; that is what shows a slow one. (b) Nothing caches on disk; `PhotoFiles`, `ImageCache`, SyLib, `CaptureRecorder` and `MirrorWriter` are untouched. |
 | M2-4f (checked by Claude) | 23 Nov 2026 | **checked** | Claude read the row below: 107 tests, no new warnings, S-24 to S-26 verbatim, only the named files changed, and the seven steps of §3 as written. Files are removed only after the save, and nothing touches the old Pages without a recipe folder. Writing the pending file directly in test 4 is fine, since `setPending` is private. Note (a), About's "Every original photo is kept", is put to Pops (MT-33). Pops's device check (clause 5) is open. |
 | M2-4f | 23 Nov 2026 | **complete** (clause 5 is Pops's, not yet done) | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 107 tests in 19 suites passed after 0.253 seconds."; `** TEST SUCCEEDED **` (105 − 2 replaced + 2 replacements + 2 new = 107). **Clauses:** ✅ 1 builds and passes with 107. The only warnings are the existing appintentsmetadataprocessor "Metadata extraction skipped" (×2), so there are no new warnings. ✅ 2 `RecipeView`'s alert is `.alert("Delete This Recipe?", …)` (S-24) with `Button("Delete", role: .destructive)` and `Button("Cancel", role: .cancel)` (S-26), and its message is S-25 as rewritten, verbatim: "This deletes the recipe and its page photos from all your devices. This can't be undone." It is still a plain centered `.alert`. ✅ 3 only the named files and the named test files changed, plus this row: `Capture/PhotoFiles.swift`, `Store/RecipeEditor.swift`, `Mirror/MirrorWriter.swift`, `Views/Recipe/RecipeView.swift`, `Views/Root/RootView.swift`, `SylantroTests/Capture/CaptureRecorderTests.swift`, `SylantroTests/Capture/PhotoFilesTests.swift` and `SylantroTests/Mirror/MirrorWriterTests.swift`. ✅ 4 git status is below. ⚠️ 5 Pops's check is not done; the agent doesn't do it. On the iPhone, delete a recipe: it leaves the library, and its folder leaves iCloud Drive › Sylantro › Recipes on the Mac. On the iPad, the recipe goes from the list. Then delete a second recipe **on the iPad** (not the device that saved it): it goes from the iPhone and from Files too. **What changed:** (1) `PhotoFiles.remove(_:)` deletes `url(for:)` in a coordinated `.forDeleting` write. It does nothing when neither the file nor `.<name>.icloud` exists, and logs the file name at debug. (2) `RecipeEditor.init(context:mirror:photoFiles:)` takes `photoFiles: PhotoFiles? = nil`, and `RootView` passes the live one. (3) `RecipeEditor.delete(_:)` is now `@discardableResult … throws -> Task<Void, Never>?`, in the task's seven steps: (i) every `RecipeModel` with the id, none → `recipeNotFound`; (ii) pages are the union of `sourcePageIDs` over every decodable copy, minus every page any other recipe lists; (iii) photos are those whose `sourcePageID` is one of those pages (both kinds), plus any whose `recipeID` is this recipe, with their `fileName`s noted; (iv) sessions are those of those pages' `sessionID`s that no remaining `SourcePageModel` points to; (v) the recipe copies, pages, photo records and sessions are deleted, then **one** `save()`, and on failure `rollback()`, log and rethrow, with no file touched; (vi) only after the save succeeds, one `Task.detached` removes each noted file with `photoFiles.remove`, logging an error and going on, then awaits `mirror?.removeRecipe(recipeID:)`, and that task is returned (nil when there are no files and no mirror); (vii) it logs at info "recipe ‹id› deleted: ‹n› pages, ‹m› photos" and "recipe ‹id›: ‹m› photo files removed", counts only. `RecipeView` still calls `delete` and returns to the library without waiting. (4) `MirrorWriter.removeRecipe(recipeID:)` finds the folder with `existingFolder(for:includingPlaceholders: true)`, so a renamed folder or an iCloud placeholder counts. It removes the whole folder in one coordinated `.forDeleting` delete and clears the id from the pending file. With no folder, it only clears pending. It never throws, and errors are logged. Removed: `moveToPagesWithoutRecipe`, `pagesWithoutRecipeFolderName`, and the helpers nothing else used (`nextFreeNumber`, `removeIfEmpty`, `dayStamp` and the coordinated `move`). The coordinated `remove` stays, used by `removeRecipe`. Nothing touches an existing `Pages without a recipe` folder, and catch-up is unchanged. **Doc comments updated (clause 6 of §3):** `PhotoFiles`' type comment ("Files are added, and removed only by `remove`, which only Delete Recipe calls (SLT-157); nothing ever overwrites or moves one"); `RecipeEditor.delete`'s comment and log line (was "its pages and photos are kept"); `MirrorWriter`'s type comment (was "`Pages without a recipe/` for a deleted recipe's pages (MT-16)… only moved on delete"), its delete section, and its `remove` helper's comment. A grep for "Pages without", "moveToPages", "MT-16", "SC-5", "photos are kept" and "only ever added" in `Sylantro/` and `SylantroTests/` finds only `removeRecipe`'s note that the existing folder is left alone, and the new test's check that none is made. **Tests:** (1) "deleting a recipe keeps its pages and photos" is replaced by "deleting a recipe removes its pages, photos and files". (2) "a page another recipe uses is kept" is new: the second recipe is compared whole, before and after. (3) "removing a photo deletes its file" is new. (4) "deleting moves the pages out" is replaced by "deleting removes the recipe's folder": the test writes the pending file itself to mark the recipe pending, since `setPending` is private. All four pass. **Files:** as clause 3; and this row. **Fixes:** none needed. **Git status before** (branch `milestone-2`, head `a142f7c`): M2-4c/d's work staged; `MM` on `Docs/00B`, `00_DECISION_LEDGER`, `01`, `13`, `14` and `CaptureFlowView.swift`; ` M` on `Docs/02` and `05`; `?? Views/Capture/SavedPauseView.swift` (M2-4e's). **After:** the same, plus ` M` on `PhotoFiles.swift`, `CaptureRecorderTests.swift` and `PhotoFilesTests.swift`, `AM` on `MirrorWriter.swift` and `MirrorWriterTests.swift`, and `MM` on `RecipeEditor.swift`, `RecipeView.swift` and `RootView.swift`. This row is in `14`'s change. **Git:** `git status --short` (×2), `git branch --list`, `git log --oneline -3`, `git diff --stat -- Sylantro/Docs/`, `git diff -- Sylantro/Docs/00B_SYLANTRO_GUARDRAILS.md Sylantro/Docs/00_DECISION_LEDGER.md Sylantro/Docs/13_SCREENS.md Sylantro/Docs/02_ARCHITECTURE.md Sylantro/Docs/05_IMAGE_STORAGE_DESIGN.md` (SLT-157, SLT-030 narrowed, 00B 0.19, `13` §4.3 and S-25). **Notes:** (a) **For Pops, copy that still says photos are kept:** About's description (`RootView.aboutDescription`, SLT-087) says "Every original photo is kept…". That is approved copy, not a doc comment, so it is unchanged; whether it still reads right beside SLT-157 is yours to rule. (b) The known limits are as the task accepts. If the app closes between the save and the file removal, those photo files and the Files folder stay behind with no recipe, and nothing sweeps them in M2. A delete on another device removes the shared Files folder too. (c) When `photoFiles` is nil (only in tests), the task still runs and only the mirror is cleared; the info line then says 0 files removed. |
 | M2-6 check (sync timings, 1.1 and 1.2) | 23 Nov 2026 | **Pops: passed** | Pops, 23 Nov 2026: "the timings seem fine". No figures taken; Pops accepts "fine" in place of the two timings the Done-when asked for. Save time on the device is the app's own work (HEIC encoding and the mirror), and how fast CloudKit delivers to the iPad and Mac is not in the app's control; the timings were asked only to catch a fault (a Save that stalls, or rows or photos that never arrive), and none was seen. |
@@ -1148,6 +1200,10 @@ becomes a fix task before Milestone 2 closes.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 1.0 | Closed: every task built and every device check passed; open items carried forward (header) | SLT-160 (Pops, 23 Nov 2026: "close out m2") |
+| 0.44 | M2-6 passed: every Milestone 2 check is done | Pops, 23 Nov 2026: "m2-6 pass too" |
+| 0.43 | M2-4g checked by Claude (107 tests); device check part 3: M2-4d, M2-4e, M2-4f and M2-4g passed | Pops, 23 Nov 2026: "M2-4d, 4e, 4f, fg pass" |
+| 0.42 | Task M2-4g written and ready (thumbnails fill in at launch; 107 tests) | Pops, 23 Nov 2026: "the thumbnails in the list take a very long time to load after app launch… scrolling then shows the images" |
 | 0.41 | MT-33 ruled: About's copy kept as is | Pops, 23 Nov 2026 (decision card, "Keep it as is") |
 | 0.40 | M2-4f checked by Claude (107 tests); About's copy put to Pops (MT-33) | M2-4f Results row |
 | 0.39 | Task M2-4f written and ready (Delete means all gone, 107 tests); MT-32 ruled, MT-16 superseded | Pops, 23 Nov 2026: "delete for real… Delete should mean all gone." (SLT-157) |

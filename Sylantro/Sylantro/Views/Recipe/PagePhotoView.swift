@@ -37,7 +37,8 @@ struct PagePhotoView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .task(id: photo.fileName) { await load() }
+        // Runs again when `photoFiles` arrives after launch (`14` M2-4g).
+        .task(id: [photo.fileName, photoFiles?.root.path]) { await load() }
     }
 
     private func load() async {

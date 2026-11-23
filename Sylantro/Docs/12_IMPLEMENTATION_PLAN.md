@@ -1,10 +1,10 @@
 # Sylantro — Implementation Plan
 
 **The build, in milestones, and where every feature document lands**
-Version 0.12 · 22 November 2026 · **Draft: the order is Claude's proposal for Pops, except 1.0's
+Version 0.13 · 23 November 2026 · **Draft: the order is Claude's proposal for Pops, except 1.0's
 contents (IP-7, ruled: everything designed so far, M1 to M8).** Otherwise only what a ledger row already rules is decided (SLT-021,
 SLT-090, SLT-093, SLT-100); every proposal is marked
-*(rec.)* and listed in §6. M0 done; M1 done (SLT-156; six spike runs scored)
+*(rec.)* and listed in §6. M0 done; M1 done (SLT-156; six spike runs scored); M2 done (SLT-160; every device check passed)
 
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md` and `00B_SYLANTRO_GUARDRAILS.md`.
 Modeled on SyJong's `12_IMPLEMENTATION_PLAN.md`. Not for the agent: tasks live in the milestone
@@ -67,8 +67,8 @@ order (IP-3).
 |---|---|---|---|---|---|
 | 1 | **0** | **Setup** *(done)* | Build and run the shell on the pinned SE at iOS 26.5, store local-only, Score It \*'s menu, Settings and About with the full-size icon | `00B` §7 (Tasks A-1 to A-4) | — |
 | 2 | 1 | Spike and a tested Domain layer *(done, SLT-156)* | Run the 25 test pages through on-device reading and structuring on his iPhone 18 Pro and read the scores; in the suite, the recipe types, their JSON, the ingredient-line parser, and structuring in parts checked against the page (splitter, page rules, validator) | `06` (M1-1 ✓, M1-2 ✓), `11` (M1-3 ✓, run 1 scored; M1-4 next, then run 2), `10` (the test set; §7 the scores) | the test pages (done, SLT-092) |
-| 3 | 2 | Capture and storage | Tap +, photograph a recipe's pages, Save, and see it in the library on iPhone, iPad and Mac, synced; the page-2 prompt (SLT-046); the photos and a plain copy in Files; the recovery screen if the store won't open | its own document(s), written at its start | M1; `02` and `05` accepted; a Screens document for the library, camera and recipe (`02` §7); the iCloud Documents capability (Pops, before the mirror task, `00B` §7); NI-5 and P-1, P-2 settled (§4) |
-| 4 | 3 | Extraction and review | Scan twenty pages without waiting, then work through the review inbox: each recipe read and structured in the background, flagged fields, tap a line to see it on the photo, pick which recipes to keep from a page with several (SLT-047), Add page | its own document(s) | M2; the spike's findings (§4); `10`'s TS-5, TS-10, TS-11, TS-15; the review inbox's screens |
+| 3 | 2 | Capture and storage *(done, SLT-160)* | Tap +, photograph a recipe's pages, Save, and see it in the library on iPhone, iPad and Mac, synced; the page question (SLT-046); Delete (all gone, SLT-157); the photos and a plain copy in Files; the recovery screen if the store won't open | `14` (M2-1 to M2-6, fixes M2-4a to M2-4g ✓), `14A` (SyLib ✓) | M1; `02` and `05` accepted; a Screens document for the library, camera and recipe (`02` §7); the iCloud Documents capability (Pops, before the mirror task, `00B` §7); NI-5 and P-1, P-2 settled (§4) |
+| 4 | 3 | Extraction and review | Scan twenty pages without waiting, then work through the review inbox: each recipe read and structured in the background, flagged fields, tap a line to see it on the photo, pick which recipes to keep from a page with several (SLT-047), reorder and remove a recipe's pages (`14` MT-29, MT-31) | its own document(s) | M2; the spike's findings (§4); `10`'s TS-5, TS-10, TS-11, TS-15; the review inbox's screens |
 | 5 | 6 | Sharing a recipe | Send one recipe by AirDrop, Messages or Mail and open it in another Sylantro, with the duplicate check (SLT-100, SLT-103) | its own document; design `04` | M3; `04` accepted, SH-1 to SH-6 |
 | 6 | 4 | Nutrition | Protein and phenylalanine per serving on every recipe, from USDA data on the device, each food match confirmed by her | its own document(s); design `03` | M3; `03` accepted, N-1 to N-10; the nutrition spike (`03` §12); the clinic's food list question |
 | 7 | 5 | PKU tools | A phenylalanine budget view; low-protein substitutions that make variant recipes, before and after per serving | its own document(s); a substitutions design, not yet written (`03` §11) | M4 |
@@ -81,9 +81,7 @@ order (IP-3).
 - **The nutrition spike** (`03` §12 step 1): Claude and Pops match the spike's ingredients by hand
   and by search. It can run as soon as M1's scores are in.
 - **The Apple News check** (`08` §7, NI-7): a checklist Pops runs on his phone, any time before M7.
-- **The photo sync check** (`05` §7): once M2's photo task is built, a 30-page session synced
-  between Pops's iPhone and iPad, with placeholders until the files land (SLT-053: no image data
-  in the database, so there is no asset-or-bytes measurement).
+- **The photo sync check** (`05` §7): done in M2-6, passed (`14` §2).
 - **The icon on device** (`07`): the 29 px check on his Home Screen, any time.
 
 **Why this order** *(rec.)*: 1.0 holds M1 to M8 (IP-7), so Ship (M9) is last and the question is
@@ -117,7 +115,7 @@ row here in the same change (IP-4).
 | 11 | `11_MILESTONE_1_SPIKE.md` | Tasks | M1 (M1-3, M1-4) | — |
 | 12 | `12_IMPLEMENTATION_PLAN.md` | Plan | — | this document |
 | 13 | `13_SCREENS.md` | Design | M2 (library, camera, recipe, recovery); M3's review screens later | M2's first screen task |
-| 14 | `14_MILESTONE_2_CAPTURE.md` | Tasks | M2 (M2-1 to M2-6) | — |
+| 14 | `14_MILESTONE_2_CAPTURE.md` | Tasks | M2 (M2-1 to M2-6) | closed, v1.0 (SLT-160) |
 
 **Ideas, not yet placed** (Pops decides where they go):
 
@@ -138,7 +136,13 @@ title fixes (`11` §1), several recipes on a page (SLT-047), handwriting, and `1
 TS-11 and TS-15. **Still open from the old gate:** whether Vision's document reading helps columns
 (`11` §1) and the duplicate threshold (`01` §8). Task A-4's About screen was checked by Pops on device (M0 done).
 
-**Before M2's first task:** `02` accepted, with the App-layer names (`RecipeEditor`,
+**M2 closed** (23 Nov 2026, SLT-160): capture, storage, sync and the Files copy are built and every
+device check passed (`14` §2). **Carried to M3:** reordering and removing a recipe's pages, with
+the review screens (`14` MT-29, MT-31); the device-only store with `ExtractionQueue` (`14` MT-1).
+**Parked for later, no milestone yet:** a Settings switch for the Files photo copies (`05` P-8) and
+Hide or Archive a recipe (SLT-157).
+
+**Before M2's first task** *(met)*: `02` accepted, with the App-layer names (`RecipeEditor`,
 `CaptureRecorder`, `ExtractionQueue`, `MirrorWriter`) and the recovery screen's choices and copy
 (`02` §5.3); `05`'s P-1 to P-7 ruled, and IS-4 (ruled A: an app-only photo folder in her iCloud Drive, so the iCloud Documents
 capability is needed before the photo task, not only the mirror task); **NI-5** (how a web
@@ -203,6 +207,7 @@ this document's close-out.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.13 | M2 closed: §2 row done, §4 what M3 inherits and what is parked, §3 row 14 closed | SLT-160 (Pops, 23 Nov 2026: "close out m2") |
 | 0.12 | §1's SyLib queue gains its first row, `ImageCache`'s memory-only store (`14A`, task M2-4a) | M2-4 run 1 found the gap; Pops, 22 Nov 2026 (decision card, "Add memory-only to SyLib first") |
 | 0.11 | §3: `14_MILESTONE_2_CAPTURE.md` added, M2's tasks | IP-2; Pops, 22 Nov 2026: "make it so" (prep Milestone 2) |
 | 0.10 | §3: `13_SCREENS.md` added, the Screens document M2 waits on | IP-4; Pops, 22 Nov 2026: "make it so" (prep Milestone 2) |

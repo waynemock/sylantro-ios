@@ -46,7 +46,8 @@ struct PagePhotoViewer: View {
                 }
             }
         }
-        .task {
+        // Runs again when `photoFiles` arrives after launch (`14` M2-4g).
+        .task(id: photoFiles?.root.path) {
             guard let photoFiles else { return }
             image = await PagePhotoView.loadImage(fileName, from: photoFiles)
         }
