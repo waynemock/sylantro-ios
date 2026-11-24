@@ -63,10 +63,15 @@ struct RecipeView: View {
     @State private var isAskingReadAgain = false
     /// Add Page saved pages: RV-7 runs once the camera has closed.
     @State private var pagesWereAdded = false
+    /// She has tapped a line, so S-61's hint no longer shows on this device (SC-16): device-only,
+    /// never synced, never in the store.
+    @AppStorage("reviewHintSeen") private var reviewHintSeen = false
 
-    /// The page open in the full-screen viewer.
+    /// The pages open in the full-screen viewer: from this page, with this line outlined.
     private struct ViewedPage: Identifiable {
-        let id: String
+        let id = UUID()
+        let startPageID: UUID?
+        let box: SourceBox?
     }
 
     /// What the page shows after a tap (RV-11).
@@ -110,7 +115,9 @@ struct RecipeView: View {
             }
         }
         .background(syTheme.backgroundColor)
-        .navigationTitle(recipe.title.isEmpty ? "New recipe" : recipe.title)
+        // SC-18: a small title naming the view, not the recipe.
+        .navigationTitle(barTitle(recipe))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 // iOS's own Edit and Done (S-50, SC-10), before Add Page, once read.
@@ -123,6 +130,12 @@ struct RecipeView: View {
                     .disabled(captureRecorder == nil)
                 // The ⋯ symbol alone: iOS gives it its own label (MT-11).
                 Menu {
+                    // The scans, when the strip isn't shown (SC-14, S-62).
+                    if recipe.extraction != nil && horizontalSizeClass == .compact && !showsStrip(recipe) {
+                        Button("View Pages") {
+                            viewedPage = ViewedPage(startPageID: recipe.sourcePageIDs.first, box: nil)
+                        }
+                    }
                     Button("Delete Recipe", role: .destructive) { isConfirmingDelete = true }
                         .disabled(recipeEditor == nil)
                 } label: {
@@ -176,7 +189,11 @@ struct RecipeView: View {
             }
         }
         .fullScreenCover(item: $viewedPage) { page in
-            PagePhotoViewer(fileName: page.id, photoFiles: photoFiles)
+            let fileNames = recipe.sourcePageIDs.compactMap { photo(forPage: $0)?.fileName }
+            let pagesWithPhotos = recipe.sourcePageIDs.filter { photo(forPage: $0)?.fileName != nil }
+            PagePhotoViewer(fileNames: fileNames,
+                            startIndex: page.startPageID.flatMap { pagesWithPhotos.firstIndex(of: $0) } ?? 0,
+                            box: page.box, photoFiles: photoFiles)
                 .appTextSizeCap()
         }
     }
@@ -216,11 +233,15 @@ struct RecipeView: View {
 
     @ViewBuilder
     private func readContent(_ recipe: Recipe) -> some View {
-        if horizontalSizeClass == .compact {
-            // iPhone: the page strip across the top, about a third of the height, then the fields.
+        if horizontalSizeClass == .compact && !showsStrip(recipe) {
+            // iPhone, once checked (SC-14): the fields from the title, no photo at the top.
+            fields(recipe)
+        } else if horizontalSizeClass == .compact {
+            // iPhone while she checks it or edits: the page strip across the top, about a third of
+            // the height, then the fields.
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-                    PageStrip(photo: stripPhoto(recipe), selectedBox: selectedBox,
+                    PageStrip(photo: stripPhoto(recipe), selectedBox: stripBox(recipe),
                               showsWholePage: isWholePageSelected,
                               isExpanded: isStripExpanded, photoFiles: photoFiles,
                               accent: syTheme.primaryAccent) {
@@ -251,17 +272,43 @@ struct RecipeView: View {
         return nil
     }
 
+    /// The strip's line: the selected one; with nothing selected, the title's (RV-31).
+    private func stripBox(_ recipe: Recipe) -> SourceBox? {
+        pageSelection == nil ? recipe.titleBox : selectedBox
+    }
+
+    /// SC-14: on iPhone the strip shows while she checks the recipe or edits it.
+    private func showsStrip(_ recipe: Recipe) -> Bool {
+        recipe.needsReview || isEditing
+    }
+
+    /// SC-16: S-61 shows while the strip does (iPhone) or while she checks it (iPad and Mac),
+    /// until her first tap on a line.
+    private func showsHint(_ recipe: Recipe) -> Bool {
+        guard !reviewHintSeen else { return false }
+        return horizontalSizeClass == .compact ? showsStrip(recipe) : recipe.needsReview
+    }
+
+    /// SC-18's bar title: S-2 before it is read, S-64 in Edit, S-63 while she checks it, S-65 once
+    /// reviewed.
+    private func barTitle(_ recipe: Recipe) -> LocalizedStringKey {
+        if recipe.extraction == nil { return "New recipe" }
+        if isEditing { return "Edit" }
+        return recipe.needsReview ? "Review" : "Recipe"
+    }
+
     private var isWholePageSelected: Bool {
         if case .wholePage = pageSelection { return true }
         return false
     }
 
-    /// The strip's page: the selected line's, the page shown whole, else the first page.
+    /// The strip's page: the selected line's, the page shown whole, else the title's, else the
+    /// first page.
     private func stripPhoto(_ recipe: Recipe) -> Photo? {
         switch pageSelection {
         case .line(let box): photo(forPage: box.pageID)
         case .wholePage(let pageID): photo(forPage: pageID)
-        case nil: recipe.sourcePageIDs.first.flatMap(photo(forPage:))
+        case nil: (recipe.titleBox?.pageID ?? recipe.sourcePageIDs.first).flatMap(photo(forPage:))
         }
     }
 
@@ -298,8 +345,8 @@ struct RecipeView: View {
     private func pageButton(_ pageID: UUID, selectedBox: SourceBox?) -> some View {
         if let photo = photo(forPage: pageID) {
             Button {
-                if let fileName = photo.fileName {
-                    viewedPage = ViewedPage(id: fileName)
+                if photo.fileName != nil {
+                    viewedPage = ViewedPage(startPageID: pageID, box: nil)
                 }
             } label: {
                 PagePhotoView(photo: photo, photoFiles: photoFiles)
@@ -370,12 +417,18 @@ struct RecipeView: View {
     private func headerSection(_ recipe: Recipe, flags all: [ReviewFlag]) -> some View {
         let titleFlags = flags(all, on: .title)
         Section {
+            // SC-16: the hint, above the title.
+            if showsHint(recipe) {
+                Label("Tap a line to see it on the page.", systemImage: "hand.tap")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             if isEditing {
                 TextField("", text: $draft.title)
                     .font(.title.bold())
                     .flagged(titleFlags)
             } else {
-                Button { show(nil, recipe) } label: {
+                Button { show(recipe.titleBox, recipe) } label: {
                     Text(verbatim: recipe.title.isEmpty ? "New recipe" : recipe.title)
                         .font(.title.bold())
                         .flagged(titleFlags)
@@ -449,12 +502,13 @@ struct RecipeView: View {
             }
         } else if hasIngredients || !listFlags.isEmpty {
             Section {
+                // SC-17: a flag on the whole list is one tinted line atop it; its rows stay plain.
+                listFlagLines(listFlags)
                 ForEach(recipe.ingredientGroups, id: \.id) { group in
                     if let name = group.name, !name.isEmpty {
                         Text(verbatim: name)
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.secondary)
-                            .flaggedRow(listFlags)
                     }
                     ForEach(group.ingredients, id: \.id) { ingredient in
                         let ingredientFlags = flags(all, on: .ingredient(ingredient.id))
@@ -462,10 +516,9 @@ struct RecipeView: View {
                             Text(verbatim: ingredient.rawText)
                                 .flagged(ingredientFlags)
                         }
-                        .flaggedRow(ingredientFlags + listFlags)
+                        .flaggedRow(ingredientFlags)
                     }
                 }
-                listFlagLines(listFlags)
             } header: {
                 heading("Ingredients")
             }
@@ -488,6 +541,8 @@ struct RecipeView: View {
             }
         } else if !recipe.steps.isEmpty || !listFlags.isEmpty {
             Section {
+                // SC-17, as for ingredients.
+                listFlagLines(listFlags)
                 ForEach(Array(recipe.steps.enumerated()), id: \.element.id) { offset, step in
                     let stepFlags = flags(all, on: .step(step.id))
                     tappableLine(step.sourceBox, recipe) {
@@ -498,9 +553,8 @@ struct RecipeView: View {
                         }
                         .flagged(stepFlags)
                     }
-                    .flaggedRow(stepFlags + listFlags)
+                    .flaggedRow(stepFlags)
                 }
-                listFlagLines(listFlags)
             } header: {
                 heading("Steps")
             }
@@ -605,7 +659,8 @@ struct RecipeView: View {
             .textCase(nil)
     }
 
-    /// The S-52 lines of a list's flags, as a tinted row at its end.
+    /// The S-52 lines of a field's flags, as one tinted row (atop a list, SC-17; at the end of the
+    /// other fields, as M3-3).
     @ViewBuilder
     private func listFlagLines(_ flags: [ReviewFlag]) -> some View {
         if !flags.isEmpty {
@@ -639,7 +694,14 @@ struct RecipeView: View {
     // MARK: Actions
 
     /// A tapped line: its place on the page, or its first page whole when it has none (RV-11).
+    /// With the strip not shown (iPhone, SC-14), the viewer opens on its page, zoomed and outlined.
+    /// Her first tap ends the hint (SC-16).
     private func show(_ box: SourceBox?, _ recipe: Recipe) {
+        reviewHintSeen = true
+        if horizontalSizeClass == .compact && !showsStrip(recipe) {
+            viewedPage = ViewedPage(startPageID: box?.pageID ?? recipe.sourcePageIDs.first, box: box)
+            return
+        }
         withAnimation(.easeInOut) {
             if let box {
                 pageSelection = .line(box)
@@ -927,7 +989,8 @@ private struct PageThumbnail: View {
 // MARK: - The page
 
 /// The selected line's outline on a page drawn at `size`: a rounded rectangle, 2 pt, the accent.
-private struct LineOutline: View {
+/// The full-screen viewer draws it too (`15` M3-3a).
+struct LineOutline: View {
     let box: SourceBox
     let size: CGSize
     let accent: Color

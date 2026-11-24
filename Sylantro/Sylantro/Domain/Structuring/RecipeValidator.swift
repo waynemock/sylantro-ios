@@ -1,18 +1,21 @@
 import Foundation
 
 /// The found-on-the-page check (SLT-142, extending SLT-042): every value the model returned is
-/// looked for in the page's text. Values that aren't found are dropped or flagged, and an
-/// ingredient that is a copied step is removed. Warnings go to `extraction.warnings`.
+/// looked for in the page's text, and in the same text without page clutter (`15` M3-3a, RV-30:
+/// a step split by a page's footer is found). Values that aren't found are dropped or flagged, and
+/// an ingredient that is a copied step is removed. Warnings go to `extraction.warnings`.
 nonisolated enum RecipeValidator {
     /// An ingredient longer than this that matches a step is the copied method.
     private static let copiedStepLength = 60
 
-    static func check(_ recipe: Recipe, pageText: String) -> Recipe {
+    /// `clutterFreeText` is `pageText` less its `PageClutter` lines; a caller with no such text
+    /// passes `pageText` again.
+    static func check(_ recipe: Recipe, pageText: String, clutterFreeText: String) -> Recipe {
         var recipe = recipe
         var warnings: [String] = []
 
         func found(_ value: String) -> Bool {
-            TextMatch.contains(value, in: pageText)
+            TextMatch.contains(value, in: pageText) || TextMatch.contains(value, in: clutterFreeText)
         }
 
         /// A value that isn't on the page is removed, with a warning.

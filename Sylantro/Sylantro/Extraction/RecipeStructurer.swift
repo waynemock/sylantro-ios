@@ -128,6 +128,8 @@ nonisolated struct RecipeStructurer: Sendable {
         let pages = pageLines.map { $0.map(\.text) }
         let allLines = Array(pages.joined())
         let pageText = allLines.joined(separator: "\n")
+        // The same lines less page clutter, so a step split by a footer is found (RV-30).
+        let clutterFreeText = allLines.filter { !PageClutter.isClutter($0) }.joined(separator: "\n")
         var split = PageSplitter.split(pages)
         let rules = PageRules.find(in: allLines)
 
@@ -219,16 +221,17 @@ nonisolated struct RecipeStructurer: Sendable {
         let recipe = Self.assemble(title: title, header: header,
                                    ingredientGroups: ingredientGroups ?? [], steps: steps, split: split, rules: rules,
                                    pageIDs: pageIDs, unreadableAreas: unreadableAreas, warnings: warnings)
-        let checked = RecipeValidator.check(recipe, pageText: pageText)
+        let checked = RecipeValidator.check(recipe, pageText: pageText, clutterFreeText: clutterFreeText)
         outcome.recipes = [SourceLocator.locate(checked, lines: Self.locatorLines(pageLines, pageIDs: pageIDs))]
     }
 
-    /// Every readable line, in page then reading order, its box on its page. A page with no page
-    /// ID adds no lines.
-    private static func locatorLines(_ pageLines: [[PageReading.ReadLine]], pageIDs: [UUID]) -> [SourceLocator.Line] {
+    /// Every readable line but page clutter (RV-30), in page then reading order, its box on its
+    /// page. A page with no page ID adds no lines. Not private, so a test can place a step across
+    /// a page's footer.
+    static func locatorLines(_ pageLines: [[PageReading.ReadLine]], pageIDs: [UUID]) -> [SourceLocator.Line] {
         var lines: [SourceLocator.Line] = []
         for (pageIndex, page) in pageLines.enumerated() where pageIndex < pageIDs.count {
-            for line in page {
+            for line in page where !PageClutter.isClutter(line.text) {
                 lines.append(SourceLocator.Line(text: line.text, box: SourceBox(
                     pageID: pageIDs[pageIndex], x: line.box.x, y: line.box.y,
                     width: line.box.width, height: line.box.height
@@ -357,13 +360,15 @@ nonisolated struct RecipeStructurer: Sendable {
     /// (SLT-146). A group's name is its `nameLine` only when that line is in range, isn't any
     /// item's line, doesn't start like an ingredient (`WrapJoiner.startsIngredient`) and isn't too
     /// long; a group after the first with no name joins the group before it. Each line is used by
-    /// one item at most. Warnings for numbers out of range, a long group name, a repeated line, and
-    /// every line nothing used.
+    /// one item at most. Lines the model skipped (RV-29, `15` M3-3a): a group with no name takes an
+    /// unused heading line (ending `:`) just before its span; an unused line inside a group's span
+    /// that starts like an ingredient is put back among its ingredients, in line order, with
+    /// `put back: ingredient n`. Warnings for numbers out of range, a long group name, a repeated
+    /// line, each line put back, and every line nothing used.
     static func ingredientGroups(from part: GeneratedIngredientLines, lines: [String]) -> (groups: [IngredientGroup], warnings: [String]) {
         var warnings: [String] = []
         var used = Set<Int>()
         var usedByItems = Set<Int>()
-        var groups: [IngredientGroup] = []
 
         // Every in-range line any item in the answer names, so a group name is never one of them.
         var itemLines = Set<Int>()
@@ -371,9 +376,18 @@ nonisolated struct RecipeStructurer: Sendable {
             itemLines.formUnion(item.firstLine...min(item.lastLine, max(lines.count, item.firstLine)))
         }
 
+        /// One answered group: its name, its ingredients with each one's first line, and its span.
+        struct Made {
+            var name: String?
+            var ingredients: [(line: Int, ingredient: Ingredient)]
+            var span: ClosedRange<Int>?
+        }
+        var made: [Made] = []
+
         for generated in part.groups {
             var name: String?
-            if generated.nameLine >= 1, generated.nameLine <= lines.count, !itemLines.contains(generated.nameLine) {
+            let nameLineInRange = generated.nameLine >= 1 && generated.nameLine <= lines.count
+            if nameLineInRange, !itemLines.contains(generated.nameLine) {
                 var text = lines[generated.nameLine - 1].trimmingCharacters(in: .whitespacesAndNewlines)
                 if !WrapJoiner.startsIngredient(text) {
                     if text.hasSuffix(":") {
@@ -388,7 +402,8 @@ nonisolated struct RecipeStructurer: Sendable {
                 }
             }
 
-            var ingredients: [Ingredient] = []
+            var ingredients: [(line: Int, ingredient: Ingredient)] = []
+            var itemRanges: [ClosedRange<Int>] = []
             for item in generated.items {
                 guard item.firstLine >= 1, item.lastLine <= lines.count, item.lastLine >= item.firstLine,
                       item.lastLine - item.firstLine + 1 <= maximumItemLines else {
@@ -402,9 +417,10 @@ nonisolated struct RecipeStructurer: Sendable {
                 }
                 usedByItems.formUnion(numbers)
                 used.formUnion(numbers)
+                itemRanges.append(item.firstLine...item.lastLine)
                 let rawText = joinedLines(Array(lines[(item.firstLine - 1)...(item.lastLine - 1)]))
                 let parsed = IngredientLineParser.parse(rawText)
-                ingredients.append(Ingredient(
+                ingredients.append((item.firstLine, Ingredient(
                     rawText: rawText,
                     quantity: parsed.quantity,
                     unit: parsed.unit,
@@ -412,15 +428,62 @@ nonisolated struct RecipeStructurer: Sendable {
                     preparation: nonEmpty(item.preparation),
                     isOptional: item.isOptional ?? false,
                     note: nonEmpty(item.note)
-                ))
+                )))
             }
-            if name == nil, !groups.isEmpty {
+
+            // The span: from the name line when in range, else the first item, to the last item.
+            var span: ClosedRange<Int>?
+            if let first = itemRanges.first, let last = itemRanges.last {
+                let start = nameLineInRange ? generated.nameLine : first.lowerBound
+                span = min(start, last.upperBound)...last.upperBound
+            }
+            made.append(Made(name: name, ingredients: ingredients, span: span))
+        }
+
+        // A group with no name takes an unused heading just before its span (RV-29).
+        for index in made.indices where made[index].name == nil {
+            guard let span = made[index].span, span.lowerBound >= 2, !used.contains(span.lowerBound - 1) else { continue }
+            var text = lines[span.lowerBound - 2].trimmingCharacters(in: .whitespacesAndNewlines)
+            guard text.hasSuffix(":"), !WrapJoiner.startsIngredient(text) else { continue }
+            text.removeLast()
+            guard text.count <= maximumGroupNameLength else { continue }
+            made[index].name = text
+            used.insert(span.lowerBound - 1)
+        }
+
+        // An unused line inside a group's span that starts like an ingredient is put back (RV-29).
+        var putBack = Set<UUID>()
+        for index in made.indices {
+            guard let span = made[index].span else { continue }
+            for number in span where !used.contains(number) {
+                let text = lines[number - 1].trimmingCharacters(in: .whitespacesAndNewlines)
+                guard WrapJoiner.startsIngredient(text) else { continue }
+                let parsed = IngredientLineParser.parse(text)
+                let rest = parsed.rest.trimmingCharacters(in: .whitespacesAndNewlines)
+                let ingredient = Ingredient(rawText: text, quantity: parsed.quantity, unit: parsed.unit,
+                                            item: rest.isEmpty ? nil : rest)
+                made[index].ingredients.append((number, ingredient))
+                putBack.insert(ingredient.id)
+                used.insert(number)
+            }
+            made[index].ingredients.sort { $0.line < $1.line }
+        }
+
+        // The groups: one with no name after the first joins the one before it.
+        var groups: [IngredientGroup] = []
+        for group in made {
+            let ingredients = group.ingredients.map(\.ingredient)
+            if group.name == nil, !groups.isEmpty {
                 groups[groups.count - 1].ingredients.append(contentsOf: ingredients)
             } else {
-                groups.append(IngredientGroup(name: name, ingredients: ingredients))
+                groups.append(IngredientGroup(name: group.name, ingredients: ingredients))
             }
         }
 
+        // `put back: ingredient n`, numbered across every group as `RecipeValidator` numbers.
+        for (offset, ingredient) in groups.flatMap(\.ingredients).enumerated() where putBack.contains(ingredient.id) {
+            warnings.append("put back: ingredient \(offset + 1)")
+        }
         for number in lines.indices.map({ $0 + 1 }) where !used.contains(number) {
             warnings.append("unused ingredient line \(number)")
         }

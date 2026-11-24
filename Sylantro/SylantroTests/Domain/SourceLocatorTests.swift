@@ -91,4 +91,51 @@ struct SourceLocatorTests {
 
         #expect(Self.ingredients(located).first?.sourceBox == nil)
     }
+
+    // MARK: Across a page break, and the title (`15` M3-3a, RV-30, RV-31)
+
+    /// A page's read lines, one under another as `lines(_:)` places them.
+    static func readLines(_ texts: [String]) -> [PageReading.ReadLine] {
+        texts.enumerated().map { index, text in
+            PageReading.ReadLine(text: text, confidence: 1,
+                                 box: .init(x: 0.125, y: 0.125 + Double(index) * 0.0625, width: 0.5, height: 0.0625))
+        }
+    }
+
+    @Test("a step across pages")
+    func stepAcrossPages() {
+        // Page 1 ends with the step's first lines and a footer; page 2 starts with its last line.
+        let pageOne = Self.readLines(["1. Bloom the made-up yeast in", "warm water and", "www.example.com/soup Page 1 of 2"])
+        let pageTwo = Self.readLines(["let it stand 5 minutes.", "2. Mix."])
+        let lines = RecipeStructurer.locatorLines([pageOne, pageTwo], pageIDs: [Self.page1, Self.page2])
+        let step = "Bloom the made-up yeast in warm water and let it stand 5 minutes."
+
+        let located = SourceLocator.locate(Self.recipe(steps: [step]), lines: lines)
+
+        // Page 1's two lines only: no footer, nothing from page 2.
+        #expect(located.steps.first?.sourceBox
+            == SourceBox(pageID: Self.page1, x: 0.125, y: 0.125, width: 0.5, height: 0.125))
+    }
+
+    @Test("one page first")
+    func onePageFirst() {
+        // A run across the break would match first in line order; the one-page run wins.
+        let lines = Self.lines(["Stir.", "Mix the flour"]) + Self.lines(["and the water.", "Mix the flour and the water."], page: Self.page2)
+
+        let located = SourceLocator.locate(Self.recipe(steps: ["Mix the flour and the water."]), lines: lines)
+
+        #expect(located.steps.first?.sourceBox == lines[3].box)
+    }
+
+    @Test("the title is placed")
+    func titleIsPlaced() {
+        let lines = Self.lines(["Test Soup", "1 cup water", "Simmer the Test Soup gently."])
+        var recipe = Self.recipe(ingredients: ["1 cup water"])
+        recipe.title = "Test Soup"
+        #expect(SourceLocator.locate(recipe, lines: lines).titleBox == lines[0].box)
+
+        // Found only inside a step's line: no box.
+        recipe.title = "Simmer the Test Soup"
+        #expect(SourceLocator.locate(recipe, lines: lines).titleBox == nil)
+    }
 }

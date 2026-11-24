@@ -2,7 +2,7 @@
 
 **Design document · the library, the camera, a recipe and its review, and the recovery screen,
 with every word she reads**
-Version 0.37 · 24 November 2026 · **M2's screens and copy accepted (SC-1 to SC-8). M3's review
+Version 0.38 · 24 November 2026 · **M2's screens and copy accepted (SC-1 to SC-8). M3's review
 screens drawn (§2, §3.2, §4.4, §4.5; `15` RV-8 to RV-13, RV-26, RV-28 ruled); SC-9 to SC-12 ruled; S-44 to S-53
 approved.** Accepted for M3-3. M3-4's pages (§4.6, SC-13, S-54 to S-60) accepted; M3-3a's S-52l, S-61 and S-62 approved; SC-18 to SC-21 ruled, S-63 to S-71 approved; S-52m proposed for M3-5. Every
 string in §6 is Claude's proposal. The layout
@@ -321,6 +321,7 @@ Every string she reads in M2. Pops approves or rewrites each; the agent pastes t
 | S-69 | Edit sheet's buttons, VoiceOver labels (✕ and ✓ icons) | Cancel · Save *(approved)* |
 | S-70 | Recipe ⋯ menu, starts Edit (SC-20) | Edit *(approved)* |
 | S-71 | Library section, scans not read yet (SC-21) | New Scans *(approved)* |
+| S-72 | Edit, the Pages section's heading (§4.6, M3-3b) | Pages *(approved)* |
 | S-41 | Camera permission (`NSCameraUsageDescription`, iOS's own prompt) | Sylantro uses the camera to photograph the pages of your recipes. *(approved: Pops, 23 Nov 2026, decision card "Photograph binder pages")* |
 
 ---
@@ -360,6 +361,7 @@ When Pops rules, the rulings are filed in the ledger at this document's close-ou
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.38 | S-72 "Pages" approved: the heading of Edit's Pages section (§4.6), for M3-3b | M3-4 note a; Pops, 24 Nov 2026: "sure add the heading in 3b" |
 | 0.37 | S-52m proposed: the not-a-recipe flag for M3-5 | `15` RV-32 ruled; Pops, 24 Nov 2026 |
 | 0.36 | S-63 to S-69 and S-71 approved as drafted | Pops, 24 Nov 2026: "Yes" |
 | 0.35 | SC-21 ruled: New Scans (S-71 proposed), a first library section for scans not read yet; §2 updated. Task M3-3b's | Pops, 24 Nov 2026: "Seems like new scans should be in their own section at the top of the list." Then decision card, "Own section on top: New Scans" |

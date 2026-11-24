@@ -8,6 +8,9 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
     var id: UUID
     var schemaVersion: Int
     var title: String
+    /// Where the title is on the page (`15` RV-31, M3-3a), as ingredients and steps carry theirs;
+    /// nil when not placed, as in every recipe read before M3-3a.
+    var titleBox: SourceBox?
     var yield: Yield?
     var times: Times?
     var ingredientGroups: [IngredientGroup]
@@ -37,6 +40,7 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
         id: UUID = UUID(),
         schemaVersion: Int = Recipe.currentSchemaVersion,
         title: String = "",
+        titleBox: SourceBox? = nil,
         yield: Yield? = nil,
         times: Times? = nil,
         ingredientGroups: [IngredientGroup] = [],
@@ -58,6 +62,7 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
         self.id = id
         self.schemaVersion = schemaVersion
         self.title = title
+        self.titleBox = titleBox
         self.yield = yield
         self.times = times
         self.ingredientGroups = ingredientGroups
@@ -83,6 +88,7 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
         id = try container.decode(UUID.self, forKey: .id)
         schemaVersion = try container.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? Recipe.currentSchemaVersion
         title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
+        titleBox = try container.decodeIfPresent(SourceBox.self, forKey: .titleBox)
         yield = try container.decodeIfPresent(Yield.self, forKey: .yield)
         times = try container.decodeIfPresent(Times.self, forKey: .times)
         ingredientGroups = try container.decodeIfPresent([IngredientGroup].self, forKey: .ingredientGroups) ?? []

@@ -101,6 +101,16 @@ struct ReviewFlagTests {
         #expect(ReviewFlag.line(for: .other("a made-up warning")) == "Check this.")
     }
 
+    @Test("put back")
+    func putBack() {
+        let recipe = Self.recipe(warnings: ["put back: ingredient 2"], ingredients: ["2 cups flour", "1 Tbsp. made-up yeast"])
+
+        let flags = ReviewFlag.flags(for: recipe)
+
+        #expect(flags == [ReviewFlag(kind: .putBack, field: .ingredient(recipe.ingredientGroups[0].ingredients[1].id))])
+        #expect(ReviewFlag.line(for: .putBack) == "Put back from the page. Check it.")
+    }
+
     @Test("needs review")
     func needsReview() {
         #expect(!Recipe(reviewState: .needsReview).needsReview)

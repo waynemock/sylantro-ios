@@ -28,6 +28,8 @@ nonisolated struct ReviewFlag: Sendable, Equatable {
         case mayHoldOtherRecipes([String])
         case unreadableLine(page: Int)
         case continuesOnUnscannedPage
+        /// A line the model skipped, put back from the page (RV-29).
+        case putBack
         case other(String)
     }
 
@@ -49,11 +51,13 @@ nonisolated struct ReviewFlag: Sendable, Equatable {
         case .mayHoldOtherRecipes(let titles): "This page may hold other recipes: \(titles.joined(separator: ", "))."
         case .other: "Check this."
         case .continuesOnUnscannedPage: "Continues on a page not scanned"
+        case .putBack: "Put back from the page. Check it."
         }
     }
 
     /// The prefixes of warnings that carry a value after them.
     private static let notOnPageIngredient = "not on page: ingredient "
+    private static let putBackIngredient = "put back: ingredient "
     private static let notOnPageStep = "not on page: step "
     private static let unusedIngredientLine = "unused ingredient line "
     private static let otherRecipes = "may hold other recipes: "
@@ -104,6 +108,9 @@ nonisolated struct ReviewFlag: Sendable, Equatable {
         }
         if warning == "title from layout" {
             return ReviewFlag(kind: .titleFromLayout, field: .title)
+        }
+        if let n = number(after: putBackIngredient, in: warning) {
+            return ReviewFlag(kind: .putBack, field: ingredientIDs[n].map(Field.ingredient) ?? .ingredients)
         }
         if let n = number(after: notOnPageIngredient, in: warning) {
             return ReviewFlag(kind: .notOnPage, field: ingredientIDs[n].map(Field.ingredient) ?? .ingredients)

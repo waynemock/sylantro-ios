@@ -146,6 +146,19 @@ struct RecipeJSONTests {
         #expect(createdAt.lowerBound < title.lowerBound)
     }
 
+    @Test("an older recipe reads")
+    func olderRecipeReads() throws {
+        // `full` has no title box, as every recipe before M3-3a (RV-31).
+        let data = try RecipeJSON.encode(Self.full)
+        let json = try #require(String(data: data, encoding: .utf8))
+        #expect(!json.contains("titleBox"))
+
+        let decoded = try RecipeJSON.decode(data)
+
+        #expect(decoded.titleBox == nil)
+        #expect(decoded == Self.full)
+    }
+
     @Test("a file with only an id reads with every default")
     func onlyAnIDReadsWithDefaults() throws {
         let json = #"{"id":"8D5E1B3C-2F4A-4B6E-9C1D-7A8B9C0D1E2F"}"#
