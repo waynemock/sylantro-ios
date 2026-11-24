@@ -50,7 +50,7 @@ Score It \* as its template (SLT-080).
 | 13 | `13_SCREENS.md` | The screens: the library, the camera, a recipe and its review, and the recovery screen, with every string she reads | v0.38 — **accepted for M2, M3-3, M3-4, M3-3a and M3-3b** (SC-1 to SC-21); all wording through S-71 approved; S-52m proposed |
 | 14 | `14_MILESTONE_2_CAPTURE.md` | Milestone 2's tasks: the plan M2-1 to M2-6 (capture types, store and recovery screen, photo files and `CaptureRecorder`, screens, mirror, device check), M2-1 to M2-5 written in full | v1.0 — **closed** (SLT-160); M2-1 to M2-5 and fixes M2-4a to M2-4g complete (107 tests); every device check passed |
 | 14A | `14A_SYLIB_IMAGE_CACHE_MEMORY.md` | One SyLib task (M2-4a): `ImageCache` keeps an image in memory without writing a JPEG, for M2-4's thumbnails | v0.3 — **M2-4a complete** (SyLib 1659 tests) |
-| 15 | `15_MILESTONE_3_REVIEW.md` | Milestone 3's tasks: the plan M3-1 to M3-7 (Domain and structurer fixes, the extraction queue, review, a recipe's pages, several recipes on a page, unreadable handwriting and search, device check) and the questions they wait on | v0.51 — **draft**; RV-1 to RV-13, RV-18, RV-19, RV-21 and RV-23 to RV-27 ruled; **M3-1 complete** (123 tests); **M3-2 complete** (142 tests); **M3-2a complete** (149 tests); **M3-3 complete** (163 tests); **M3-4 complete** (172 tests); **M3-3a complete** (181 tests); M3-3b (editing in a sheet) ready |
+| 15 | `15_MILESTONE_3_REVIEW.md` | Milestone 3's tasks: the plan M3-1 to M3-7 (Domain and structurer fixes, the extraction queue, review, a recipe's pages, several recipes on a page, unreadable handwriting and search, device check) and the questions they wait on | v0.52 — **draft**; RV-1 to RV-13, RV-18, RV-19, RV-21 and RV-23 to RV-27 ruled; **M3-1 complete** (123 tests); **M3-2 complete** (142 tests); **M3-2a complete** (149 tests); **M3-3 complete** (163 tests); **M3-4 complete** (172 tests); **M3-3a complete** (181 tests); **M3-3b complete** (184 tests); M3-5 next |
 | 16 | `16_FEATURE_IDEAS.md` | Features popular recipe apps have and how each would fit: cook mode, scaling and unit conversion, a grocery list, organizing, import from other apps, the pantry, Apple extras, export and print | v0.1 — ideas; SLT-170 to SLT-172 in (cook mode and scaling in 1.0; import eventually); FI-1 to FI-10 open |
 
 ---
@@ -122,6 +122,7 @@ Score It \* as its template (SLT-080).
 | 0.68 | Row 03 to v0.4 and row 12 to v0.16 (PKU features out of 1.0, M5 after it; IP-10); row 00 to v0.59 | Pops, 24 Nov 2026 |
 | 0.67 | Row 03 to v0.3 (§16: phe and diet features on hold, options A to E; N-13); row 00 to v0.58 | Pops, 24 Nov 2026 |
 | 0.66 | Row 03 to v0.2 (§15: recipe-from-label and dish-photo ideas, unscheduled; N-11, N-12); row 00 to v0.57 | Pops, 24 Nov 2026 |
+| 0.68 | Row 15 to v0.52: M3-3b complete | Pops, 24 Nov 2026: "Task M3-3b done" |
 | 0.67 | Row 15 to v0.51: M3-3a complete | Pops, 24 Nov 2026: "m3-3a done" |
 | 0.66 | Row 15 to v0.50: M3-4 complete; row 13 to v0.38 (S-72) | Pops, 24 Nov 2026: "Task M3-4 done" |
 | 0.65 | Row 08 to v0.5 (QR codes in scans, NI-8; photos from Photos, NI-9); row 15 to v0.48 (RV-32 ruled); row 13 to v0.37 | Pops, 24 Nov 2026 |

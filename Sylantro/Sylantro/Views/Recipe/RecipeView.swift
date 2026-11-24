@@ -10,9 +10,10 @@ import SyLibUI
 /// "Reading…" while the queue has it, or "couldn't read" with Try Again), the page-2 warning, and
 /// its pages full width in order. Once read, the review screen (`13` §4.4, SC-9, `15` M3-3): the
 /// page beside or above the fields, flags tinted with their lines, tap a line to see it on the
-/// page, Edit and Done for the kitchen fields and the pages (`13` §4.6, M3-4), and Looks Good. Add
-/// Page and Delete Recipe in the toolbar. After its pages change, a read recipe is read again,
-/// asking first if she edited it (RV-7).
+/// page, Edit and Done for the kitchen fields (each row edited in a sheet, SC-19) and the pages
+/// (`13` §4.6, M3-4), and Looks Good. The toolbar is only ⋯ (Edit, Add Page, View Pages, Delete
+/// Recipe), or Done in Edit (SC-20). After its pages change, a read recipe is read again, asking
+/// first if she edited it (RV-7).
 struct RecipeView: View {
     private let log = AppLogger(category: "Recipe")
 
@@ -50,6 +51,11 @@ struct RecipeView: View {
     /// The fields as they were when Edit began; nil when not editing.
     @State private var editStart: ReviewEdit?
     @State private var isShowingSaveFailed = false
+    /// The row open in the edit sheet (SC-19), and whether its sheet was closed by Save.
+    @State private var editingField: EditingField?
+    @State private var editingFieldSaved = false
+    /// The last row opened, kept after the sheet clears `editingField`, for its close.
+    @State private var openedField: EditingField?
     /// The page order as she edits it (M3-4); the order as saved; the pages she removed, not yet
     /// saved.
     @State private var draftPageIDs: [UUID] = []
@@ -66,6 +72,13 @@ struct RecipeView: View {
     /// She has tapped a line, so S-61's hint no longer shows on this device (SC-16): device-only,
     /// never synced, never in the store.
     @AppStorage("reviewHintSeen") private var reviewHintSeen = false
+
+    /// The row open in the edit sheet: its field, and whether + just added it (Cancel removes it).
+    private struct EditingField: Identifiable {
+        let id = UUID()
+        let field: ReviewEdit.Field
+        let isNew: Bool
+    }
 
     /// The pages open in the full-screen viewer: from this page, with this line outlined.
     private struct ViewedPage: Identifiable {
@@ -120,28 +133,32 @@ struct RecipeView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                // iOS's own Edit and Done (S-50, SC-10), before Add Page, once read.
-                if recipe.extraction != nil {
+                if isEditing {
+                    // In Edit, only iOS's Done (S-50, SC-20), which ends Edit and saves.
                     EditButton()
-                }
-                // SyLib's toolbar buttons (SLT-089); Add Page reads as S-22 (MT-26).
-                IconButton("doc.badge.plus", context: .toolbar) { addPage() }
-                    .accessibilityLabel("Add Page")
-                    .disabled(captureRecorder == nil)
-                // The ⋯ symbol alone: iOS gives it its own label (MT-11).
-                Menu {
-                    // The scans, when the strip isn't shown (SC-14, S-62).
-                    if recipe.extraction != nil && horizontalSizeClass == .compact && !showsStrip(recipe) {
-                        Button("View Pages") {
-                            viewedPage = ViewedPage(startPageID: recipe.sourcePageIDs.first, box: nil)
+                } else {
+                    // Only ⋯ (SC-20), the symbol alone: iOS gives it its own label (MT-11).
+                    Menu {
+                        // Edit (S-70), once read; `beginEditing` runs from `onChange`.
+                        if recipe.extraction != nil {
+                            Button { editMode = .active } label: { Label("Edit", systemImage: "pencil") }
                         }
+                        Button { addPage() } label: { Label("Add Page", systemImage: "doc.badge.plus") }
+                            .disabled(captureRecorder == nil)
+                        // The scans, when the strip isn't shown (SC-14, S-62).
+                        if recipe.extraction != nil && horizontalSizeClass == .compact && !showsStrip(recipe) {
+                            Button("View Pages") {
+                                viewedPage = ViewedPage(startPageID: recipe.sourcePageIDs.first, box: nil)
+                            }
+                        }
+                        Divider()
+                        Button("Delete Recipe", role: .destructive) { isConfirmingDelete = true }
+                            .disabled(recipeEditor == nil)
+                    } label: {
+                        IconButton("ellipsis.circle", context: .toolbar)
                     }
-                    Button("Delete Recipe", role: .destructive) { isConfirmingDelete = true }
-                        .disabled(recipeEditor == nil)
-                } label: {
-                    IconButton("ellipsis.circle", context: .toolbar)
+                    .appTextSizeCap()
                 }
-                .appTextSizeCap()
             }
         }
         .environment(\.editMode, $editMode)
@@ -187,6 +204,22 @@ struct RecipeView: View {
                 CaptureFlowView(mode: .addPages(recipeID: recipeID), captureRecorder: captureRecorder,
                                 onPagesAdded: { pagesWereAdded = true })
             }
+        }
+        // The edit sheet (SC-19): a swipe down, allowed only while nothing changed, is a Cancel.
+        .sheet(item: $editingField, onDismiss: editSheetClosed) { editing in
+            RowEditSheet(title: sheetTitle(editing.field),
+                         original: draft.text(for: editing.field),
+                         photo: fieldBox(editing.field, recipe).flatMap { photo(forPage: $0.pageID) },
+                         box: fieldBox(editing.field, recipe),
+                         photoFiles: photoFiles,
+                         accent: syTheme.primaryAccent) { text in
+                draft = draft.setting(text, for: editing.field)
+                editingFieldSaved = true
+                editingField = nil
+            } onCancel: {
+                editingField = nil
+            }
+            .appTextSizeCap()
         }
         .fullScreenCover(item: $viewedPage) { page in
             let fileNames = recipe.sourcePageIDs.compactMap { photo(forPage: $0)?.fileName }
@@ -408,6 +441,9 @@ struct RecipeView: View {
                     pendingPageRemoval = offsets
                     isConfirmingPageRemoval = true
                 } : nil)
+            } header: {
+                // S-72 (`13` §4.6).
+                heading("Pages")
             }
         }
     }
@@ -424,9 +460,11 @@ struct RecipeView: View {
                     .foregroundStyle(.secondary)
             }
             if isEditing {
-                TextField("", text: $draft.title)
-                    .font(.title.bold())
-                    .flagged(titleFlags)
+                editRow(.title, recipe, emptyWord: "Title") { text in
+                    Text(verbatim: text)
+                        .font(.title.bold())
+                }
+                .flaggedRow(titleFlags)
             } else {
                 Button { show(recipe.titleBox, recipe) } label: {
                     Text(verbatim: recipe.title.isEmpty ? "New recipe" : recipe.title)
@@ -460,7 +498,7 @@ struct RecipeView: View {
             }
 
             if isEditing {
-                TextField("Serves", text: $draft.yieldText)
+                editRow(.yield, recipe, emptyWord: "Serves") { Text(verbatim: $0) }
             } else if let yield = recipe.yield.flatMap(RecipeRendering.yieldLine) {
                 Text(verbatim: yield)
             }
@@ -484,17 +522,22 @@ struct RecipeView: View {
                             .foregroundStyle(.secondary)
                             .dimmed(true)
                     }
-                    ForEach($group.lines, id: \.id) { $line in
-                        TextField("", text: $line.text)
+                    ForEach(group.lines, id: \.id) { line in
+                        editRow(.ingredient(line.id), recipe, emptyWord: "Ingredient") { Text(verbatim: $0) }
                     }
                     .onDelete { group.lines.remove(atOffsets: $0) }
                     .onMove { group.lines.move(fromOffsets: $0, toOffset: $1) }
-                    addRow("Add Ingredient") { group.lines.append(ReviewEdit.Line(id: UUID(), text: "")) }
+                    addRow("Add Ingredient") {
+                        let line = ReviewEdit.Line(id: UUID(), text: "")
+                        group.lines.append(line)
+                        openSheet(.ingredient(line.id), isNew: true)
+                    }
                 }
                 if draft.groups.isEmpty {
                     addRow("Add Ingredient") {
-                        draft.groups.append(ReviewEdit.Group(id: UUID(), name: nil,
-                                                             lines: [ReviewEdit.Line(id: UUID(), text: "")]))
+                        let line = ReviewEdit.Line(id: UUID(), text: "")
+                        draft.groups.append(ReviewEdit.Group(id: UUID(), name: nil, lines: [line]))
+                        openSheet(.ingredient(line.id), isNew: true)
                     }
                 }
             } header: {
@@ -530,12 +573,16 @@ struct RecipeView: View {
         let listFlags = flags(all, on: .steps)
         if isEditing {
             Section {
-                ForEach($draft.steps, id: \.id) { $step in
-                    TextField("", text: $step.text, axis: .vertical)
+                ForEach(draft.steps, id: \.id) { step in
+                    editRow(.step(step.id), recipe, emptyWord: "Step \(stepNumber(step.id))") { Text(verbatim: $0) }
                 }
                 .onDelete { draft.steps.remove(atOffsets: $0) }
                 .onMove { draft.steps.move(fromOffsets: $0, toOffset: $1) }
-                addRow("Add Step") { draft.steps.append(ReviewEdit.StepLine(id: UUID(), text: "")) }
+                addRow("Add Step") {
+                    let step = ReviewEdit.StepLine(id: UUID(), text: "")
+                    draft.steps.append(step)
+                    openSheet(.step(step.id), isNew: true)
+                }
             } header: {
                 heading("Steps")
             }
@@ -566,7 +613,7 @@ struct RecipeView: View {
         let notesFlags = flags(all, on: .notes)
         if isEditing {
             Section {
-                TextField("", text: $draft.notes, axis: .vertical)
+                editRow(.notes, recipe, emptyWord: "Notes") { Text(verbatim: $0) }
             } header: {
                 heading("Notes")
             }
@@ -676,6 +723,72 @@ struct RecipeView: View {
                 .foregroundStyle(.green)
         }
         .accessibilityLabel(Text(label))
+    }
+
+    /// A row in Edit (SC-19): the edit's text in full, wrapping; empty, its heading's word in
+    /// secondary color. A tap shows its place on the page and opens the edit sheet.
+    private func editRow<Content: View>(_ field: ReviewEdit.Field, _ recipe: Recipe, emptyWord: LocalizedStringKey,
+                                        @ViewBuilder text: (String) -> Content) -> some View {
+        let value = draft.text(for: field)
+        return Button {
+            show(fieldBox(field, recipe), recipe)
+            openSheet(field, isNew: false)
+        } label: {
+            Group {
+                if value.isEmpty {
+                    Text(emptyWord)
+                        .foregroundStyle(.secondary)
+                } else {
+                    text(value)
+                }
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func openSheet(_ field: ReviewEdit.Field, isNew: Bool) {
+        editingFieldSaved = false
+        let editing = EditingField(field: field, isNew: isNew)
+        openedField = editing
+        editingField = editing
+    }
+
+    /// The sheet closed: by Save, its text is in the edit already; otherwise it was a Cancel, and a
+    /// line or step the + just added comes out again.
+    private func editSheetClosed() {
+        defer { editingFieldSaved = false }
+        guard !editingFieldSaved, let closed = openedField, closed.isNew else { return }
+        draft = draft.removing(closed.field)
+    }
+
+    /// The field's place on the page: the title's, an ingredient's or a step's; none for Serves,
+    /// Notes or a new row.
+    private func fieldBox(_ field: ReviewEdit.Field, _ recipe: Recipe) -> SourceBox? {
+        switch field {
+        case .title: recipe.titleBox
+        case .yield, .notes: nil
+        case .ingredient(let id): recipe.ingredientGroups.lazy.flatMap(\.ingredients).first { $0.id == id }?.sourceBox
+        case .step(let id): recipe.steps.first { $0.id == id }?.sourceBox
+        }
+    }
+
+    /// The step's place in the edit, from 1.
+    private func stepNumber(_ id: UUID) -> Int {
+        (draft.steps.firstIndex { $0.id == id } ?? draft.steps.count) + 1
+    }
+
+    /// The sheet's title (S-66, S-51, S-67, S-68).
+    private func sheetTitle(_ field: ReviewEdit.Field) -> LocalizedStringKey {
+        switch field {
+        case .title: "Title"
+        case .yield: "Serves"
+        case .notes: "Notes"
+        case .ingredient: "Ingredient"
+        case .step(let id): "Step \(stepNumber(id))"
+        }
     }
 
     /// A line she can tap to see it on the page (RV-11): the whole row; VoiceOver hears a button,
@@ -1004,6 +1117,81 @@ struct LineOutline: View {
     }
 }
 
+// MARK: - The edit sheet
+
+/// One row's edit sheet (SC-19, `15` M3-3b): medium, able to go large, with its drag indicator;
+/// iPad and Mac show the system's form sheet. Its bar names the field, with ✕ (Cancel) and ✓
+/// (Save, disabled until the text changes). The row's part of the page (as the strip draws it,
+/// about 120 pt tall, none without a place), then its text in full, focused. Once she has typed, a
+/// swipe down doesn't close it, so her words are never lost.
+private struct RowEditSheet: View {
+    let title: LocalizedStringKey
+    let original: String
+    let photo: Photo?
+    let box: SourceBox?
+    let photoFiles: PhotoFiles?
+    let accent: Color
+    let onSave: (String) -> Void
+    let onCancel: () -> Void
+
+    @State private var text: String
+    @State private var detent: PresentationDetent = .medium
+    @FocusState private var isFocused: Bool
+
+    /// The page crop's height, in points.
+    private static let cropHeight: CGFloat = 120
+
+    init(title: LocalizedStringKey, original: String, photo: Photo?, box: SourceBox?, photoFiles: PhotoFiles?,
+         accent: Color, onSave: @escaping (String) -> Void, onCancel: @escaping () -> Void) {
+        self.title = title
+        self.original = original
+        self.photo = photo
+        self.box = box
+        self.photoFiles = photoFiles
+        self.accent = accent
+        self.onSave = onSave
+        self.onCancel = onCancel
+        _text = State(initialValue: original)
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    if let box {
+                        PageStrip(photo: photo, selectedBox: box, showsWholePage: false, isExpanded: false,
+                                  photoFiles: photoFiles, accent: accent, isInteractive: false) {}
+                            .frame(height: Self.cropHeight)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+                    TextField("", text: $text, axis: .vertical)
+                        .lineLimit(3...)
+                        .focused($isFocused)
+                }
+                .padding()
+            }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    IconButton("xmark", context: .toolbar) { onCancel() }
+                        .accessibilityLabel("Cancel")
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    IconButton("checkmark", context: .toolbar) { onSave(text) }
+                        .tint(accent)
+                        .disabled(text == original)
+                        .accessibilityLabel("Save")
+                }
+            }
+        }
+        .presentationDetents([.medium, .large], selection: $detent)
+        .presentationDragIndicator(.visible)
+        .interactiveDismissDisabled(text != original)
+        .onAppear { isFocused = true }
+    }
+}
+
 /// iPhone's page strip (`13` §4.4, `15` M3-3 part 4.1): the area around the selected line, zoomed
 /// to fill the width with a margin and outlined; at first the top of the page; a page selected
 /// whole, fitted. A drag down or a tap on the grabber opens the whole page at full height; a drag
@@ -1015,6 +1203,8 @@ private struct PageStrip: View {
     let isExpanded: Bool
     let photoFiles: PhotoFiles?
     let accent: Color
+    /// False in the edit sheet: no grabber, no drag (`15` M3-3b).
+    var isInteractive = true
     let onToggle: () -> Void
 
     @State private var image: UIImage?
@@ -1032,17 +1222,20 @@ private struct PageStrip: View {
         }
         .background(Color(uiColor: .secondarySystemBackground))
         .overlay(alignment: .bottom) {
-            Capsule()
-                .fill(.secondary)
-                .frame(width: 36, height: 5)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 40)
-                .contentShape(Rectangle())
-                .onTapGesture { onToggle() }
+            if isInteractive {
+                Capsule()
+                    .fill(.secondary)
+                    .frame(width: 36, height: 5)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 40)
+                    .contentShape(Rectangle())
+                    .onTapGesture { onToggle() }
+            }
         }
         .gesture(
             DragGesture(minimumDistance: 20)
                 .onEnded { value in
+                    guard isInteractive else { return }
                     if value.translation.height > Self.dragDistance && !isExpanded {
                         onToggle()
                     } else if value.translation.height < -Self.dragDistance && isExpanded {

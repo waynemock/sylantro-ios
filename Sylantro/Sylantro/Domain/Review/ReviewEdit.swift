@@ -23,11 +23,74 @@ nonisolated struct ReviewEdit: Sendable, Equatable {
         var text: String
     }
 
+    /// One field she edits in a sheet (`15` M3-3b, SC-19).
+    nonisolated enum Field: Sendable, Equatable, Hashable {
+        case title
+        case yield
+        case notes
+        case ingredient(UUID)
+        case step(UUID)
+    }
+
     var title: String
     var yieldText: String
     var groups: [Group]
     var steps: [StepLine]
     var notes: String
+
+    /// The field's text in the edit; `""` for an id not in it.
+    func text(for field: Field) -> String {
+        switch field {
+        case .title: title
+        case .yield: yieldText
+        case .notes: notes
+        case .ingredient(let id): groups.lazy.flatMap(\.lines).first { $0.id == id }?.text ?? ""
+        case .step(let id): steps.first { $0.id == id }?.text ?? ""
+        }
+    }
+
+    /// The edit with the field's text replaced, nothing else changed; an id not in it changes
+    /// nothing.
+    func setting(_ text: String, for field: Field) -> ReviewEdit {
+        var edit = self
+        switch field {
+        case .title:
+            edit.title = text
+        case .yield:
+            edit.yieldText = text
+        case .notes:
+            edit.notes = text
+        case .ingredient(let id):
+            for groupIndex in edit.groups.indices {
+                if let lineIndex = edit.groups[groupIndex].lines.firstIndex(where: { $0.id == id }) {
+                    edit.groups[groupIndex].lines[lineIndex].text = text
+                    return edit
+                }
+            }
+        case .step(let id):
+            if let index = edit.steps.firstIndex(where: { $0.id == id }) {
+                edit.steps[index].text = text
+            }
+        }
+        return edit
+    }
+
+    /// The edit without the field: an ingredient line or step removed by id (an emptied group
+    /// stays; `applied` drops it), the title, yield or notes emptied.
+    func removing(_ field: Field) -> ReviewEdit {
+        var edit = self
+        switch field {
+        case .title, .yield, .notes:
+            return setting("", for: field)
+        case .ingredient(let id):
+            for groupIndex in edit.groups.indices {
+                edit.groups[groupIndex].lines.removeAll { $0.id == id }
+            }
+        case .step(let id):
+            edit.steps.removeAll { $0.id == id }
+        }
+        return edit
+    }
 
     /// The recipe's kitchen fields as she starts to edit them: each ingredient's `rawText`, the
     /// yield's printed text, the notes.

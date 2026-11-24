@@ -130,4 +130,61 @@ struct ReviewEditTests {
         edit.yieldText = ""
         #expect(edit.applied(to: served, now: Self.now).yield == nil)
     }
+
+    // MARK: By field (`15` M3-3b, SC-19)
+
+    /// The made-up recipe's edit, with a yield and notes.
+    static func edit() -> ReviewEdit {
+        var edit = ReviewEdit.from(recipe())
+        edit.yieldText = "Serves 4"
+        edit.notes = "Made up."
+        return edit
+    }
+
+    @Test("text by field")
+    func textByField() {
+        let edit = Self.edit()
+
+        #expect(edit.text(for: .title) == "Test Soup")
+        #expect(edit.text(for: .yield) == "Serves 4")
+        #expect(edit.text(for: .notes) == "Made up.")
+        #expect(edit.text(for: .ingredient(edit.groups[0].lines[1].id)) == "1 tsp salt")
+        #expect(edit.text(for: .step(edit.steps[0].id)) == "Mix the flour.")
+        #expect(edit.text(for: .ingredient(UUID())) == "")
+        #expect(edit.text(for: .step(UUID())) == "")
+    }
+
+    @Test("setting a field")
+    func settingAField() {
+        let edit = Self.edit()
+        let salt = edit.groups[0].lines[1].id
+
+        let set = edit.setting("2 tsp salt", for: .ingredient(salt))
+
+        #expect(set.text(for: .ingredient(salt)) == "2 tsp salt")
+        var expected = edit
+        expected.groups[0].lines[1].text = "2 tsp salt"
+        #expect(set == expected)
+        #expect(edit.setting("2 tsp salt", for: .ingredient(UUID())) == edit)
+    }
+
+    @Test("removing a new line")
+    func removingANewLine() {
+        // One base edit: each `edit()` is a fresh recipe with new ids.
+        let base = Self.edit()
+        var edit = base
+        let newLine = ReviewEdit.Line(id: UUID(), text: "")
+        edit.groups[0].lines.append(newLine)
+        let newStep = ReviewEdit.StepLine(id: UUID(), text: "")
+        edit.steps.append(newStep)
+
+        let removed = edit.removing(.ingredient(newLine.id)).removing(.step(newStep.id))
+
+        #expect(removed == base)
+        // An emptied group stays; `applied` drops it.
+        var single = base
+        single.groups = [ReviewEdit.Group(id: UUID(), name: nil, lines: [newLine])]
+        #expect(single.removing(.ingredient(newLine.id)).groups.count == 1)
+        #expect(single.removing(.ingredient(newLine.id)).groups[0].lines.isEmpty)
+    }
 }

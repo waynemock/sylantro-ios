@@ -6,7 +6,8 @@ import SyLibUI
 import SyLibCloud
 
 /// The library (`02` §7, `13` §2), the sidebar: her recipes, newest scan first, one row per id, the
-/// read ones still to check first under Needs Review (S-44, RV-8, `15` M3-3). Its
+/// scans not read yet first under New Scans (S-71, SC-21), then the read ones still to check under
+/// Needs Review (S-44, RV-8, `15` M3-3). Its
 /// toolbar is Score It *'s Games list's: the iCloud button while iCloud is not available, the +
 /// that starts a scan (SC-2, MT-21), and ⋯ with Update Available (while there is one), Settings,
 /// About and App Store. From Score It *'s `GameListView.swift`, without its games, + and
@@ -43,6 +44,8 @@ struct LibraryView: View {
         let title: String
         let detail: RecipeRow.Detail
         let needsReview: Bool
+        /// Read and structured; until then it is a new scan (SC-21).
+        let isRead: Bool
         let coverFileName: String?
     }
 
@@ -85,6 +88,7 @@ struct LibraryView: View {
                             title: model.title,
                             detail: detail,
                             needsReview: recipe?.needsReview == true,
+                            isRead: recipe?.extraction != nil,
                             coverFileName: pageIDs.first.flatMap { coverByPage[$0]?.fileName }))
         }
         return rows
@@ -100,10 +104,17 @@ struct LibraryView: View {
 
     var body: some View {
         let rows = rows
-        let toReview = rows.filter(\.needsReview)
-        let others = rows.filter { !$0.needsReview }
+        let newScans = rows.filter { !$0.isRead }
+        let toReview = rows.filter { $0.isRead && $0.needsReview }
+        let others = rows.filter { $0.isRead && !$0.needsReview }
         List(selection: $selection) {
-            // Needs Review first, newest first, only while it holds a recipe (RV-8).
+            // New Scans first (SC-21), then Needs Review (RV-8), each newest first and only while it
+            // holds a recipe.
+            if !newScans.isEmpty {
+                Section("New Scans") {
+                    ForEach(newScans) { recipeRow($0) }
+                }
+            }
             if !toReview.isEmpty {
                 Section("Needs Review") {
                     ForEach(toReview) { recipeRow($0) }
