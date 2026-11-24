@@ -161,6 +161,42 @@ struct MirrorWriterTests {
         #expect(try Self.modificationDate(movedPage) == dateBefore)
     }
 
+    // MARK: A recipe's pages (`15` M3-4)
+
+    @Test("pages rewritten in order")
+    func pagesRewrittenInOrder() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let first = try fixture.writePhoto()
+        let second = try fixture.writePhoto(width: 60, height: 40)
+        let snapshot = Self.snapshot(fileNames: [first, second])
+        await fixture.mirror.write(snapshot)
+        let folder = try #require(try fixture.recipeFolder(snapshot.recipe.id))
+        let oldPageTwo = try Data(contentsOf: folder.appending(path: "pages/page-2.heic"))
+
+        var recipe = snapshot.recipe
+        recipe.sourcePageIDs.reverse()
+        await fixture.mirror.write(MirrorSnapshot(recipe: recipe, pages: snapshot.pages.reversed(), pagesChanged: true))
+
+        #expect(try Data(contentsOf: folder.appending(path: "pages/page-1.heic")) == oldPageTwo)
+    }
+
+    @Test("a removed page goes")
+    func removedPageGoes() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let snapshot = Self.snapshot(fileNames: [try fixture.writePhoto(), try fixture.writePhoto(), try fixture.writePhoto()])
+        await fixture.mirror.write(snapshot)
+        let folder = try #require(try fixture.recipeFolder(snapshot.recipe.id))
+
+        var recipe = snapshot.recipe
+        recipe.sourcePageIDs.removeLast()
+        await fixture.mirror.write(MirrorSnapshot(recipe: recipe, pages: Array(snapshot.pages.prefix(2)), pagesChanged: true))
+
+        let names = try FileManager.default.contentsOfDirectory(atPath: folder.appending(path: "pages").path(percentEncoded: false))
+        #expect(names.sorted() == ["page-1.heic", "page-2.heic"])
+    }
+
     @Test("deleting removes the recipe's folder")
     func deletingRemovesRecipeFolder() async throws {
         let fixture = try Fixture()

@@ -437,4 +437,144 @@ struct CaptureRecorderTests {
         #expect(states == ["waiting", "waiting"])
         #expect(told == [failedID])
     }
+
+    // MARK: A recipe's pages (`15` M3-4)
+
+    /// A recipe of `count` pages saved through the recorder: the recorder, the store, the recipe's
+    /// id and its pages in order.
+    static func savedRecipe(pages count: Int, folder: URL) throws
+        -> (recorder: CaptureRecorder, context: ModelContext, container: ModelContainer, recipeID: UUID, pageIDs: [UUID]) {
+        let (recorder, context, container) = try makeRecorder(photoRoot: folder)
+        let image = try #require(PhotoFilesTests.makeImage(width: 40, height: 60))
+        let sessionID = try recorder.startSession(now: now)
+        let recipeID = try recorder.saveCapture(Array(repeating: image, count: count), sessionID: sessionID,
+                                                continuesOnUnscannedPage: false, now: now)
+        let pageIDs = try #require(try fetchRecipe(recipeID, in: context)?.sourcePageIDs)
+        return (recorder, context, container, recipeID, pageIDs)
+    }
+
+    @Test("pages reordered")
+    func pagesReordered() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let saved = try Self.savedRecipe(pages: 3, folder: folder)
+        // A second copy of the recipe, as CloudKit allows.
+        let copy = RecipeModel()
+        copy.hydrate(from: try #require(try Self.fetchRecipe(saved.recipeID, in: saved.context)))
+        saved.context.insert(copy)
+        try saved.context.save()
+        let reversed = Array(saved.pageIDs.reversed())
+
+        try RecipeEditor(context: saved.context).reorderPages(reversed, of: saved.recipeID, now: Self.now)
+
+        let copies = try saved.context.fetch(FetchDescriptor<RecipeModel>()).compactMap { $0.toDomain() }
+        #expect(copies.count == 2)
+        #expect(copies.allSatisfy { $0.sourcePageIDs == reversed })
+    }
+
+    @Test("not the same pages")
+    func notTheSamePages() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let saved = try Self.savedRecipe(pages: 2, folder: folder)
+        let editor = RecipeEditor(context: saved.context)
+        let before = try Self.fetchRecipe(saved.recipeID, in: saved.context)
+
+        #expect(throws: RecipeEditorError.pagesDontMatch(saved.recipeID)) {
+            try editor.reorderPages([saved.pageIDs[1]], of: saved.recipeID, now: Self.now)
+        }
+        #expect(throws: RecipeEditorError.pagesDontMatch(saved.recipeID)) {
+            try editor.reorderPages(saved.pageIDs + [UUID()], of: saved.recipeID, now: Self.now)
+        }
+
+        #expect(try Self.fetchRecipe(saved.recipeID, in: saved.context) == before)
+    }
+
+    @Test("a page removed")
+    func pageRemoved() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let saved = try Self.savedRecipe(pages: 2, folder: folder)
+        let removed = saved.pageIDs[0]
+
+        try RecipeEditor(context: saved.context).removePage(removed, from: saved.recipeID, now: Self.now)
+
+        #expect(try Self.fetchRecipe(saved.recipeID, in: saved.context)?.sourcePageIDs == [saved.pageIDs[1]])
+        #expect(!(try saved.context.fetch(FetchDescriptor<SourcePageModel>()).contains { $0.id == removed }))
+        #expect(!(try saved.context.fetch(FetchDescriptor<PhotoModel>()).contains { $0.sourcePageID == removed }))
+        #expect(try saved.context.fetch(FetchDescriptor<SourcePageModel>()).count == 1)
+    }
+
+    @Test("a shared page is kept")
+    func sharedPageIsKept() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let saved = try Self.savedRecipe(pages: 2, folder: folder)
+        let shared = saved.pageIDs[0]
+        let image = try #require(PhotoFilesTests.makeImage(width: 40, height: 60))
+        let sessionID = try saved.recorder.startSession(now: Self.now)
+        let otherID = try saved.recorder.saveCapture([image], sessionID: sessionID, continuesOnUnscannedPage: false, now: Self.now)
+        let editor = RecipeEditor(context: saved.context)
+        // The other recipe lists the shared page too (SLT-047).
+        try editor.appendPages([shared], to: otherID, now: Self.now)
+        try saved.context.save()
+
+        try editor.removePage(shared, from: saved.recipeID, now: Self.now)
+
+        #expect(try Self.fetchRecipe(saved.recipeID, in: saved.context)?.sourcePageIDs == [saved.pageIDs[1]])
+        #expect(try saved.context.fetch(FetchDescriptor<SourcePageModel>()).contains { $0.id == shared })
+        #expect(try saved.context.fetch(FetchDescriptor<PhotoModel>()).contains { $0.sourcePageID == shared })
+    }
+
+    @Test("not the last page")
+    func notTheLastPage() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let saved = try Self.savedRecipe(pages: 1, folder: folder)
+
+        #expect(throws: RecipeEditorError.lastPage(saved.recipeID)) {
+            try RecipeEditor(context: saved.context).removePage(saved.pageIDs[0], from: saved.recipeID, now: Self.now)
+        }
+        #expect(try Self.fetchRecipe(saved.recipeID, in: saved.context)?.sourcePageIDs == saved.pageIDs)
+    }
+
+    @Test("read again")
+    func readAgain() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let saved = try Self.savedRecipe(pages: 2, folder: folder)
+        for pageID in saved.pageIDs {
+            try saved.recorder.recordReading(pageID: pageID, text: "Test Soup", words: [Self.word("Test Soup", pageID: pageID)])
+        }
+        _ = try saved.recorder.finishStructuring(Recipe(title: "Test Soup"), recipeID: saved.recipeID,
+                                                 lastPageEnds: false, now: Self.now)
+        var told: [UUID] = []
+        saved.recorder.onRecipeSaved = { told.append($0) }
+
+        try saved.recorder.readAgain(recipeID: saved.recipeID, now: Self.now.addingTimeInterval(60))
+
+        let pages = try saved.context.fetch(FetchDescriptor<SourcePageModel>()).compactMap { $0.toDomain() }
+        #expect(pages.count == 2)
+        #expect(pages.allSatisfy { $0.structuringState == .waiting })
+        #expect(pages.allSatisfy { $0.ocrText == "Test Soup" && $0.ocrWords.count == 1 })
+        #expect(told == [saved.recipeID])
+    }
+
+    @Test("read again, edited")
+    func readAgainEdited() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let saved = try Self.savedRecipe(pages: 1, folder: folder)
+        _ = try saved.recorder.finishStructuring(Recipe(title: "Test Soup"), recipeID: saved.recipeID,
+                                                 lastPageEnds: false, now: Self.now)
+        let recipe = try #require(try Self.fetchRecipe(saved.recipeID, in: saved.context))
+        var edit = ReviewEdit.from(recipe)
+        edit.title = "Her Test Soup"
+        try RecipeEditor(context: saved.context).saveEdits(edit, to: saved.recipeID, now: Self.now)
+        #expect(try Self.fetchRecipe(saved.recipeID, in: saved.context)?.reviewState == .edited)
+
+        try saved.recorder.readAgain(recipeID: saved.recipeID, now: Self.now.addingTimeInterval(60))
+
+        #expect(try Self.fetchRecipe(saved.recipeID, in: saved.context)?.reviewState == .needsReview)
+    }
 }

@@ -3,7 +3,8 @@ import SwiftData
 import SyLibCore
 
 /// What `MirrorWriter` needs to copy one recipe: the recipe, and its pages in order with each
-/// page's photo file and when it was captured.
+/// page's photo file and when it was captured; and whether its pages were reordered or removed, so
+/// their copies are written again (`15` M3-4).
 nonisolated struct MirrorSnapshot: Sendable {
     nonisolated struct Page: Sendable {
         let pageID: UUID
@@ -14,13 +15,15 @@ nonisolated struct MirrorSnapshot: Sendable {
 
     let recipe: Recipe
     let pages: [Page]
+    var pagesChanged: Bool = false
 }
 
 extension MirrorSnapshot {
     /// Snapshots of `recipes`, read from the store on the main actor: each recipe's pages in
-    /// `sourcePageIDs` order, with its cropped photo (MT-7) or any photo of it.
+    /// `sourcePageIDs` order, with its cropped photo (MT-7) or any photo of it; `pagesChanged` as
+    /// given.
     @MainActor
-    static func make(for recipes: [Recipe], in context: ModelContext) throws -> [MirrorSnapshot] {
+    static func make(for recipes: [Recipe], in context: ModelContext, pagesChanged: Bool = false) throws -> [MirrorSnapshot] {
         var capturedAtByPage: [UUID: Date] = [:]
         for page in try context.fetch(FetchDescriptor<SourcePageModel>()) where capturedAtByPage[page.id] == nil {
             capturedAtByPage[page.id] = page.capturedAt
@@ -37,7 +40,7 @@ extension MirrorSnapshot {
                 Page(pageID: pageID,
                      fileName: photoByPage[pageID]?.fileName,
                      capturedAt: capturedAtByPage[pageID] ?? recipe.createdAt)
-            })
+            }, pagesChanged: pagesChanged)
         }
     }
 }
@@ -46,7 +49,9 @@ extension MirrorSnapshot {
 /// `recipe.md` and `pages/page-<n>.heic`. Written by the device that made the change (MT-15), after
 /// its save, never blocking or undoing it; never read back as the app's data (SLT-052). A title
 /// change renames its folder (`02` §5.4, RV-27); an iCloud placeholder is never moved. Page copies
-/// are never replaced; a recipe she deletes has its whole folder removed (SLT-157). The mirror never
+/// are never replaced, except when its pages were reordered or removed (M3-4): then every
+/// `page-‹n›.heic` is removed and the pages copied again in their new order. A recipe she deletes
+/// has its whole folder removed (SLT-157). The mirror never
 /// changes anything in `PhotoFiles`' folder. HEIC only (SLT-054).
 actor MirrorWriter {
     private let log = AppLogger(category: "Mirror")
@@ -133,6 +138,19 @@ actor MirrorWriter {
             }
             let pagesFolder = folder.appending(path: "pages", directoryHint: .isDirectory)
             try fileManager.createDirectory(at: pagesFolder, withIntermediateDirectories: true)
+            // Pages reordered or removed: every page copy goes first, one coordinated delete each,
+            // so they are copied again from `page-1.heic` in the new order (M3-4).
+            if snapshot.pagesChanged {
+                let names = (try? fileManager.contentsOfDirectory(atPath: pagesFolder.path(percentEncoded: false))) ?? []
+                for name in names where Self.isPageCopy(name) {
+                    do {
+                        try remove(pagesFolder.appending(path: name))
+                    } catch {
+                        log.error(self, "recipe \(recipeID): \(name) not removed: \(error)")
+                        isComplete = false
+                    }
+                }
+            }
 
             var pageFileNames: [String] = []
             for (index, page) in snapshot.pages.enumerated() {
@@ -245,6 +263,13 @@ actor MirrorWriter {
         return nil
     }
 
+    /// `page-‹n›.heic`, n one or more digits.
+    private static func isPageCopy(_ name: String) -> Bool {
+        guard name.hasPrefix("page-"), name.hasSuffix(".heic") else { return false }
+        let number = name.dropFirst("page-".count).dropLast(".heic".count)
+        return !number.isEmpty && number.allSatisfy { ("0"..."9").contains($0) }
+    }
+
     private func exists(_ url: URL) -> Bool {
         FileManager.default.fileExists(atPath: url.path(percentEncoded: false))
     }
@@ -291,7 +316,7 @@ actor MirrorWriter {
         if let error = coordinationError ?? operationError { throw error }
     }
 
-    /// Removes a deleted recipe's folder (SLT-157).
+    /// Removes a deleted recipe's folder (SLT-157), or a page copy written again (M3-4).
     private func remove(_ url: URL) throws {
         var coordinationError: NSError?
         var operationError: (any Error)?

@@ -10,12 +10,16 @@ enum RecipeEditorError: Error, Equatable {
     case recipeUnreadable(UUID)
     /// She has edited the recipe, so a new reading doesn't replace it (RV-7).
     case recipeEdited(UUID)
+    /// The pages given aren't the recipe's (M3-4).
+    case pagesDontMatch(UUID)
+    /// The recipe's only page can't be removed; Delete Recipe removes it all (M3-4).
+    case lastPage(UUID)
 }
 
 /// The writer for recipes (`02` §5.2, SLT-082, `14` MT-8). M2-3 gives it what capture needs, M3-2
-/// the queue's structured reading, M3-3 review's three changes. `delete`, `markReviewed`,
-/// `saveEdits` and `dismissPageTwoWarning` save (the last three then write the Files copy); the
-/// others don't: their caller saves once.
+/// the queue's structured reading, M3-3 review's three changes, M3-4 a recipe's pages. `delete`,
+/// `markReviewed`, `saveEdits`, `dismissPageTwoWarning`, `reorderPages` and `removePage` save (all
+/// but `delete` then write the Files copy); the others don't: their caller saves once.
 @MainActor
 final class RecipeEditor {
     private let log = AppLogger(category: "RecipeEditor")
@@ -61,32 +65,19 @@ final class RecipeEditor {
             throw RecipeEditorError.recipeNotFound(recipeID)
         }
 
-        // Its pages: every copy's, minus any another recipe lists (SLT-047, for M3).
-        var pageIDs = Set(models.compactMap { $0.toDomain() }.flatMap(\.sourcePageIDs))
-        let otherRecipes = try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id != recipeID }))
-        for other in otherRecipes {
-            if let recipe = other.toDomain() {
-                pageIDs.subtract(recipe.sourcePageIDs)
-            }
+        // Its pages, those no other recipe lists, with their photos and sessions; and any dish
+        // photo of the recipe.
+        let pageIDs = Set(models.compactMap { $0.toDomain() }.flatMap(\.sourcePageIDs))
+        let records = try recordsOnly(of: recipeID, pageIDs: pageIDs)
+        let dishPhotos = try context.fetch(FetchDescriptor<PhotoModel>()).filter { photo in
+            photo.recipeID == recipeID && !records.photos.contains { $0 === photo }
         }
-
-        // Its photos: those of its pages, of both kinds, and any dish photo of the recipe.
-        let photos = try context.fetch(FetchDescriptor<PhotoModel>()).filter { photo in
-            photo.sourcePageID.map { pageIDs.contains($0) } == true || photo.recipeID == recipeID
-        }
-        let fileNames = photos.compactMap(\.fileName)
-
-        // Its sessions: those of its pages that no remaining page points to.
-        let allPages = try context.fetch(FetchDescriptor<SourcePageModel>())
-        let pages = allPages.filter { pageIDs.contains($0.id) }
-        let remainingSessionIDs = Set(allPages.filter { !pageIDs.contains($0.id) }.compactMap(\.sessionID))
-        let sessionIDs = Set(pages.compactMap(\.sessionID)).subtracting(remainingSessionIDs)
-        let sessions = try context.fetch(FetchDescriptor<ScanSessionModel>()).filter { sessionIDs.contains($0.id) }
+        let photos = records.photos + dishPhotos
 
         for model in models { context.delete(model) }
-        for page in pages { context.delete(page) }
+        for page in records.pages { context.delete(page) }
         for photo in photos { context.delete(photo) }
-        for session in sessions { context.delete(session) }
+        for session in records.sessions { context.delete(session) }
         do {
             try context.save()
         } catch {
@@ -95,11 +86,103 @@ final class RecipeEditor {
             log.error(self, "recipe \(recipeID): not deleted: \(error)")
             throw error
         }
-        log.info(self, "recipe \(recipeID) deleted: \(pages.count) pages, \(photos.count) photos")
+        log.info(self, "recipe \(recipeID) deleted: \(records.pages.count) pages, \(photos.count) photos")
+        return removeFilesAfterSave(photos.compactMap(\.fileName), of: recipeID, removingFolder: true)
+    }
 
+    // MARK: A recipe's pages (`15` M3-4)
+
+    /// The pages she put in order (RV-15): `pageIDs` must be exactly the recipe's pages, in any
+    /// order, on every copy, else `pagesDontMatch` and nothing changes. Saves, and the Files copy's
+    /// pages are written again in the new order.
+    func reorderPages(_ pageIDs: [UUID], of recipeID: UUID, now: Date) throws {
+        let changed = try changedCopies(recipeID) { recipe in
+            guard pageIDs.count == recipe.sourcePageIDs.count,
+                  pageIDs.map(\.uuidString).sorted() == recipe.sourcePageIDs.map(\.uuidString).sorted() else {
+                throw RecipeEditorError.pagesDontMatch(recipeID)
+            }
+            recipe.sourcePageIDs = pageIDs
+            recipe.updatedAt = now
+        }
+        for (model, recipe) in changed {
+            model.hydrate(from: recipe)
+        }
+        try saveAndMirror(recipeID: recipeID, pagesChanged: true)
+        log.info(self, "recipe \(recipeID): pages reordered, \(changed.count) copies")
+    }
+
+    /// A page she removed (RV-15, SLT-157): out of the recipe on every copy (its only page throws
+    /// `lastPage`, a page not in it `pagesDontMatch`, and nothing changes). When no other recipe
+    /// lists it, its page and photo records, and a session left with no page, go in the same save,
+    /// and its photo files after it, in a detached task it returns, as `delete` does. Saves, and
+    /// the Files copy's pages are written again.
+    @discardableResult
+    func removePage(_ pageID: UUID, from recipeID: UUID, now: Date) throws -> Task<Void, Never>? {
+        let changed = try changedCopies(recipeID) { recipe in
+            guard recipe.sourcePageIDs.contains(pageID) else {
+                throw RecipeEditorError.pagesDontMatch(recipeID)
+            }
+            guard recipe.sourcePageIDs.count > 1 else {
+                throw RecipeEditorError.lastPage(recipeID)
+            }
+            recipe.sourcePageIDs.removeAll { $0 == pageID }
+            recipe.updatedAt = now
+        }
+        let records = try recordsOnly(of: recipeID, pageIDs: [pageID])
+        for (model, recipe) in changed {
+            model.hydrate(from: recipe)
+        }
+        for page in records.pages { context.delete(page) }
+        for photo in records.photos { context.delete(photo) }
+        for session in records.sessions { context.delete(session) }
+        try saveAndMirror(recipeID: recipeID, pagesChanged: true)
+        log.info(self, "recipe \(recipeID): page removed, \(records.pages.count) page copies and \(records.photos.count) photos deleted")
+        return removeFilesAfterSave(records.photos.compactMap(\.fileName), of: recipeID, removingFolder: false)
+    }
+
+    /// Read Again on a recipe she edited (RV-7): it needs review again, on every copy, so the
+    /// queue reads it. Does not save.
+    func reopenForReading(_ recipeID: UUID, now: Date) throws {
+        let changed = try changedCopies(recipeID) { recipe in
+            if recipe.reviewState == .edited {
+                recipe.reviewState = .needsReview
+            }
+        }
+        for (model, recipe) in changed {
+            model.hydrate(from: recipe)
+        }
+        log.info(self, "recipe \(recipeID): reopened for reading, \(changed.count) copies")
+    }
+
+    /// The records of `pageIDs` that only `recipeID` lists (SLT-047: a page another recipe lists is
+    /// kept): every copy of those pages, their photos of any kind, and the sessions they would
+    /// leave with no page.
+    private func recordsOnly(of recipeID: UUID, pageIDs: Set<UUID>) throws
+        -> (pages: [SourcePageModel], photos: [PhotoModel], sessions: [ScanSessionModel]) {
+        var pageIDs = pageIDs
+        let otherRecipes = try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id != recipeID }))
+        for other in otherRecipes {
+            if let recipe = other.toDomain() {
+                pageIDs.subtract(recipe.sourcePageIDs)
+            }
+        }
+        let photos = try context.fetch(FetchDescriptor<PhotoModel>()).filter { photo in
+            photo.sourcePageID.map { pageIDs.contains($0) } == true
+        }
+        let allPages = try context.fetch(FetchDescriptor<SourcePageModel>())
+        let pages = allPages.filter { pageIDs.contains($0.id) }
+        let remainingSessionIDs = Set(allPages.filter { !pageIDs.contains($0.id) }.compactMap(\.sessionID))
+        let sessionIDs = Set(pages.compactMap(\.sessionID)).subtracting(remainingSessionIDs)
+        let sessions = try context.fetch(FetchDescriptor<ScanSessionModel>()).filter { sessionIDs.contains($0.id) }
+        return (pages, photos, sessions)
+    }
+
+    /// After a save that removed photo records: their files, and with `removingFolder` the
+    /// recipe's folder in Files, in a detached task (nil when there is nothing to do).
+    private func removeFilesAfterSave(_ fileNames: [String], of recipeID: UUID, removingFolder: Bool) -> Task<Void, Never>? {
+        let mirror = removingFolder ? mirror : nil
         guard !fileNames.isEmpty || mirror != nil else { return nil }
         let photoFiles = photoFiles
-        let mirror = mirror
         let log = log
         return Task.detached {
             var removed = 0
@@ -190,7 +273,20 @@ final class RecipeEditor {
 
     /// Every copy of the recipe, changed by `body`, after checking every copy can be read (as
     /// `applyStructure`); then saved and its Files copy written.
-    private func change(_ recipeID: UUID, _ what: String, _ body: (inout Recipe) -> Void) throws {
+    private func change(_ recipeID: UUID, _ what: String, _ body: (inout Recipe) throws -> Void) throws {
+        let changed = try changedCopies(recipeID, body)
+        for (model, recipe) in changed {
+            model.hydrate(from: recipe)
+        }
+        try saveAndMirror(recipeID: recipeID)
+        log.info(self, "recipe \(recipeID): \(what), \(changed.count) copies")
+    }
+
+    /// Every copy of the recipe with `body` applied, nothing written yet: no copy throws
+    /// `recipeNotFound`, a copy that can't be read `recipeUnreadable`, and `body` may throw, so a
+    /// throw changes nothing.
+    private func changedCopies(_ recipeID: UUID, _ body: (inout Recipe) throws -> Void) throws
+        -> [(model: RecipeModel, recipe: Recipe)] {
         let models = try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == recipeID }))
         guard !models.isEmpty else {
             throw RecipeEditorError.recipeNotFound(recipeID)
@@ -200,19 +296,16 @@ final class RecipeEditor {
             guard var recipe = model.toDomain() else {
                 throw RecipeEditorError.recipeUnreadable(recipeID)
             }
-            body(&recipe)
+            try body(&recipe)
             changed.append((model, recipe))
         }
-        for (model, recipe) in changed {
-            model.hydrate(from: recipe)
-        }
-        try saveAndMirror(recipeID: recipeID)
-        log.info(self, "recipe \(recipeID): \(what), \(models.count) copies")
+        return changed
     }
 
-    /// Saves, then writes the recipe's copy in Files as `CaptureRecorder` does after its saves; a
-    /// failed save is rolled back, logged and rethrown.
-    private func saveAndMirror(recipeID: UUID) throws {
+    /// Saves, then writes the recipe's copy in Files as `CaptureRecorder` does after its saves, its
+    /// page copies written again when `pagesChanged` (M3-4); a failed save is rolled back, logged
+    /// and rethrown.
+    private func saveAndMirror(recipeID: UUID, pagesChanged: Bool = false) throws {
         do {
             try context.save()
         } catch {
@@ -228,7 +321,7 @@ final class RecipeEditor {
             return
         }
         do {
-            guard let snapshot = try MirrorSnapshot.make(for: [recipe], in: context).first else { return }
+            guard let snapshot = try MirrorSnapshot.make(for: [recipe], in: context, pagesChanged: pagesChanged).first else { return }
             Task { await mirror.write(snapshot) }
         } catch {
             log.error(self, "recipe \(recipeID): no copy in Files: \(error)")

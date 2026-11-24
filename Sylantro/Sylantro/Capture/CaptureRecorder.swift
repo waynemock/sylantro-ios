@@ -157,6 +157,34 @@ final class CaptureRecorder {
         onRecipeSaved?(recipeID)
     }
 
+    /// Read Again after its pages changed (RV-7, `15` M3-4): an edited recipe needs review again
+    /// (`RecipeEditor.reopenForReading`), every copy of each of its pages waits, in one save; then
+    /// the queue is told, so it structures the recipe again from its pages in order. A page already
+    /// read keeps its reading, so only new pages are read (RV-4).
+    func readAgain(recipeID: UUID, now: Date) throws {
+        let recipeModels = try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == recipeID }))
+        guard !recipeModels.isEmpty else {
+            throw RecipeEditorError.recipeNotFound(recipeID)
+        }
+        let recipes = recipeModels.compactMap { $0.toDomain() }
+        let pages = try pageModels(Set(recipes.flatMap(\.sourcePageIDs)))
+        do {
+            if recipes.contains(where: { $0.reviewState == .edited }) {
+                try recipeEditor.reopenForReading(recipeID, now: now)
+            }
+            for page in pages {
+                page.structuringStateRaw = StructuringState.waiting.rawValue
+            }
+            try context.save()
+        } catch {
+            context.rollback()
+            log.error(self, "recipe \(recipeID): not read again: \(error)")
+            throw error
+        }
+        log.info(self, "recipe \(recipeID): read again, \(pages.count) page copies waiting")
+        onRecipeSaved?(recipeID)
+    }
+
     /// Marks every copy of the pages failed (RV-24), and saves.
     func markFailed(pageIDs: [UUID]) throws {
         let pages = try pageModels(Set(pageIDs))

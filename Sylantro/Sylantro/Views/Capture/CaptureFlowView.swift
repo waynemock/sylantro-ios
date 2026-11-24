@@ -19,6 +19,9 @@ struct CaptureFlowView: View {
 
     let mode: CaptureMode
     let captureRecorder: CaptureRecorder
+    /// Add Page's pages were saved: called after `addPages` succeeds, before the camera closes
+    /// (`15` M3-4, RV-7).
+    var onPagesAdded: () -> Void = {}
 
     @Environment(\.dismiss) private var dismiss
 
@@ -195,6 +198,7 @@ struct CaptureFlowView: View {
             let session = try currentSessionID()
             try captureRecorder.addPages(pending, to: recipeID, sessionID: session)
             pending = []
+            onPagesAdded()
             dismiss()
         } catch {
             log.error(self, "pages not added: \(error)")

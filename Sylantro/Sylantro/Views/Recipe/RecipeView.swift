@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import UIKit
 import VisionKit
+import SyLibCache
 import SyLibCore
 import SyLibUI
 
@@ -9,8 +10,9 @@ import SyLibUI
 /// "Reading…" while the queue has it, or "couldn't read" with Try Again), the page-2 warning, and
 /// its pages full width in order. Once read, the review screen (`13` §4.4, SC-9, `15` M3-3): the
 /// page beside or above the fields, flags tinted with their lines, tap a line to see it on the
-/// page, Edit and Done for the kitchen fields, and Looks Good. Add Page and Delete Recipe in the
-/// toolbar.
+/// page, Edit and Done for the kitchen fields and the pages (`13` §4.6, M3-4), and Looks Good. Add
+/// Page and Delete Recipe in the toolbar. After its pages change, a read recipe is read again,
+/// asking first if she edited it (RV-7).
 struct RecipeView: View {
     private let log = AppLogger(category: "Recipe")
 
@@ -25,6 +27,8 @@ struct RecipeView: View {
 
     @Environment(\.syTheme) private var syTheme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    /// For reading the recipe as just saved (RV-7's question); writes go through the writers.
+    @Environment(\.modelContext) private var modelContext
     @Query private var recipeModels: [RecipeModel]
     @Query private var photoModels: [PhotoModel]
     /// Every page, for its structuring state.
@@ -46,6 +50,19 @@ struct RecipeView: View {
     /// The fields as they were when Edit began; nil when not editing.
     @State private var editStart: ReviewEdit?
     @State private var isShowingSaveFailed = false
+    /// The page order as she edits it (M3-4); the order as saved; the pages she removed, not yet
+    /// saved.
+    @State private var draftPageIDs: [UUID] = []
+    @State private var savedPageIDs: [UUID] = []
+    @State private var removedPageIDs: [UUID] = []
+    /// The rows waiting on the remove alert (S-54).
+    @State private var pendingPageRemoval: IndexSet?
+    @State private var isConfirmingPageRemoval = false
+    /// Its pages changed and it isn't read again yet (RV-7).
+    @State private var needsReadAgain = false
+    @State private var isAskingReadAgain = false
+    /// Add Page saved pages: RV-7 runs once the camera has closed.
+    @State private var pagesWereAdded = false
 
     /// The page open in the full-screen viewer.
     private struct ViewedPage: Identifiable {
@@ -138,9 +155,24 @@ struct RecipeView: View {
         .alert("Couldn't Save", isPresented: $isShowingSaveFailed) {
             Button("OK") {}
         }
-        .fullScreenCover(isPresented: $isAddingPages) {
+        // Removing a page in Edit (S-54 to S-56).
+        .alert("Remove This Page?", isPresented: $isConfirmingPageRemoval) {
+            Button("Remove", role: .destructive) { removePendingPages() }
+            Button("Cancel", role: .cancel) { pendingPageRemoval = nil }
+        } message: {
+            Text("This removes the page and its photo from all your devices. This can't be undone.")
+        }
+        // RV-7: her edits would be replaced (S-57 to S-59).
+        .alert("Read the Pages Again?", isPresented: $isAskingReadAgain) {
+            Button("Read Again") { readAgainAfterAsking() }
+            Button("Keep My Edits", role: .cancel) { needsReadAgain = false }
+        } message: {
+            Text("The pages changed. Reading them again replaces your edits to this recipe.")
+        }
+        .fullScreenCover(isPresented: $isAddingPages, onDismiss: pagesAddedCameraClosed) {
             if let captureRecorder {
-                CaptureFlowView(mode: .addPages(recipeID: recipeID), captureRecorder: captureRecorder)
+                CaptureFlowView(mode: .addPages(recipeID: recipeID), captureRecorder: captureRecorder,
+                                onPagesAdded: { pagesWereAdded = true })
             }
         }
         .fullScreenCover(item: $viewedPage) { page in
@@ -288,6 +320,7 @@ struct RecipeView: View {
     private func fields(_ recipe: Recipe) -> some View {
         let flags = recipe.needsReview ? ReviewFlag.flags(for: recipe) : []
         return List {
+            pagesSection()
             headerSection(recipe, flags: flags)
             ingredientsSection(recipe, flags: flags)
             stepsSection(recipe, flags: flags)
@@ -310,6 +343,26 @@ struct RecipeView: View {
     /// The flags naming `field`.
     private func flags(_ flags: [ReviewFlag], on field: ReviewFlag.Field) -> [ReviewFlag] {
         flags.filter { $0.field == field }
+    }
+
+    /// In Edit, the pages first (`13` §4.6): one thumbnail row each, no words, VoiceOver reading
+    /// S-60; drag to move; delete asks first (S-54), and the only page has none.
+    @ViewBuilder
+    private func pagesSection() -> some View {
+        if isEditing {
+            Section {
+                ForEach(Array(draftPageIDs.enumerated()), id: \.element) { offset, pageID in
+                    PageThumbnail(photo: photo(forPage: pageID), photoFiles: photoFiles)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Page \(offset + 1)")
+                }
+                .onMove { draftPageIDs.move(fromOffsets: $0, toOffset: $1) }
+                .onDelete(perform: draftPageIDs.count > 1 ? { offsets in
+                    pendingPageRemoval = offsets
+                    isConfirmingPageRemoval = true
+                } : nil)
+            }
+        }
     }
 
     /// Title, the whole-recipe lines, Serves or Makes, and the times.
@@ -596,30 +649,107 @@ struct RecipeView: View {
         }
     }
 
-    /// Edit began: the fields as they are now. A draft kept after a failed save stays.
+    /// Edit began: the fields and the page order as they are now. A draft kept after a failed save
+    /// stays.
     private func beginEditing() {
         guard editStart == nil, let recipe = recipeModels.first?.toDomain() else { return }
         draft = ReviewEdit.from(recipe)
         editStart = draft
+        draftPageIDs = recipe.sourcePageIDs
+        savedPageIDs = recipe.sourcePageIDs
+        removedPageIDs = []
     }
 
-    /// Done: her changes saved, or nothing when she made none. A failed save says so (S-14) and
-    /// stays in Edit.
+    /// Done (`15` M3-4 part 3.2), in order: her field edits, if any; each removed page, then the
+    /// new order if it differs; then, after a page change, RV-7. Each step done is remembered, so a
+    /// failed step (S-14, staying in Edit) is the next Done's first.
     private func finishEditing() {
         guard let editStart else { return }
-        guard draft != editStart else {
-            self.editStart = nil
-            return
-        }
         do {
             guard let recipeEditor else { throw RecipeEditorError.recipeNotFound(recipeID) }
-            try recipeEditor.saveEdits(draft, to: recipeID, now: Date())
+            if draft != editStart {
+                try recipeEditor.saveEdits(draft, to: recipeID, now: Date())
+                self.editStart = draft
+            }
+            while let pageID = removedPageIDs.first {
+                try recipeEditor.removePage(pageID, from: recipeID, now: Date())
+                removedPageIDs.removeFirst()
+                savedPageIDs.removeAll { $0 == pageID }
+                needsReadAgain = true
+            }
+            if draftPageIDs != savedPageIDs {
+                try recipeEditor.reorderPages(draftPageIDs, of: recipeID, now: Date())
+                savedPageIDs = draftPageIDs
+                needsReadAgain = true
+            }
+            if needsReadAgain {
+                try readAgainOrAsk()
+            }
             self.editStart = nil
         } catch {
-            log.error(self, "recipe \(recipeID): edits not saved: \(error)")
+            log.error(self, "recipe \(recipeID): changes not saved: \(error)")
             isShowingSaveFailed = true
             editMode = .active
         }
+    }
+
+    /// RV-7, once a read recipe's pages changed: an edited recipe asks first (S-57); any other is
+    /// read again now. A recipe not read yet is left to the queue.
+    private func readAgainOrAsk() throws {
+        let recipe = savedRecipe()
+        guard recipe?.extraction != nil else {
+            needsReadAgain = false
+            return
+        }
+        if recipe?.reviewState == .edited {
+            isAskingReadAgain = true
+        } else {
+            try readAgain()
+        }
+    }
+
+    private func readAgain() throws {
+        guard let captureRecorder else { throw RecipeEditorError.recipeNotFound(recipeID) }
+        try captureRecorder.readAgain(recipeID: recipeID, now: Date())
+        needsReadAgain = false
+    }
+
+    /// Read Again at RV-7's question.
+    private func readAgainAfterAsking() {
+        do {
+            try readAgain()
+        } catch {
+            log.error(self, "recipe \(recipeID): not read again: \(error)")
+            isShowingSaveFailed = true
+        }
+    }
+
+    /// The camera Add Page opened has closed: after pages were added, RV-7 (part 3.3).
+    private func pagesAddedCameraClosed() {
+        guard pagesWereAdded else { return }
+        pagesWereAdded = false
+        needsReadAgain = true
+        do {
+            try readAgainOrAsk()
+        } catch {
+            log.error(self, "recipe \(recipeID): not read again: \(error)")
+            isShowingSaveFailed = true
+        }
+    }
+
+    /// The recipe as last saved, read from the store, not the view's query.
+    private func savedRecipe() -> Recipe? {
+        var descriptor = FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == recipeID })
+        descriptor.fetchLimit = 1
+        return (try? modelContext.fetch(descriptor))?.first?.toDomain()
+    }
+
+    /// Remove at the alert: the rows leave the draft order, to be removed at Done.
+    private func removePendingPages() {
+        guard let offsets = pendingPageRemoval else { return }
+        pendingPageRemoval = nil
+        removedPageIDs.append(contentsOf: offsets.map { draftPageIDs[$0] })
+        draftPageIDs.remove(atOffsets: offsets)
     }
 
     private func markReviewed() {
@@ -736,6 +866,61 @@ private extension View {
     /// The fields Edit doesn't change, shown as read, dimmed.
     func dimmed(_ isDimmed: Bool) -> some View {
         opacity(isDimmed ? 0.5 : 1)
+    }
+}
+
+// MARK: - A page's row in Edit
+
+/// A page's thumbnail at `RecipeRow`'s size, from memory or made off the main actor, as
+/// `RecipeRow` does (`15` M3-4); a placeholder until its file is here (SC-6).
+private struct PageThumbnail: View {
+    let photo: Photo?
+    let photoFiles: PhotoFiles?
+
+    @State private var thumbnail: UIImage?
+
+    var body: some View {
+        Group {
+            if let thumbnail {
+                Image(uiImage: thumbnail)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                ZStack {
+                    Rectangle().fill(.quaternary)
+                    Image(systemName: "icloud.and.arrow.down")
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .frame(width: 56, height: 56)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .task(id: [photo?.fileName, photoFiles?.root.path]) { await load() }
+    }
+
+    /// From memory, or made off the main actor once the file is here, checked again every 2
+    /// seconds until it is. Kept in memory only (SLT-054).
+    private func load() async {
+        guard let photoFiles, let fileName = photo?.fileName else {
+            thumbnail = nil
+            return
+        }
+        let url = photoFiles.url(for: fileName)
+        if let cached = await ImageCache.shared.memoryImage(for: url) {
+            thumbnail = cached
+            return
+        }
+        while !Task.isCancelled {
+            let image = await Task.detached {
+                photoFiles.thumbnail(of: fileName).map { UIImage(cgImage: $0) }
+            }.value
+            if let image {
+                await ImageCache.shared.store(image, for: url, toDisk: false)
+                thumbnail = image
+                return
+            }
+            try? await Task.sleep(for: .seconds(2))
+        }
     }
 }
 
