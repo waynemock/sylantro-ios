@@ -5,7 +5,8 @@ import SyLibCore
 import SyLibUI
 import SyLibCloud
 
-/// The library (`02` §7, `13` §2), the sidebar: her recipes, newest scan first, one row per id. Its
+/// The library (`02` §7, `13` §2), the sidebar: her recipes, newest scan first, one row per id, the
+/// read ones still to check first under Needs Review (S-44, RV-8, `15` M3-3). Its
 /// toolbar is Score It *'s Games list's: the iCloud button while iCloud is not available, the +
 /// that starts a scan (SC-2, MT-21), and ⋯ with Update Available (while there is one), Settings,
 /// About and App Store. From Score It *'s `GameListView.swift`, without its games, + and
@@ -21,6 +22,8 @@ struct LibraryView: View {
     let photoFiles: PhotoFiles?
     /// The capture writer; nil until the root has it, and the + waits for it.
     let captureRecorder: CaptureRecorder?
+    /// The extraction queue, for "Reading…" (S-45); nil until the root has it.
+    let extractionQueue: ExtractionQueue?
 
     @Environment(\.syTheme) private var syTheme
     @Environment(\.openURL) private var openURL
@@ -28,6 +31,8 @@ struct LibraryView: View {
 
     @Query(sort: \RecipeModel.createdAt, order: .reverse) private var recipeModels: [RecipeModel]
     @Query private var photoModels: [PhotoModel]
+    /// Every page, for its structuring state: one query, not a fetch per row.
+    @Query private var pageModels: [SourcePageModel]
 
     @State private var isShowingCamera = false
     @State private var isShowingNoCamera = false
@@ -36,14 +41,20 @@ struct LibraryView: View {
     private struct Row: Identifiable {
         let id: UUID
         let title: String
-        let createdAt: Date
-        let pageCount: Int
+        let detail: RecipeRow.Detail
+        let needsReview: Bool
         let coverFileName: String?
     }
 
     /// One row per id, newest first: CloudKit allows duplicates, and the first of each id wins
-    /// (`02` §5.2). A recipe's cover is the photo of its first page.
+    /// (`02` §5.2). A recipe's cover is the photo of its first page. The line under the title, in
+    /// `15` M3-3's order: being read now; not read with a failed page; not read; its author, else
+    /// its publisher, else when it was scanned.
     private var rows: [Row] {
+        var stateByPage: [UUID: String] = [:]
+        for page in pageModels where stateByPage[page.id] == nil {
+            stateByPage[page.id] = page.structuringStateRaw
+        }
         var coverByPage: [UUID: PhotoModel] = [:]
         for photo in photoModels {
             guard let pageID = photo.sourcePageID else { continue }
@@ -55,26 +66,51 @@ struct LibraryView: View {
         var seen: Set<UUID> = []
         var rows: [Row] = []
         for model in recipeModels where seen.insert(model.id).inserted {
-            let pageIDs = model.toDomain()?.sourcePageIDs ?? []
+            let recipe = model.toDomain()
+            let pageIDs = recipe?.sourcePageIDs ?? []
+            let scanned = RecipeRow.Detail.scanned(model.createdAt, pageCount: pageIDs.count)
+            let detail: RecipeRow.Detail
+            if extractionQueue?.currentRecipeID == model.id {
+                detail = .reading
+            } else if recipe?.extraction == nil {
+                let hasFailedPage = pageIDs.contains { stateByPage[$0] == StructuringState.failed.rawValue }
+                detail = hasFailedPage ? .couldNotRead : scanned
+            } else {
+                let source = [recipe?.attribution?.author, recipe?.attribution?.publisher]
+                    .compactMap { $0 }
+                    .first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+                detail = source.map { .source($0) } ?? scanned
+            }
             rows.append(Row(id: model.id,
                             title: model.title,
-                            createdAt: model.createdAt,
-                            pageCount: pageIDs.count,
+                            detail: detail,
+                            needsReview: recipe?.needsReview == true,
                             coverFileName: pageIDs.first.flatMap { coverByPage[$0]?.fileName }))
         }
         return rows
     }
 
+    private func recipeRow(_ row: Row) -> some View {
+        RecipeRow(title: row.title,
+                  detail: row.detail,
+                  coverFileName: row.coverFileName,
+                  photoFiles: photoFiles)
+            .tag(row.id)
+    }
+
     var body: some View {
         let rows = rows
+        let toReview = rows.filter(\.needsReview)
+        let others = rows.filter { !$0.needsReview }
         List(selection: $selection) {
-            ForEach(rows) { row in
-                RecipeRow(title: row.title,
-                          createdAt: row.createdAt,
-                          pageCount: row.pageCount,
-                          coverFileName: row.coverFileName,
-                          photoFiles: photoFiles)
-                    .tag(row.id)
+            // Needs Review first, newest first, only while it holds a recipe (RV-8).
+            if !toReview.isEmpty {
+                Section("Needs Review") {
+                    ForEach(toReview) { recipeRow($0) }
+                }
+            }
+            Section {
+                ForEach(others) { recipeRow($0) }
             }
         }
         // Rounded inset groups in every column, as on iPhone.
@@ -157,7 +193,8 @@ struct LibraryView: View {
 
 #Preview {
     NavigationStack {
-        LibraryView(present: { _ in }, selection: .constant(nil), photoFiles: nil, captureRecorder: nil)
+        LibraryView(present: { _ in }, selection: .constant(nil), photoFiles: nil, captureRecorder: nil,
+                    extractionQueue: nil)
     }
     .modelContainer(for: SylantroApp.syncedModels, inMemory: true)
     .environment(CloudAccountStatus())

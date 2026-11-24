@@ -4,13 +4,24 @@ import SyLibCache
 import SyLibCore
 
 /// One recipe in the library (`13` §2): its cover's thumbnail, its title ("New recipe" until it is
-/// read), and when it was scanned with its page count.
+/// read), and one line under it (`15` M3-3).
 struct RecipeRow: View {
+    /// The line under the title, in `15` M3-3's order.
+    enum Detail: Equatable {
+        /// Being read now (S-45).
+        case reading
+        /// Couldn't be read (S-46, RV-24).
+        case couldNotRead
+        /// When it was scanned and its page count (S-3).
+        case scanned(Date, pageCount: Int)
+        /// Its author or publisher, as printed.
+        case source(String)
+    }
+
     private let log = AppLogger(category: "Library")
 
     let title: String
-    let createdAt: Date
-    let pageCount: Int
+    let detail: Detail
     /// The cover photo's file: the recipe's first page.
     let coverFileName: String?
     let photoFiles: PhotoFiles?
@@ -25,7 +36,7 @@ struct RecipeRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title.isEmpty ? "New recipe" : title)
                     .font(.headline)
-                Text("Scanned \(createdAt, format: .dateTime.month(.abbreviated).day()) · \(pagesText)")
+                detailText
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -35,8 +46,17 @@ struct RecipeRow: View {
         .task(id: [coverFileName, photoFiles?.root.path]) { await loadThumbnail() }
     }
 
-    private var pagesText: String {
-        pageCount == 1 ? "1 page" : "\(pageCount) pages"
+    private var detailText: Text {
+        switch detail {
+        case .reading:
+            Text("Reading…")
+        case .couldNotRead:
+            Text("Couldn't read these pages")
+        case .scanned(let createdAt, let pageCount):
+            Text("Scanned \(createdAt, format: .dateTime.month(.abbreviated).day()) · \(pageCount == 1 ? "1 page" : "\(pageCount) pages")")
+        case .source(let source):
+            Text(verbatim: source)
+        }
     }
 
     @ViewBuilder

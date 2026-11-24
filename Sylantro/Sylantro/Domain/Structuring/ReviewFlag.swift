@@ -34,6 +34,24 @@ nonisolated struct ReviewFlag: Sendable, Equatable {
     var kind: Kind
     var field: Field
 
+    /// The line she reads under a flagged field, `13` §6's S-52a to S-52k (`15` M3-3). Kept here
+    /// so a test checks them; the view only shows them.
+    static func line(for kind: Kind) -> String {
+        switch kind {
+        case .noTitle: "No title found. Add one."
+        case .titleFromLayout: "Check the title."
+        case .notOnPage: "Not found on the page. Check it."
+        case .droppedNotOnPage: "Something here wasn't on the page and was left out."
+        case .ingredientWasStep: "One of these looked like a step and was moved."
+        case .ingredientsFromWholePage, .ingredientLinesUnsure: "Check the ingredients."
+        case .stepsFromWholePage: "Check the steps."
+        case .unreadableLine(let page): "A line on page \(page) couldn't be read."
+        case .mayHoldOtherRecipes(let titles): "This page may hold other recipes: \(titles.joined(separator: ", "))."
+        case .other: "Check this."
+        case .continuesOnUnscannedPage: "Continues on a page not scanned"
+        }
+    }
+
     /// The prefixes of warnings that carry a value after them.
     private static let notOnPageIngredient = "not on page: ingredient "
     private static let notOnPageStep = "not on page: step "

@@ -350,4 +350,91 @@ struct CaptureRecorderTests {
         let recipe = try #require(try context.fetch(FetchDescriptor<RecipeModel>()).first?.toDomain())
         #expect(recipe.continuesOnUnscannedPage == false)
     }
+
+    // MARK: Review (`15` M3-3)
+
+    /// `recipe` saved in a fresh in-memory store: the context, an editor on it, and the container.
+    static func makeReadRecipe(_ recipe: Recipe) throws -> (context: ModelContext, editor: RecipeEditor, container: ModelContainer) {
+        let container = try ModelTwinTests.makeContainer()
+        let context = container.mainContext
+        let model = RecipeModel()
+        model.hydrate(from: recipe)
+        context.insert(model)
+        try context.save()
+        return (context, RecipeEditor(context: context), container)
+    }
+
+    static func fetchRecipe(_ id: UUID, in context: ModelContext) throws -> Recipe? {
+        try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == id })).first?.toDomain()
+    }
+
+    @Test("looks good")
+    func looksGood() throws {
+        let read = Recipe(title: "Test Soup", reviewState: .needsReview, extraction: Extraction(), createdAt: Self.now, updatedAt: Self.now)
+        let edited = Recipe(title: "Her Test Soup", reviewState: .edited, extraction: Extraction(), createdAt: Self.now, updatedAt: Self.now)
+        let (context, editor, container) = try Self.makeReadRecipe(read)
+        _ = container
+        let model = RecipeModel()
+        model.hydrate(from: edited)
+        context.insert(model)
+        try context.save()
+
+        try editor.markReviewed(read.id, now: Self.now.addingTimeInterval(60))
+        try editor.markReviewed(edited.id, now: Self.now.addingTimeInterval(60))
+
+        #expect(try Self.fetchRecipe(read.id, in: context)?.reviewState == .reviewed)
+        #expect(try Self.fetchRecipe(edited.id, in: context)?.reviewState == .edited)
+    }
+
+    @Test("edits are saved")
+    func editsAreSaved() throws {
+        let read = Recipe(title: "Test Soup", reviewState: .needsReview, extraction: Extraction(), createdAt: Self.now, updatedAt: Self.now)
+        let (_, editor, container) = try Self.makeReadRecipe(read)
+        var edit = ReviewEdit.from(read)
+        edit.title = "Her Test Soup"
+
+        try editor.saveEdits(edit, to: read.id, now: Self.now.addingTimeInterval(60))
+
+        // A fresh fetch, from a new context on the same store.
+        let fresh = try ModelContext(container).fetch(FetchDescriptor<RecipeModel>()).first?.toDomain()
+        #expect(fresh?.title == "Her Test Soup")
+        #expect(fresh?.reviewState == .edited)
+    }
+
+    @Test("the warning goes")
+    func warningGoes() throws {
+        let read = Recipe(title: "Test Soup", continuesOnUnscannedPage: true, reviewState: .needsReview,
+                          extraction: Extraction(), createdAt: Self.now, updatedAt: Self.now)
+        let (context, editor, container) = try Self.makeReadRecipe(read)
+        _ = container
+
+        try editor.dismissPageTwoWarning(read.id, now: Self.now.addingTimeInterval(60))
+
+        #expect(try Self.fetchRecipe(read.id, in: context)?.continuesOnUnscannedPage == false)
+    }
+
+    @Test("try again")
+    func tryAgain() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (recorder, context, container) = try Self.makeRecorder(photoRoot: folder)
+        _ = container
+        let image = try #require(PhotoFilesTests.makeImage(width: 40, height: 60))
+        let sessionID = try recorder.startSession(now: Self.now)
+        let failedID = try recorder.saveCapture([image, image], sessionID: sessionID, continuesOnUnscannedPage: false, now: Self.now)
+        let waitingID = try recorder.saveCapture([image], sessionID: sessionID, continuesOnUnscannedPage: false, now: Self.now)
+        let failedPages = try #require(try Self.fetchRecipe(failedID, in: context)?.sourcePageIDs)
+        try recorder.markFailed(pageIDs: failedPages)
+        var told: [UUID] = []
+        recorder.onRecipeSaved = { told.append($0) }
+
+        try recorder.retryFailed(recipeID: failedID)
+        try recorder.retryFailed(recipeID: waitingID)
+
+        let states = try context.fetch(FetchDescriptor<SourcePageModel>())
+            .filter { failedPages.contains($0.id) }
+            .map(\.structuringStateRaw)
+        #expect(states == ["waiting", "waiting"])
+        #expect(told == [failedID])
+    }
 }

@@ -62,13 +62,15 @@ struct RootView: View {
             LibraryView(present: { sheet = $0 },
                         selection: $selection,
                         photoFiles: photoFiles,
-                        captureRecorder: captureRecorder)
+                        captureRecorder: captureRecorder,
+                        extractionQueue: extractionQueue)
         } detail: {
             if let selection {
                 RecipeView(recipeID: selection,
                            photoFiles: photoFiles,
                            recipeEditor: recipeEditor,
                            captureRecorder: captureRecorder,
+                           extractionQueue: extractionQueue,
                            onDeleted: { self.selection = nil })
                     .id(selection)
             } else {

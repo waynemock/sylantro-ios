@@ -139,6 +139,24 @@ final class CaptureRecorder {
         return true
     }
 
+    /// Try Again (S-48, RV-24): every copy of the recipe's failed pages waits again, saved, and
+    /// the queue is told (`onRecipeSaved`). With no failed page it does nothing and doesn't save.
+    func retryFailed(recipeID: UUID) throws {
+        let recipeModels = try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == recipeID }))
+        let pageIDs = Set(recipeModels.compactMap { $0.toDomain() }.flatMap(\.sourcePageIDs))
+        let failed = try pageModels(pageIDs).filter { $0.structuringStateRaw == StructuringState.failed.rawValue }
+        guard !failed.isEmpty else {
+            log.info(self, "recipe \(recipeID): Try Again, no failed page")
+            return
+        }
+        for page in failed {
+            page.structuringStateRaw = StructuringState.waiting.rawValue
+        }
+        try save("recipe \(recipeID): failed pages not reset")
+        log.info(self, "recipe \(recipeID): Try Again, \(failed.count) page copies waiting")
+        onRecipeSaved?(recipeID)
+    }
+
     /// Marks every copy of the pages failed (RV-24), and saves.
     func markFailed(pageIDs: [UUID]) throws {
         let pages = try pageModels(Set(pageIDs))

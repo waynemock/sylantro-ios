@@ -2,9 +2,9 @@
 
 **A Syzygy Softwerks task document · every saved page read and structured behind her, and a review
 where she checks each recipe against its photo**
-Version 0.30 · 24 November 2026 · **Draft: the task plan (RV-1), flags (RV-10), the test set's four
+Version 0.48 · 24 November 2026 · **Draft: the task plan (RV-1), flags (RV-10), the test set's four
 proposals (RV-18) the spike leftovers (RV-19) the device-only store (RV-2) which device reads (RV-3) how a reading is kept (RV-4) no background work (RV-5) reading M2's recipes (RV-6) and her edits on a page change (RV-7) where review lives (RV-8) the review layout (RV-9) tap-to-highlight (RV-11) what she edits (RV-12) Looks Good (RV-13) and where the screens are drawn (RV-21) are ruled; the rest of RV-2 to RV-22 is open.
-**M3-1 complete** (123 tests; run 7 scored). **M3-2 complete** (142 tests). **M3-2a complete** (149 tests); M3-3 written in full and ready (`13` v0.22 accepted).** The questions in §3 are
+**M3-1 complete** (123 tests; run 7 scored). **M3-2 complete** (142 tests). **M3-2a complete** (149 tests); **M3-3 complete** (163 tests); M3-4, M3-3a and M3-3b written in full and ready (in that order); Pops's device checks to run.** The questions in §3 are
 Claude's proposals for Pops. No task is written in full until the questions it depends on are
 ruled (§1's Gates column).
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`, `00B_SYLANTRO_GUARDRAILS.md`,
@@ -77,9 +77,11 @@ One task at a time, in order. Each is checked before the next is written, as M2 
 | **M3-1** ✓ | **Domain and the structurer, before any screen:** SP-20's two title fixes; the header area in the spike report; each ingredient's `sourceBox` from its page line, and each step's from `TextMatch`; `ReviewFlag`, a Domain type that turns `extraction.warnings` into typed flags that name a field (RV-10); the spike's leftovers (one fraction table, `GeneratedRecipe` and `makeRecipe` removed with their tests, the fallback's noisy warnings dropped). Checked by a spike run 7 on Pops's iPhone | RV-1, RV-10, RV-19; TS-5, TS-10, TS-11 (RV-18) |
 | **M3-2** ✓ | **The queue:** the device-only store (`ExtractionJobModel`, `DeviceStateModel`) if RV-2 keeps it; `ExtractionQueue` reading and structuring waiting pages one recipe at a time; the reading written once to the page (RV-4); the result handed to `RecipeEditor` as the recipe's draft; the Files copy rewritten. The library rows fill in with titles. No review screen yet | M3-1; RV-2 to RV-7 |
 | **M3-2a** ✓ | **Three fixes found on device:** a title holding the author's name (RV-25, SP-23); "Page n of n" on the last page clears the page-2 warning (RV-26); the Files folder follows the title (RV-27) | M3-2; RV-25 to RV-27 |
-| M3-3 (ready) | **Review:** where recipes that need review are listed (RV-8), the review screen with the photo and the fields (RV-9), flags in plain words (RV-10), tap a line to see it on the photo (RV-11), editing (RV-12), and Looks Good (RV-13) | M3-2; `13` v0.18 with the review screens and every string (RV-21) |
-| M3-4 | **A recipe's pages:** reorder and remove (MT-29, MT-31, RV-15), and reading again after a page is added, moved or removed (RV-7) | M3-3; RV-7, RV-15 |
-| M3-5 | **Several recipes on a page** (SLT-047): she picks which to save; each is structured on its own and shares the photo (RV-14) | M3-3; RV-14; a spike check on the test set's four-recipe page (`10` H-38) |
+| **M3-3** ✓ | **Review:** where recipes that need review are listed (RV-8), the review screen with the photo and the fields (RV-9), flags in plain words (RV-10), tap a line to see it on the photo (RV-11), editing (RV-12), and Looks Good (RV-13) | M3-2; `13` v0.18 with the review screens and every string (RV-21) |
+| M3-3a (ready) | **Review, after using it:** the strip only while she checks, scans under ⋯, a hint to tap a line, one line for a whole-list flag; skipped ingredient lines put back (RV-29) and steps across a page break found (RV-30) | M3-4; `13` v0.29 SC-14 to SC-17 |
+| M3-3b (ready) | **Editing a row in a sheet:** in Edit, a tap on a row opens a sheet (medium, can go large) with the row's part of the page, its text in full, Cancel and Save; Add Page and Edit move into ⋯; New Scans atop the library | M3-3a; `13` v0.35 SC-19 to SC-21 |
+| M3-4 (ready) | **A recipe's pages:** reorder and remove (MT-29, MT-31, RV-15), and reading again after a page is added, moved or removed (RV-7) | M3-3; RV-7, RV-15 |
+| M3-5 | **Several recipes on a page** (SLT-047): she picks which to save; each is structured on its own and shares the photo (RV-14); a page that isn't a recipe is flagged (RV-32) | M3-3; RV-14, RV-32; a spike check on the test set's four-recipe page (`10` H-38) |
 | M3-6 | **Handwriting she can't read and search:** the unreadable piece of the photo shown in place (TS-15, if accepted), and search by title and ingredient (RV-16) | M3-3; RV-16, RV-18 |
 | M3-7 | **Pops's device check:** twenty pages scanned without waiting on his iPhone 18 Pro, read behind him, reviewed, a page reordered and one removed, a several-recipe page split, synced to iPad and Mac; one recipe scanned on a device without Apple Intelligence, if he has one | M3-6 |
 
@@ -732,7 +734,12 @@ document except §2 of this one.
 
 ### Task M3-3 · Sylantro · Review
 
-**Status: ready, not started.** Every question it depends on is ruled: RV-8 to RV-13, RV-21,
+**Status: complete** (24 Nov 2026, 163 tests; Results log), checked by Claude against its Done
+when: all six clauses pass. The agent's notes (a) to (o) are accepted. Two are left for later
+rulings, not fixes: (a) the title has no page position, so the strip starts at the top of page 1
+(placing it needs a `Recipe` field or a structurer change); (g) the strip's grabber has no
+VoiceOver label, since `13` §6 has no word for it. Pops's check on device is still to run.
+Every question it depended on was ruled: RV-8 to RV-13, RV-21,
 RV-26, RV-28 here, and `13` v0.22 (SC-9 to SC-12; S-44 to S-53 approved).
 
 **Inputs:** `00`, `00A`, `00B`, `02` (§1, §4, §5.2, §6), `13` v0.22 (all of it: §2, §3.2, §4.4,
@@ -937,10 +944,394 @@ search (M3-6). No network. Edit no document except §2 of this one.
 
 ---
 
+### Task M3-4 · Sylantro · A recipe's pages
+
+**Status: ready, not started** RV-7 and RV-15 ruled; `13` v0.25 §4.6 (SC-13, S-54 to S-60 approved; `13` v0.30).
+
+**Inputs:** `00`, `00A`, `00B`, `02` §5.2 and §5.4, `13` v0.25 (§4.4, §4.6, §6), this document
+(RV-7, RV-15, Tasks M3-2 and M3-3), and these files: `Store/RecipeEditor.swift`,
+`Capture/CaptureRecorder.swift`, `Mirror/MirrorWriter.swift`, `Views/Recipe/RecipeView.swift`,
+`Views/Capture/CaptureFlowView.swift`, `Domain/Extraction/ExtractionPlanner.swift` (to read: an
+`.edited` recipe gets no job), and the tests `SylantroTests/Capture/CaptureRecorderTests.swift`,
+`SylantroTests/Mirror/MirrorWriterTests.swift`.
+
+*Why:* pages scanned out of order, or a page that isn't the recipe's (M2's device check, MT-29,
+MT-31), can't be fixed today; and a page added to a read recipe either isn't read or, if she
+edited it, waits forever. This task lets her reorder and remove pages in Edit and reads the
+recipe again afterward, asking first if she has edited it (RV-7).
+
+#### Part 1 · The writers
+
+`RecipeEditor` (each changes every copy of the recipe after checking every copy reads, then
+saves through `saveAndMirror`, as M3-3's calls do):
+
+- `reorderPages(_ pageIDs: [UUID], of recipeID: UUID, now: Date) throws`: `pageIDs` must hold
+  exactly the recipe's `sourcePageIDs` in some order, else it throws a new
+  `RecipeEditorError.pagesDontMatch(UUID)` and changes nothing. Sets the order and `updatedAt`.
+- `removePage(_ pageID: UUID, from recipeID: UUID, now: Date) throws -> Task<Void, Never>?`: the
+  recipe's only page throws a new `RecipeEditorError.lastPage(UUID)`; a page not in the recipe
+  throws `pagesDontMatch`. Removes the id from `sourcePageIDs` and sets `updatedAt`. If no other
+  recipe lists the page, every copy of its `SourcePageModel`, its `PhotoModel`s and any session
+  left with no page are deleted in the same save, and its photo files are removed after the
+  save in a detached task it returns, exactly as `delete` does for a recipe (SLT-157). Factor
+  the shared part out of `delete` rather than copying it.
+- `saveAndMirror` gains `pagesChanged: Bool` (default false), passed to the mirror (Part 2).
+  Both calls above pass true.
+
+`CaptureRecorder.readAgain(recipeID: UUID, now: Date) throws`: if the recipe is `.edited`, its
+`reviewState` becomes `.needsReview` (through a new `RecipeEditor.reopenForReading(_:now:)`,
+which doesn't save); every copy of each of its pages becomes `.waiting` (a page already read
+keeps its reading, so only new pages are read, RV-4); one save; then `onRecipeSaved(recipeID)`
+so the queue structures it again from its pages in their order. Nothing else changes: the new
+reading replaces the recipe's fields through `applyStructure`, as M3-2 built it.
+
+#### Part 2 · The Files copy
+
+`MirrorSnapshot` gains `pagesChanged: Bool` (false from `make` unless asked;
+`make(for:in:pagesChanged:)`). In `MirrorWriter.write`, when it is true, every `page-‹n›.heic`
+in the recipe's `pages` folder is removed first (one coordinated delete each), then the pages
+are copied as today, `page-1.heic` onward in the new order. Otherwise page copies are still
+never replaced. Update the type comment.
+
+#### Part 3 · The recipe screen (`13` §4.6)
+
+1. **In Edit** (M3-3's `EditButton`): a **Pages**
+   section first in the fields `List`, one row per page in order, each row the page's
+   thumbnail (`RecipeRow`'s size, from memory or made off the main actor, as
+   `RecipeRow` does) with the VoiceOver label S-60 ("Page ‹n›"), and no visible text. `.onMove`
+   reorders; `.onDelete` asks with a plain alert (S-54, S-55, S-56: Remove destructive, Cancel)
+   and, on Remove, takes the page out of the draft order. A recipe with one page has no delete
+   on its row. This section is the same on every device; the page photos (strip or column)
+   show the draft order once Done saves.
+2. **Done** applies, in order: the field edits (M3-3's `saveEdits`, if any changed); then the
+   page changes, if any: `removePage` for each removed page, then `reorderPages` with the draft
+   order when it differs; then, if any page change was made and the recipe has an `extraction`,
+   the RV-7 rule below. A failed step shows S-14 with OK and stays in Edit, as M3-3.
+3. **Add Page** (S-22) on a read recipe: `CaptureFlowView` in `.addPages` mode gains an
+   `onPagesAdded: () -> Void`, called after `addPages` succeeds and before it closes;
+   `RecipeView` then applies the RV-7 rule. On a recipe not read yet, as today.
+4. **The RV-7 rule:** if the recipe is `.edited`, a plain alert (S-57, S-58; buttons S-59:
+   **Read Again**, then **Keep My Edits** as the cancel role). Read Again, or a recipe that isn't
+   `.edited`, calls `readAgain`. Keep My Edits does nothing more: the pages keep their new order
+   and the recipe isn't read again (a page she added stays `.waiting`; the queue leaves an
+   edited recipe alone).
+
+#### Part 4 · Tests
+
+Swift Testing, made-up values only.
+
+| File | Test | Checks |
+|---|---|---|
+| `CaptureRecorderTests` (the editor's tests live here, as M3-2 chose) | pages reordered | `reorderPages` saves the new order on every copy |
+| | not the same pages | a list missing one, or with an extra, throws `pagesDontMatch` and changes nothing |
+| | a page removed | `removePage` drops it from the recipe and deletes its page and photo records |
+| | a shared page is kept | a page another recipe lists leaves this recipe but keeps its records |
+| | not the last page | the only page throws `lastPage` |
+| | read again | `readAgain` makes every page `.waiting`, keeps their readings, and calls `onRecipeSaved` once |
+| | read again, edited | an `.edited` recipe becomes `.needsReview` |
+| `MirrorWriterTests` | pages rewritten in order | two pages written; then the snapshot with them swapped and `pagesChanged`: `page-1.heic` has the old `page-2.heic`'s bytes |
+| | a removed page goes | three pages written; then two with `pagesChanged`: only `page-1.heic` and `page-2.heic` remain |
+
+**The suite total:** 163 plus these 9: **172**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with **172** tests (or the total before plus 9,
+   said), with the destination string and the run's own total.
+3. `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty.
+4. A scan of every string literal in the changed views finds only `13` §6's words (S-54 to S-60
+   new), SF Symbol names, and log text.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's check on device (iPhone 18 Pro, then iPad)
+
+1. A recipe whose pages are out of order: Edit, drag them into order, Done. The photos show the
+   new order, the recipe is read again (Reading…), and its steps follow the pages. In Files,
+   `pages/page-1.heic` is the new first page.
+2. A recipe with a stray page: Edit, delete it, Remove, Done. It's gone, on the iPad too.
+3. Edit a recipe's title, then Add Page: "Read the Pages Again?" Keep My Edits keeps the title;
+   do it again and Read Again replaces it with the new reading, and it's back in Needs Review.
+4. A recipe's only page has no delete.
+
+#### Do not
+
+Change `SylantroSchemaV1` or any synced model, `StoreOpener`, the structurer or its prompts,
+`TextReader`, `ExtractionPlanner`, `ExtractionQueue`, the spike, `Info.plist`, the entitlements,
+build settings or SyLib. No popover or confirmation dialog (SLT-088). No several-recipes choice
+(M3-5), no search (M3-6). No string she reads beyond `13` §6. No network. Edit no document
+except §2 of this one.
+
+---
+
+### Task M3-3a · Sylantro · Review, after using it
+
+**Status: ready, not started; runs after M3-4** (both change `RecipeView`). Found on Pops's
+device, 24 Nov 2026. RV-29 and RV-30 here; `13` v0.31 SC-14 to SC-18; RV-31; S-52l, S-61 and S-62
+approved (`13` v0.30); S-63 to S-65 approved (`13` v0.36).
+
+**Inputs:** `00`, `00A`, `00B`, `13` v0.31 (§4.4 and its v0.26 to v0.31 rulings, §6), `10` §7
+(SP-22), this document (RV-29 to RV-31, Tasks M3-1, M3-3, M3-4), and these files:
+`Views/Recipe/RecipeView.swift`, `Views/Recipe/PagePhotoViewer.swift`,
+`Domain/Recipe/Recipe.swift`, `Domain/Review/ReviewEdit.swift`,
+`Extraction/RecipeStructurer.swift`, `Domain/Structuring/RecipeValidator.swift`,
+`Domain/Structuring/SourceLocator.swift`, `Domain/Structuring/PageClutter.swift`,
+`Domain/Structuring/WrapJoiner.swift`, `Domain/Structuring/ReviewFlag.swift`,
+`Domain/Parsing/IngredientLineParser.swift`, and the tests `RecipeStructurerTests.swift`,
+`SourceLocatorTests.swift`, `ReviewFlagTests.swift`, `StructuringRulesTests.swift`,
+`RecipeJSONTests.swift`.
+
+*Why:* on device, the pinned scan strip took a third of the screen even when she was only
+reading (SC-14); new users don't know a line can be tapped (SC-16); a flag on a whole list tinted
+every row (SC-17); the kolaches' first ingredient was dropped (RV-29, SP-24); and its first step,
+which runs across a page break, was flagged "Not found on the page" with no position (RV-30,
+SP-22); and the large title slid over the scan as the list scrolled (SC-18); and a tap on the title couldn't show where it is (RV-31).
+
+#### Part 1 · A step across a page break (RV-30, SP-22)
+
+1. `RecipeStructurer`: the found-on-the-page check gets a second text, the same lines less every
+   `PageClutter.isClutter` line. `RecipeValidator.check(_:pageText:clutterFreeText:)`: a value is
+   found when it is in either text. Callers that have no such text pass `pageText` twice.
+2. `locatorLines` leaves out `PageClutter.isClutter` lines.
+3. `SourceLocator.find`: a run may continue from the last line of one page onto the next page
+   (two pages at most, still `maximum` lines in all). Its box is the union of its lines on the
+   **first** page only. A run within one page is tried first, as now; the cross-page run only
+   when no single-page run matches.
+
+#### Part 2 · Ingredient lines the model skipped (RV-29, SP-24)
+
+In `RecipeStructurer.ingredientGroups(from:lines:)`, after the items are made:
+
+1. A group's **span** runs from its `nameLine` when that is in range (whether or not it became
+   the name), else its first item's `firstLine`, to its last item's `lastLine`.
+2. An unused line inside a group's span that `WrapJoiner.startsIngredient` is **put back**: an
+   `Ingredient` made from it as items are (`rawText` the line, `quantity` and `unit` from
+   `IngredientLineParser.parse`, `item` the parse's `rest` trimmed, nil if empty), placed among
+   the group's ingredients in line order. Its `unused ingredient line n` warning is not added;
+   instead `put back: ingredient n`, numbered as `not on page: ingredient n` is (its place among
+   all the recipe's ingredients, 1-based).
+3. A group with no name, whose span starts at a line just after an unused line that ends with
+   `:`, doesn't `startsIngredient` and is no longer than `maximumGroupNameLength`, takes that line
+   as its name (less the `:`); the line is used.
+4. `ReviewFlag`: a new `Kind.putBack` on that `ingredient(UUID)`, resolved as `notOnPage`'s
+   number is; `line(for: .putBack)` is S-52l.
+
+#### Part 3 · The recipe screen (`13` §4.4 with SC-14 to SC-18)
+
+1. **SC-14, iPhone (compact) only:** the scan strip shows only while the recipe `needsReview`
+   or she is in Edit. Otherwise the fields start at the title, with no photo at the top (no dish
+   photo yet: SC-15 is after M3). iPad and Mac are unchanged.
+2. **The scans, when the strip isn't shown:** ⋯ gains **View Pages** (S-62), above Delete
+   Recipe, opening `PagePhotoViewer` on page 1. `PagePhotoViewer` gains paging between the
+   recipe's pages (a `TabView` with `.page` style, each page zoomable as now) and an optional
+   starting page and box.
+3. **Tap a line when the strip isn't shown:** opens `PagePhotoViewer` on the line's page, zoomed
+   so the box fills the width with a 16 pt margin, outlined as in the strip. A line with no box
+   opens its first page whole.
+4. **SC-16, the hint:** while the strip shows (iPhone) or the recipe `needsReview` (iPad and
+   Mac), a line S-61 with `Image(systemName: "hand.tap")`, caption style, secondary color, under
+   the strip and above the title (iPad and Mac: atop the fields), until she first taps a line.
+   Then it never shows again on that device: `@AppStorage("reviewHintSeen")` (device-only,
+   never synced, never in the store).
+5. **SC-17:** a flag whose field is a whole list (`.ingredients`, `.steps`) is one tinted row
+   at the top of that list holding its S-52 line; the list's rows aren't tinted. Single-row
+   flags (one ingredient, one step, the title) tint their row as now.
+6. **SC-18, the bar (every device):** `RecipeView` uses `.navigationBarTitleDisplayMode(.inline)`
+   always, and its `navigationTitle` names the view, not the recipe: S-63 "Review" while the
+   recipe `needsReview` and she isn't in Edit, S-64 "Edit" in Edit, S-65 "Recipe" once reviewed,
+   and S-2 before it is read (as now). The recipe's title is only the fields' first row, as now,
+   and scrolls with them; nothing in the bar or above the strip moves when the list scrolls.
+   No test (a view change).
+7. **RV-31, where the title is:** `Recipe` gains `titleBox: SourceBox?`, encoded with the
+   recipe and decoded with `decodeIfPresent` (nil when missing), so older recipes still read and
+   `schemaVersion` is unchanged. `SourceLocator.locate` also places the title when `titleBox` is
+   nil and the title isn't empty: a run of 1 to 3 lines on one page (`maximumTitleRun = 3`)
+   whose normalized text **equals** the normalized title (pass 1 only, never "contains", so a
+   step mentioning the dish isn't taken), tried from the first line. `ReviewEdit.applied` keeps
+   it when she changes the title (as a changed ingredient keeps its box). `RecipeView`: a tap on
+   the title row selects `titleBox` like any line (strip zoomed and outlined; when the strip
+   isn't shown, item 3), and the strip starts at it when nothing is selected. With no
+   `titleBox`, page 1 whole, as now. `recipe.json` carries it as it carries the other boxes.
+
+#### Part 4 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `SourceLocatorTests` | a step across pages | a step whose first lines end page 1 and last line starts page 2, with a footer line between: located, box on page 1 holding only page 1's lines |
+| | one page first | a step found within one page isn't given a cross-page box |
+| `StructuringRulesTests` or `RecipeStructurerTests` (where `ingredientGroups` is tested) | a skipped line is put back | a group whose `nameLine` points at an ingredient line and whose items start after it: that line is an ingredient, first, with `put back: ingredient 1` and no `unused` warning |
+| | a line outside a group stays out | an unused line after the last group's last item isn't put back |
+| | a heading becomes the name | an unused `Kolaches:` line just before the span names the group "Kolaches" |
+| `RecipeValidatorTests` (new) or `RecipeStructurerTests` | a value across a page break is found | a step whose text is split by a footer line in `pageText` is found with `clutterFreeText` |
+| `SourceLocatorTests` | the title is placed | a title equal to a page-1 line gets that line's box; a title found only inside a step's line gets none |
+| `RecipeJSONTests` | an older recipe reads | recipe JSON with no `titleBox` decodes, `titleBox` nil, the rest unchanged |
+| `ReviewFlagTests` | put back | `put back: ingredient 2` gives `.putBack` on the second ingredient, and `line(for:)` is S-52l |
+
+**The suite total:** M3-4's total (172) plus these 9: **181**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with **181** tests (or the total before plus 9,
+   said), with the destination string and the run's own total.
+3. `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty; `promptVersion` and the prompts
+   are unchanged (these are rules after the model).
+4. A scan of every string literal in the changed views finds only `13` §6's words (S-52l, S-61,
+   S-62, S-63 to S-65 new), SF Symbol names, the `AppStorage` key, accessibility labels already named, and log
+   text.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's check on device (iPhone 18 Pro, then iPad)
+
+1. Rescan the kolaches pages: the yeast line is first under a "Kolaches" subheading, tinted with
+   "Put back from the page. Check it."; step 1 "Bloom yeast" has no flag, and tapping it outlines
+   its part at the foot of page 2.
+2. The hint shows on the first recipe in review and is gone after the first tap, for good.
+3. Looks Good: the strip goes and the recipe starts at its title. ⋯ › View Pages swipes through
+   the pages; tapping an ingredient opens its page zoomed and outlined.
+3a. The bar reads Review while checking, Edit in Edit, Recipe once reviewed, small; scrolling the
+   list moves nothing over the scan, and the recipe's title scrolls with the list.
+3b. After Read Again on the kolaches (or a rescan), tapping the title outlines it on page 1.
+4. A recipe with "Check the ingredients.": one tinted line atop the list, rows plain.
+5. Spike run 8 (or 9): titles, lines and steps no worse than run 7; step positions up.
+
+#### Do not
+
+Change `SylantroSchemaV1` or any synced model, the prompts or `promptVersion`, `TextReader`,
+`ExtractionPlanner`, `ExtractionQueue`, `MirrorWriter`, `Info.plist`, the entitlements, build
+settings or SyLib. No dish photos (SC-15: after M3). No popover, tip bubble or confirmation
+dialog (SLT-088). No string she reads beyond `13` §6. No network. Edit no document except §2 of
+this one.
+
+---
+
+### Task M3-3b · Sylantro · Editing a row in a sheet
+
+**Status: ready, not started; runs after M3-3a** (all three change `RecipeView`). SC-19 to SC-21 ruled
+(`13` v0.35); S-66 to S-71 approved (`13` v0.36) (the agent uses them as written and notes it).
+
+**Inputs:** `00`, `00A`, `00B`, `13` v0.35 (§2, §4.2, §4.4 "Editing", SC-10, SC-14, SC-18 to SC-21, §6), this
+document (Tasks M3-3, M3-3a, M3-4), and these files: `Views/Recipe/RecipeView.swift`,
+`Views/Library/LibraryView.swift`, `Domain/Review/ReviewEdit.swift`, `SylantroTests/Domain/ReviewEditTests.swift`, and SyLib's
+`IconButton`.
+
+*Why:* on device (Pops, 24 Nov 2026: "Editing is useless as is. The rows are long and only having
+a single line text field ain't gonna cut it. The multi line is better but still clunky… Tap a
+row, see a new sheet for editing it. Save cancel."), an ingredient line was cut off in its
+one-line field and a long step grew the list as she typed. And (SC-20) Add Page and Edit are
+seldom needed after the first scan, so they move into ⋯. And (SC-21) a scan still being read sat among finished recipes.
+
+#### Part 1 · `ReviewEdit` by field (Domain, `import Foundation` only)
+
+1. `ReviewEdit.Field`, an enum: `title`, `yield`, `notes`, `ingredient(UUID)`, `step(UUID)`.
+2. `text(for: Field) -> String`: that field's text in the edit; `""` for an id not in it.
+3. `setting(_ text: String, for: Field) -> ReviewEdit`: the edit with that field's text
+   replaced, nothing else changed; an id not in it changes nothing.
+4. `removing(_ field: Field) -> ReviewEdit`: an ingredient or step removed by id (an emptied
+   group stays; `applied` already drops it); `title`, `yield` and `notes` set to `""`.
+
+`applied(to:now:)` and `RecipeEditor.saveEdits` are unchanged: Done still saves the whole edit.
+
+#### Part 2 · Edit's rows (`RecipeView`, every device)
+
+1. In Edit, the title, Serves or Makes, each ingredient line, each step and the notes are plain
+   text rows showing the edit's text in full (wrapping, no line limit), not text fields. An empty
+   one shows its heading's word in secondary color (S-51 "Serves", "Notes"; S-66 for the title).
+   Delete (red minus and swipe), the drag handles, the + rows and M3-4's Pages section stay as
+   they are.
+2. **A tap on a row in Edit** selects its place on the page, as a tap does outside Edit (the strip
+   zooms and outlines it; iPad and Mac: the pages column), and opens the **edit sheet** for that
+   field. Outside Edit, a tap only shows the row on the page, as now (SC-19).
+3. **A + row** adds an empty line or step to the edit, as now, and opens the sheet for it.
+
+#### Part 3 · The edit sheet (a private view in `RecipeView.swift`, or `Views/Recipe/RowEditSheet.swift`)
+
+1. Presented with `.sheet`, `.presentationDetents([.medium, .large])`, starting at `.medium`,
+   with the drag indicator showing. On iPad and Mac it is the system's form sheet (detents are
+   iPhone's).
+2. **Its bar:** a title naming the field (S-66 "Title", S-51 "Serves", S-67 "Ingredient", S-68
+   "Step ‹n›" with the step's place from 1, S-51 "Notes"), inline. Leading: SyLib `IconButton`
+   `xmark`, VoiceOver label S-69 "Cancel". Trailing: `IconButton` `checkmark`, the palette's
+   accent, VoiceOver label S-69 "Save", disabled while the text equals what the sheet opened with.
+3. **Its content, top to bottom:** the field's place on the page, cropped and zoomed as the strip
+   does (box fills the width with a 16 pt margin, outlined), about 120 pt tall, so she can read
+   the page while the keyboard is up; none when the field has no place. Then one
+   `TextField(axis: .vertical)` with `lineLimit(3...)`, focused when the sheet opens, holding the
+   field's text in full.
+4. **Save** puts the text into the edit (`setting`) and closes the sheet. Nothing is stored yet:
+   Done saves as now, and an unchanged edit still saves nothing.
+5. **Cancel** closes the sheet and leaves the edit as it was; for a line or step the + just added,
+   it is removed (`removing`). A swipe down closes it as Cancel does while nothing changed, and is
+   blocked once she has typed (`interactiveDismissDisabled`), so a swipe never loses her words.
+6. No alert, popover or confirmation dialog (SLT-088).
+
+#### Part 4 · The toolbar (SC-20) and the library (SC-21), every device
+
+1. Outside Edit, `RecipeView`'s toolbar holds only ⋯ (SyLib `IconButton` `ellipsis.circle`, as
+   now). Its menu, in order: **Edit** (S-70, `pencil`; only once the recipe is read, as the Edit
+   button is now), **Add Page** (S-22, `doc.badge.plus`; disabled with no `CaptureRecorder`, as
+   now), **View Pages** (S-62, M3-3a; only when the strip isn't shown), a `Divider`, then
+   **Delete Recipe** (S-23, destructive, as now).
+2. Edit in the menu sets `editMode` to `.active`; `beginEditing` runs from the existing
+   `onChange`, unchanged.
+3. In Edit the toolbar holds only iOS's `EditButton()` (its Done, S-50), which ends Edit and saves
+   as now; ⋯ is hidden until Edit ends.
+4. The Add Page and Edit toolbar buttons are removed. Add Page's camera, the page question and
+   M3-4's Pages section are unchanged.
+5. **SC-21, `LibraryView`:** a recipe not read yet (`extraction == nil`: waiting, reading, or
+   couldn't be read) goes in a new first section headed **New Scans** (S-71), newest first, only
+   while it holds a recipe. Then Needs Review (S-44) as now, then the unheaded rest. Each row's
+   line is unchanged (S-45, S-46, S-47's row line as M3-3 built it). Once read, a recipe moves
+   to Needs Review (or the rest) on its own, since the sections come from the same query.
+
+#### Part 5 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `ReviewEditTests` | text by field | `text(for:)` gives the title, yield, notes, an ingredient's line and a step's text by id; `""` for an unknown id |
+| | setting a field | `setting` changes only that ingredient's text; the groups, order and other fields are equal |
+| | removing a new line | `removing(.ingredient(id))` takes that line out and leaves its group; `removing(.step(id))` the same for a step |
+
+**The suite total:** M3-3a's total (181) plus these 3: **184**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with **184** tests (or the total before plus 3,
+   said), with the destination string and the run's own total.
+3. `Domain/Review/ReviewEdit.swift` imports only Foundation; `git diff --
+   Sylantro/Store/SylantroSchemaV1.swift` is empty; `RecipeEditor` is unchanged.
+4. A scan of every string literal in the changed views finds only `13` §6's words (S-66 to S-71
+   new), SF Symbol names, accessibility labels already named, and log text.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's check on device (iPhone 18 Pro, then iPad)
+
+1. Edit, tap a long step: a half-height sheet opens with the step's part of the page at its top
+   and the whole step in the field; the strip above outlines it.
+2. Change it, Save, then Done: the step is saved and the recipe is edited. Edit again, change a
+   line, Cancel: nothing changed.
+3. Type in a sheet and swipe down: it stays open. Drag it up: it goes full height.
+4. + under the ingredients opens an empty sheet; Cancel leaves no empty row.
+5. Outside Edit, a tap still only shows the row on the page.
+6. The toolbar shows only ⋯ (Edit, Add Page, View Pages, Delete Recipe); in Edit only Done.
+7. Scan a recipe: it sits under New Scans, "Reading…", above Needs Review; once read it moves to
+   Needs Review.
+
+#### Do not
+
+Change `SylantroSchemaV1` or any synced model, `RecipeEditor`, `ReviewEdit.applied`, the
+structurer, the prompts, `ExtractionQueue`, `MirrorWriter`, `Info.plist`, the entitlements, build
+settings or SyLib. No editing outside Edit. No toolbar button but ⋯, and Done in Edit. No popover, tip bubble or confirmation dialog
+(SLT-088). No string she reads beyond `13` §6. No network. Edit no document except §2 of this one.
+
+---
+
 ## 2. Results log
 
 | Task | Date | Status | Summary |
 |---|---|---|---|
+| M3-3 | 24 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 163 tests in 24 suites passed after 0.564 seconds."; `** TEST SUCCEEDED **`. Total before: 149 (`@Test` count at session start), so 149 + 14 = 163 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source (two of this session's own were fixed: `nonEmpty`/`webURL` made `nonisolated`, an unused test value); the one warning left is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped". ✅ 2 the suite passed with 163 tests on the pinned destination. ✅ 3 `Domain/Review/ReviewEdit.swift:1` and `Domain/Review/Recipe+Review.swift:1` are each `import Foundation`, the only import. ✅ 4 `git diff -- Sylantro/Store/SylantroSchemaV1.swift`: empty (exit 0); `--cached --quiet`: exit 0. ✅ 5 a Python scan of every string literal in `RecipeView.swift`, `LibraryView.swift`, `RecipeRow.swift`, `CaptureFlowView.swift` and `RootView.swift` (comments skipped). The new ones are all `13` §6's: S-2, S-3, S-14, S-16, S-17, S-20 to S-26, S-27, S-28, S-44 to S-49, S-51's eight words, S-53. The rest are accessibility labels named here ("Show on page", "Add Ingredient", "Add Step"), SF Symbol names (`doc.badge.plus`, `ellipsis.circle`, `exclamationmark.triangle`, `plus.circle.fill`, `icloud.and.arrow.down`), log text, the logger category, and three that are none of these, given as notes j and k: `""` (the empty placeholders), `"\(offset + 1)."` (a step's number) and `"https://"` (a link's destination, never shown). The S-52 lines live in `ReviewFlag.line(for:)` (Domain) and the times words in `RecipeRendering.timesLine`, both S-51's and S-52's text. The literals already in `LibraryView` and `RootView` are unchanged. ✅ 6 git status before and after below; this row. **What was built:** part 1 `Domain/Review/ReviewEdit.swift` (`ReviewEdit` with `Group`, `Line`, `StepLine`; `from(_:)`; `applied(to:now:)` by the rules) and `Recipe.needsReview`; `ReviewFlag.line(for:)` with S-52a to S-52k. Part 2 `RecipeEditor.markReviewed`, `saveEdits`, `dismissPageTwoWarning`, each on every copy after checking every copy reads, then a private `saveAndMirror(recipeID:)` (save, roll back/log/rethrow on failure, then the Files copy as `CaptureRecorder` writes it); type comment updated. `CaptureRecorder.retryFailed(recipeID:)`. `ExtractionQueue.currentRecipeID`, `private(set)`, observed, set at a job's start and cleared by `defer` when it ends. Part 3 `LibraryView` takes the queue. Needs Review (S-44) first when it isn't empty, newest first, then an unheaded section. `RecipeRow`'s line is a `Detail` (S-45, S-46, S-3, or the author, else publisher, else S-3), from one `@Query` of `SourcePageModel`. Part 4 `RecipeView` (below, and notes a to j): before reading, M2's screen with S-45 or S-47 and Try Again (`CapsuleButton`) in place of S-20. Once read: the compact strip (`PageStrip`) over the fields, or a 45%/55% `HStack` with the pages scrolled to the selected line, outlined. Then the fields in order with S-51 headings; flags tinted `Color.orange.opacity(0.15)` with their S-52 line, caption, secondary, only while `needsReview`; tap a line; `EditButton()` before Add Page, with the kitchen fields as `TextField`s, `.onDelete`/`.onMove` and + rows; Done saves only a changed edit, and a failed save shows S-14 with OK and stays in Edit; Looks Good (`CapsuleButton(fillsWidth: true)`), hidden in Edit; That's All of It on S-52k. `RootView` passes the queue to both views. Part 5 `CaptureFlowView`'s alert gains That's All of It after Save Without It, saving with no warning. Part 6 `RecipeRendering.markdown` adds a read recipe's sections in order (yield, times, `## Ingredients` with `### ‹group›` and `- ` lines, `## Steps` numbered, `## Notes`, `## Equipment`, `## Nutrition`, `## Source`), with shared `yieldLine`, `timesLine` (and `duration`) and `sourceLines` that the screen uses too; an unread recipe is unchanged. Part 7: 14 tests as the table (`ReviewEditTests` 6, new; `ReviewFlagTests` 2; `RecipeRenderingTests` 2; `CaptureRecorderTests` 4). **Files:** new `Sylantro/Domain/Review/ReviewEdit.swift`, `Sylantro/Domain/Review/Recipe+Review.swift`, `SylantroTests/Domain/ReviewEditTests.swift`; changed `Sylantro/Domain/Structuring/ReviewFlag.swift`, `Sylantro/Domain/Recipe/RecipeRendering.swift`, `Sylantro/Store/RecipeEditor.swift`, `Sylantro/Capture/CaptureRecorder.swift`, `Sylantro/Extraction/ExtractionQueue.swift`, `Sylantro/Views/Library/LibraryView.swift`, `Sylantro/Views/Library/RecipeRow.swift`, `Sylantro/Views/Recipe/RecipeView.swift`, `Sylantro/Views/Capture/CaptureFlowView.swift`, `Sylantro/Views/Root/RootView.swift`, `SylantroTests/Capture/CaptureRecorderTests.swift`, `SylantroTests/Domain/RecipeRenderingTests.swift`, `SylantroTests/Domain/ReviewFlagTests.swift`; this document (this row only). Read and not changed: `PagePhotoView.swift`, `PagePhotoViewer.swift`, `MirrorWriter.swift`, `IngredientLineParser.swift`. No `SylantroSchemaV1`, synced model, `StoreOpener`, structurer, prompt, `TextReader`, `ExtractionPlanner`, spike, `MirrorWriter`, `Info.plist`, entitlement, build setting or SyLib change; no popover or confirmation dialog; no page reorder/remove, several-recipes choice or search; no network. **Git status before** (branch `milestone-3`): clean (M3-2a committed as `179d0a7`). **After:** at the session's check, ` M` on the 13 changed files and `??` on `Sylantro/Domain/Review/` and `SylantroTests/Domain/ReviewEditTests.swift`. By the final `git status`, those had been staged outside this session (`M ` and `A `; this session ran no git write), and this document shows ` M` for this row. **Git:** `git status --short` (×3), `git branch --list`, `git log --oneline -3`, `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (the three unchanged since this session read them), `git diff -- Sylantro/Store/SylantroSchemaV1.swift`, `git diff --cached --quiet -- Sylantro/Store/SylantroSchemaV1.swift`. **Notes, details the task left open, for Claude to confirm:** (a) **The title has no `sourceBox`**: `Recipe` has no field for one and `SourceLocator` places only ingredients and steps. So the strip starts at the top of page 1 (part 4.1's "else"), and a tap on the title shows page 1 whole (part 4.4's "one without"). Pops's check 2 ("the strip shows the title on the page") will see the top of page 1. Placing the title needs a schema or structurer ruling. (b) Serves or Makes is one line, the yield's text as printed (`RecipeRendering.yieldLine`), with no separate heading: a printed yield already reads "Serves 4" or "Makes 24 cookies", and `recipe.md` writes the same line. (c) The fields are a `List` (`.insetGrouped`, the palette background), not a `ScrollView`, because `.onDelete` and `.onMove` work only in a `List`, which scrolls. A flagged ingredient, step or title gets a rounded amber row background (`listRowBackground`). A flagged list tints each of its rows and shows its S-52 line once, in a tinted row at its end. (d) A flagged field that isn't present (for example notes dropped as not on the page) still shows its heading and its flag line, so the flag isn't lost. (e) The whole-recipe lines: S-52k shows whenever the recipe is flagged, as M2's screen did, after review too. S-52h, S-52i and S-52j (an `other` warning, always field `recipe`) show only while `needsReview`. S-52j is among them because `ReviewFlag` says an unknown warning is shown, not hidden. (f) The strip's numbers, none given: a 16 pt margin each side of a zoomed line; zoom never below the page's width and no maximum; the outline's corner radius 4; a 40 pt drag to open or close; a 36 × 5 pt grabber; background `secondarySystemBackground`. A page shown whole is fitted at the strip's height. A tap on the strip itself does nothing (the iPad and Mac pages keep M2's tap to open full screen). (g) The grabber has no VoiceOver label, since §6 has no word for it, so VoiceOver can't open the strip. Tap a line uses the hint "Show on page", not a label, so the line's own words are still read first. (h) Edit: the yield and notes fields show even when empty. The yield's placeholder is "Serves" (S-51's word). The title, line, step and notes fields have an empty placeholder (§6 has no words for them), so they have no VoiceOver label. With no ingredients, the + adds a new unnamed group. The fields Edit doesn't change are dimmed by opacity 0.5. Flags still show in Edit. Done with no `RecipeEditor` yet counts as a failed save. (i) Before reading: S-45 takes precedence; otherwise a failed page shows S-47 and Try Again in place of S-20, not under it. (j) An empty title after reading still shows as S-2 in the row, the navigation title and the fields, as before. `navigationTitle` is unchanged, so a read recipe's title is in the bar and large in the fields. The step number is drawn from the step's position, so the structurer's index from 0 and `applied`'s from 1 (as part 1 rules, and as its test checks) look the same on screen and in `recipe.md`. (k) A printed web address without a scheme is linked with `https://` before it and shown as printed. (l) `ReviewEdit.applied`: line and step texts are trimmed before comparing. A changed ingredient keeps its `isOptional`, `isHandwritten` and `isUnreadable`; part 1 lists only what is cleared. (m) `needsReview` is in a new file, `Domain/Review/Recipe+Review.swift`; the task named the folder, not the file. `PageStrip`, `LineOutline` and `FlagLines` are private views inside `RecipeView.swift`. (n) A failed Looks Good, That's All of It or Try Again is logged only, with no alert, since the task gives no copy for one. That's All of It is a small bordered button. (o) In `recipe.md`, a section's lines (ingredients, steps, equipment, source) are one block joined by single newlines. **Next:** Pops's check on device (iPhone 18 Pro, then iPad and Mac), items 1 to 8, with item 2 as note (a) says. Not run in this session |
 | M3-2a | 24 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 149 tests in 23 suites passed after 0.517 seconds."; `** TEST SUCCEEDED **`. Total before: 142 (`@Test` count at session start), so 142 + 7 = 149 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source; the one warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped", reported, not suppressed. ✅ 2 the suite passed with 149 tests on the pinned destination. ✅ 3 `HeaderArea.swift:1`, `UnfinishedPageCheck.swift:1` and `ExtractionPlanner.swift:1` are each `import Foundation`, the only import. ✅ 4 `git diff -- Sylantro/Store/SylantroSchemaV1.swift`: empty (exit 0); `git diff --cached --quiet` on it: exit 0. ✅ 5 git status before and after below; this row. **What was built:** part 1 `HeaderArea.isSideLine`'s author half: with line and name normalized, the author's line is `line == name` or `" " + line + " "` containing `" by " + name + " "`; the name no longer needs a space; the site-name half unchanged; the doc comments on `isSideLine` and `snappedTitle` say "the author's line: the name alone, or `by` and the name". Part 2 `UnfinishedPageCheck.saysLastPage(_:)` (`page`, n, `of`, m in a row, whole numbers, n == m ≥ 1; Foundation only; `reason` unchanged); `ExtractionPlanner.merged(_:into:lastPageEnds:now:)` (`continuesOnUnscannedPage` is `existing`'s `&& !lastPageEnds`, doc comment says so); `RecipeEditor.applyStructure(_:to:lastPageEnds:now:)` and `CaptureRecorder.finishStructuring(_:recipeID:lastPageEnds:now:)` pass it through, with no default; `ExtractionQueue` computes it from `readings.last?.lines.map(\.text) ?? []` and logs at info by recipe id. Part 3 `MirrorWriter.write`: a found folder (never a placeholder; `existingFolder(for:)` without placeholders) whose name isn't `RecipeRendering.folderName(title:id:)`, with nothing at that name, is moved there in one coordinated move (a new private `move(_:to:)`: `.forMoving` on the source, `.forReplacing` on the destination, `item(at:willMoveTo:)` and `item(at:didMoveTo:)`), then written into; a failed move is logged at error and the old folder written. The rename's log lines give the recipe id only. Type comment and `write`'s comment updated. `RecipeRendering` unchanged. Part 4: 7 new tests as the table (`StructuringRulesTests` 2, `UnfinishedPageCheckTests` 2, `ExtractionPlannerTests` 1, `CaptureRecorderTests` 1, `MirrorWriterTests` 1), and "a renamed folder is still found" rewritten (same name and purpose: the folder is found by id and moved back to the title's name, with `recipe.md` there). The existing `merged` test and the four other test callers pass `lastPageEnds: false`. **Files** (this session's own edits): `Sylantro/Domain/Structuring/HeaderArea.swift`, `Sylantro/Domain/Capture/UnfinishedPageCheck.swift`, `Sylantro/Domain/Extraction/ExtractionPlanner.swift`, `Sylantro/Store/RecipeEditor.swift`, `Sylantro/Capture/CaptureRecorder.swift`, `Sylantro/Extraction/ExtractionQueue.swift`, `Sylantro/Mirror/MirrorWriter.swift`, `SylantroTests/Domain/StructuringRulesTests.swift`, `SylantroTests/Domain/UnfinishedPageCheckTests.swift`, `SylantroTests/Domain/ExtractionPlannerTests.swift`, `SylantroTests/Capture/CaptureRecorderTests.swift`, `SylantroTests/Mirror/MirrorWriterTests.swift`, and this document (this row only). M3-2's work was already staged, so where a file shows `MM` or `AM` the session's lines are `git diff` (unstaged) of it. `PageReading.swift` was read and needed no change. No `SylantroSchemaV1`, synced model, prompt, `promptVersion`, `UnfinishedPageCheck.reason`, `RecipeRendering`, view, `Info.plist`, entitlement, build setting or SyLib change; no string she reads; no network. **Git status before** (branch `milestone-3`): everything staged: `M ` `Docs/02_ARCHITECTURE.md`, `10_ACCURACY_TEST_SET.md`, `12_IMPLEMENTATION_PLAN.md`, `15_MILESTONE_3_REVIEW.md`, `README.md`, `Sylantro/Capture/CaptureRecorder.swift`, `PhotoFiles.swift`, `Extraction/PageReading.swift`, `Store/RecipeEditor.swift`, `Views/Root/RootView.swift`, `SylantroTests/Capture/CaptureRecorderTests.swift`, `Store/ModelTwinTests.swift`; `A ` `Domain/Extraction/ExtractionJob.swift`, `ExtractionPlanner.swift`, `Extraction/ExtractionQueue.swift`, `Store/SylantroLocalSchema.swift`, `SylantroTests/Domain/ExtractionPlannerTests.swift`, `Extraction/PageReadingTests.swift`. **After:** `MM` `CaptureRecorder.swift`, `RecipeEditor.swift`, `CaptureRecorderTests.swift`, and this document; `AM` `ExtractionPlanner.swift`, `ExtractionQueue.swift`, `ExtractionPlannerTests.swift`; ` M` `UnfinishedPageCheck.swift`, `HeaderArea.swift`, `MirrorWriter.swift`, `StructuringRulesTests.swift`, `UnfinishedPageCheckTests.swift`, `MirrorWriterTests.swift`; the rest as before. **Git:** `git status --short` (×3), `git branch --list`, `git log --oneline -3`, `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (to confirm the three were unchanged since this session last read them), `git diff -- Sylantro/Store/SylantroSchemaV1.swift`, `git diff --cached --quiet -- Sylantro/Store/SylantroSchemaV1.swift`. **Notes, for Claude to confirm:** (a) `isSideLine` keeps a guard that the normalized name isn't empty (an author answer such as "—" normalizes to ""), so an area line that normalizes to "" isn't taken for the author's. (b) `saysLastPage` takes n and m as words of ASCII digits only, so "+5" or "５" don't count. (c) The queue logs on every structured save: "last page says it ends: true/false; page-2 warning none / cleared / kept". The warning state is from the draft as fetched at the job's start. (d) A failed rename logs the error's domain and code only, not its description: a file-system error's description carries the paths, which hold the title. (e) "Nothing is at that name" is checked as no file or folder at exactly the title's name. A `.<name>.icloud` placeholder at the new name isn't checked for, so a move could still land beside one; the spec named only the source placeholder. (f) The test run's log shows CoreData+CloudKit "Unable to initialize without an iCloud account" from the test host's synced store on a simulator with no account. It is from the environment, not this change, and every test passed. **Next:** Pops's check on device (iPhone 18 Pro): the kolaches pages' title; a "Page n of n" recipe saved with Save Without It loses "Continues on a page not scanned" once read; a new scan's Files folder takes its title once read; spike run 8, titles at least 16 of 22. Not run in this session |
 | M3-2 | 24 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 142 tests in 23 suites passed after 0.508 seconds."; `** TEST SUCCEEDED **`. Total before: 123 (`@Test` count at session start), so 123 + 19 = 142 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source; the one warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped", reported, not suppressed. ✅ 2 the suite passed with 142 tests on the pinned destination. ✅ 3 `ExtractionJob.swift` and `ExtractionPlanner.swift` each import `Foundation` only. `grep -n "context.save\|\.insert(" Extraction/ExtractionQueue.swift` (from the source folder): lines 78, 87, 145, 147, 368, 380, every one on `context`, the device-only store's context (`ExtractionQueue.swift:20`). The synced store is `syncedContext`, used only for `fetch` (lines 132, 133, 166, 316, 333, 340); every synced write goes through `captureRecorder` (`recordReading`, `finishStructuring`, `markFailed`). ✅ 4 `git diff -- Sylantro/Store/SylantroSchemaV1.swift`: empty (exit 0); no synced `@Model` changed. ✅ 5 git status before and after below; this row. **What was built:** part 1 `Domain/Extraction/ExtractionJob.swift` (the six properties, defaults as the table, not `Codable`) and `ExtractionPlanner.swift` (`otherDeviceWait` 600, `maximumAttempts` 3, `photoWait` 60, `retryDelay`, `plan`, `next`, `merged` by the rules). Part 2 `Store/SylantroLocalSchema.swift`: `ExtractionJobModel`, every property defaulted, `hydrate(from:)` and `toDomain()` (optional, as the synced twins'); no `DeviceStateModel`. Its own container, `ModelConfiguration("SylantroLocal", schema: Schema([ExtractionJobModel.self]), cloudKitDatabase: .none)`, opened in `ExtractionQueue.live`; on failure logged, then an in-memory container of the same schema; nothing deleted or moved. `StoreOpener`, `StoreSetAside` and the recovery screen are unchanged. Part 3 `CaptureRecorder`: `onRecipeSaved` after a successful `saveCapture` and `addPages`; `recordReading`; `finishStructuring`; `markFailed`. `RecipeEditor.applyStructure` checks every copy before changing any (not found, unreadable, edited, the new `recipeEdited(UUID)`); doesn't save. Part 4 `PhotoFiles.fullImage(of:)`; `PageReading.init(words:)`. Part 5 `Extraction/ExtractionQueue.swift` as specified: planning at each `setSceneActive(true)` and every 600 s while active, one job at a time, a wake at the earliest `notBefore`, read then structure then save, 30 s rate-limit retries ×3 (copied from `SpikeRunner`, which is unchanged), attempts and `retryDelay` on other failures, then `markFailed` and the job removed; `AppLogger(category: "Extraction")`, no recipe text logged. Part 6 `RootView`: the queue made in `.task` after the writers, kept in `@State`, `onRecipeSaved` calls `enqueue`, `.onChange(of: scenePhase, initial: true)` calls `setSceneActive`; inside the existing Previews guard. Part 7: 19 tests, named as the table: `ExtractionPlannerTests` 10 (new), `CaptureRecorderTests` 7 (the six, plus "an edited recipe is kept"), `ModelTwinTests` 1, `PageReadingTests` 1 (new). **Files:** new `Sylantro/Domain/Extraction/ExtractionJob.swift`, `Sylantro/Domain/Extraction/ExtractionPlanner.swift` (new folder, named by the task), `Sylantro/Store/SylantroLocalSchema.swift`, `Sylantro/Extraction/ExtractionQueue.swift`, `SylantroTests/Domain/ExtractionPlannerTests.swift`, `SylantroTests/Extraction/PageReadingTests.swift`; changed `Sylantro/Capture/CaptureRecorder.swift`, `Sylantro/Capture/PhotoFiles.swift`, `Sylantro/Extraction/PageReading.swift`, `Sylantro/Store/RecipeEditor.swift`, `Sylantro/Views/Root/RootView.swift`, `SylantroTests/Capture/CaptureRecorderTests.swift`, `SylantroTests/Store/ModelTwinTests.swift`; this document (this row only; it was already staged by Pops, so it now shows `MM`, and this row is the session's only line in it). No `SylantroSchemaV1`, synced model, `StoreOpener`, `StoreSetAside`, recovery screen, `RecipeStructurer`, `TextReader`, spike, `MirrorWriter`, `RecipeRendering`, other view, `Info.plist`, entitlement, build setting or SyLib change; no `BGProcessingTask`; no string she reads; no network. **Git status before** (branch `milestone-3`): `M  Docs/02_ARCHITECTURE.md`, `M  Docs/10_ACCURACY_TEST_SET.md`, `M  Docs/12_IMPLEMENTATION_PLAN.md`, `M  Docs/15_MILESTONE_3_REVIEW.md`, `M  Docs/README.md` (all staged; M3-1 was committed as `c676e92`). **After:** those five (this document now `MM`), plus ` M` on the 7 changed files above and `??` on `Sylantro/Domain/Extraction/`, `Sylantro/Extraction/ExtractionQueue.swift`, `Sylantro/Store/SylantroLocalSchema.swift`, `SylantroTests/Domain/ExtractionPlannerTests.swift`, `SylantroTests/Extraction/PageReadingTests.swift`. **Git:** `git status --short` (×3), `git branch --list`, `git log --oneline -5`, `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (to confirm the three were unchanged since this session last read them), `git diff -- Sylantro/Store/SylantroSchemaV1.swift`. **Notes, details the task left open, each chosen as the narrowest reading, for Claude to confirm:** (a) `recordReading`'s throw when no copy exists is a new `CaptureRecorderError.pageNotFound(UUID)`. (b) `finishStructuring` and `markFailed` set `structuringStateRaw` directly rather than through `toDomain`/`hydrate`, because a copy whose words couldn't be decoded would have its `ocrWordsData` cleared by a round trip (the recorder only adds). `finishStructuring` takes the page ids from every copy of the recipe; with no copy it returns false. (c) **`RootView` also calls `queue.setSceneActive(scenePhase == .active)` right after making the queue**: `.onChange(…, initial: true)`'s first call comes before `.task` has made it, so without this the queue wouldn't plan until the scene next changed. (d) A page with no `PhotoModel` (or no file name) yet is treated as "not here": wait `photoWait`, attempts unchanged. A file that is available but can't be decoded is a read failure and counts an attempt. Images are decoded off the main actor (`Task.detached`). (e) After three refusals in front, or a refusal while not active, the queue holds a flag and runs nothing until the next `setSceneActive(true)`. Planning and `enqueue` still update the jobs meanwhile. Without the flag, the same oldest job would be picked again at once. (f) If even the in-memory job store fails to open, the queue logs it and does nothing that launch (the pages stay waiting). (g) `enqueue` on an existing job also sets `scannedHere` true, by the property's definition. (h) `next` breaks a `createdAt` tie on the job's `id`, and passes over jobs whose recipe is gone. (i) On give-up, `markFailed` gets all the recipe's `sourcePageIDs`. If `markFailed` itself fails, it is logged and the job is still removed. (j) A recipe page missing from the store gives an empty `PageReading` in its place, so readings stay in step with `pageIDs`. (k) A failure is logged at error level by its type and attempt number, with its full description at debug only, in case a model error carries page text. (l) `RecipeEditor`'s type comment was updated: it said neither call saves, but `delete` already did. **Next:** Pops's check on device (iPhone 18 Pro, then iPad and Mac): M2's recipes fill in with titles, oldest first; three scans in a row with no camera wait; the iPad structures nothing the iPhone scanned; a read recipe's `recipe.json` in Files has ingredients and steps; backgrounding mid-structure carries on. Not run in this session |
 | M3-1 | 24 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 123 tests in 21 suites passed after 0.540 seconds."; `** TEST SUCCEEDED **`. Total before: 107 (`@Test` count in `SylantroTests/` at session start), so 107 − 3 + 19 = 123 expected. **Clauses:** ✅ 1 `xcodebuild build-for-testing -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** TEST BUILD SUCCEEDED **`, no errors and no warnings from source; the only warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped, no AppIntents.framework dependency found" (as in `00B` A-3), reported, not suppressed. ✅ 2 the suite passed on the pinned destination with 123 tests. ✅ 3 `grep -rn "unicodeFractions" Sylantro/`: one declaration, `Domain/Parsing/IngredientLineParser.swift:15` (`static let`); the other hits are uses, `IngredientLineParser.swift:141`, `:153`, `TextMatch.swift:12` and `WrapJoiner.swift:29`. `grep -rn "GeneratedRecipe\|makeRecipe" Sylantro/ SylantroTests/`: nothing (exit 1). ✅ 4 `SourceLocator.swift` and `ReviewFlag.swift` each have one import, `import Foundation`. ✅ 5 git status before and after below. ✅ 6 this row. **What was built:** part 1 `SourceLocator` as specified (runs within a page, pass 1 equals then pass 2 contains, cursor order, union box, separate ingredient and step cursors, boxes already set left alone). Part 2 `ReviewFlag` with `flags(for:)` by the table; `ingredient n` resolved over the kept ingredients with the `is a step` numbers skipped. Part 3 `StructuringOutcome.headerArea` (set where `HeaderArea.lines` is called, `[]` initially); the validated recipe goes through `SourceLocator.locate` with every readable line of `pageLines` (pages with no ID add none); `fallbackWarnings(_:)` used on the `ingredients fallback` path only. Part 4 `isSideLine` counts the author only when its normalized name holds a space; `snappedTitle`'s largest-line fallback gives `("", false)` for a step-numbered line, doc comment updated; `HeaderLine` is `Codable`. Part 5 `SpikeCaptureResult.headerArea`, `[]` in `read(_:)`, copied in `copyDiagnostics`. Part 6 one fraction table: `TextMatch` builds ` n/d` from the parser's table, `WrapJoiner` checks its keys; both private tables removed. Part 7 `GeneratedStep` moved unchanged to `GeneratedParts.swift`; `GeneratedRecipe.swift` deleted (Xcode's remove, moved to Trash; the folder is synchronized, so no project-file change); `makeRecipe` and `makeGroup` removed; the `generated(…)` helper and the 3 tests deleted, the suite comment now says it tests the parts' mapping. Part 8: 19 tests, named as the table: `SourceLocatorTests` 6, `ReviewFlagTests` 8, `StructuringRulesTests` (the file that tests `HeaderArea`) 3, `RecipeStructurerTests` 1, `SpikeRunnerTests` 1. **Files:** new `Sylantro/Domain/Structuring/SourceLocator.swift`, `Sylantro/Domain/Structuring/ReviewFlag.swift`, `SylantroTests/Domain/SourceLocatorTests.swift`, `SylantroTests/Domain/ReviewFlagTests.swift`; changed `Sylantro/Extraction/RecipeStructurer.swift`, `Sylantro/Extraction/GeneratedParts.swift`, `Sylantro/Extraction/Spike/SpikeReport.swift`, `Sylantro/Extraction/Spike/SpikeRunner.swift`, `Sylantro/Domain/Structuring/HeaderArea.swift`, `Sylantro/Domain/Structuring/TextMatch.swift`, `Sylantro/Domain/Structuring/WrapJoiner.swift`, `Sylantro/Domain/Parsing/IngredientLineParser.swift`, `SylantroTests/Extraction/RecipeStructurerTests.swift`, `SylantroTests/Extraction/SpikeRunnerTests.swift`, `SylantroTests/Domain/StructuringRulesTests.swift`; deleted `Sylantro/Extraction/GeneratedRecipe.swift`; this document (this row only). No `@Model`, store, writer, view, prompt, `promptVersion`, `TokenCap`, `RecipeValidator`, `Recipe` JSON, `Info.plist`, entitlement, build setting or SyLib change. Fixes outside the list: none needed. **Git status before** (branch `milestone-3`): ` M Docs/12_IMPLEMENTATION_PLAN.md`, ` M Docs/README.md`, `?? Docs/15_MILESTONE_3_REVIEW.md`. **After:** those three, plus ` M` for the 11 changed files above, ` D Sylantro/Extraction/GeneratedRecipe.swift`, and `??` for the 4 new files (this document stays `??`). **Git:** `git status --short` (×2), `git branch --show-current`, `git branch --list`. *(`branch --show-current` is read-only but not on `00A` §9's list; reported for review.)* **Notes:** (a) The `continuesOnUnscannedPage` flag's field isn't in part 2's table; it is `recipe`, from RV-10's ruling ("continues on a page not scanned" is a whole-recipe line at the top) and `Field.recipe`'s comment. (b) Read beyond the Inputs to compile and test: `Domain/Recipe/Recipe.swift`, `IngredientGroup.swift`, `Extraction.swift` (initializers), `Extraction/PageReading.swift` (the line box type), and the two test files part 8 names (`StructuringRulesTests.swift`, `SpikeRunnerTests.swift`). (c) A `SpikeReport` file now always carries `headerArea`; decoding an older file without it would fail, but nothing decodes reports. **Next:** Pops's spike run 7 on his iPhone 18 Pro (one-tap test set, exported to `sylantro-testpages/results/`), scored by Claude against run 6; not run in this session |
@@ -973,26 +1364,30 @@ Grouped by the task that waits on them. Each has a recommendation *(rec.)*; none
 | RV-11 | Tap a line to see it on the photo | The photo zooms to the line's `sourceBox` with a highlight; a field with no box (the model's title on a fallback) shows the whole page | **Ruled: as written.** Pops, 24 Nov 2026 (decision card, "Zoom to it on the photo"); M3-1 fills the boxes |
 | RV-12 | What she can edit in M3 | **A.** Title, servings, each ingredient line, each step, notes; the rest (times, attribution, equipment, printed nutrition) shown, not edited yet. **B.** Every field. **C.** Title only, the rest later | **Ruled: A.** Pops, 24 Nov 2026 (decision card, "The kitchen fields"): what she reads in a kitchen. An edited ingredient line is parsed again (quantity, unit); the line she typed becomes its text, and the page's own words stay on the page (SLT-060) |
 | RV-13 | How she finishes a recipe | A **Looks Good** button marks it reviewed and takes it out of Needs Review; an edit marks it edited. A recipe she never reviews is still usable | **Ruled: as written.** Pops, 24 Nov 2026 (decision card, "A Looks Good button"); the button's words in `13` |
-| RV-14 | Several recipes on a page (SLT-047) | **A.** When the structurer names other titles found on the page, review lists every title with a checkbox; each one she keeps is structured again with its title given and only the lines from that title to the next. **B.** She marks each recipe's area on the photo. **C.** She gets copies of the recipe and trims each by hand | **A** *(rec.)*: the titles are already found (SLT-151), and a title-to-next-title cut fits the test set's four-recipe page; checked in a spike run before M3-5's screens |
-| RV-15 | Reorder and remove a page (MT-29, MT-31) | An Edit button on the recipe's pages: drag to reorder, remove with a plain alert (the page and its photo gone everywhere, SLT-157); then RV-7 | **As written** *(rec.)* |
-| RV-16 | Search and sort (`13` SC-3 said "in M3, when recipes have titles") | **A.** Search by title and ingredient text; newest first stays. **B.** A, plus sort by title. **C.** None in M3 | **A** *(rec.)*; tags later |
+| RV-14 | Several recipes on a page (SLT-047) | **A.** When the structurer names other titles found on the page, review lists every title with a checkbox; each one she keeps is structured again with its title given and only the lines from that title to the next. **B.** She marks each recipe's area on the photo. **C.** She gets copies of the recipe and trims each by hand | **Ruled: A.** Pops, 24 Nov 2026 (decision card, "Pick titles from a list"): the titles are already found (SLT-151), and a title-to-next-title cut fits the test set's four-recipe page; checked in a spike run before M3-5's screens |
+| RV-15 | Reorder and remove a page (MT-29, MT-31) | An Edit button on the recipe's pages: drag to reorder, remove with a plain alert (the page and its photo gone everywhere, SLT-157); then RV-7 | **Ruled: as written.** Pops, 24 Nov 2026 (decision card, "Edit on the pages"); in M3-3's Edit mode; the alert's words in `13` |
+| RV-16 | Search and sort (`13` SC-3 said "in M3, when recipes have titles") | **A.** Search by title and ingredient text; newest first stays. **B.** A, plus sort by title. **C.** None in M3 | **Ruled: A.** Pops, 24 Nov 2026 (decision card, "Search titles and ingredients"); tags later |
 
 ### Carried items and what waits
 
 | # | Question | Proposal |
 |---|---|---|
-| RV-17 | Restoring a recipe from the Files copy (`12` §4's gate, `02` §5.3) | **Not in M3** *(rec.)*: iCloud refills a fresh store, and the Files copy is the safety net, not a second source. Parked with no milestone, as Hide or Archive is |
+| RV-17 | Restoring a recipe from the Files copy (`12` §4's gate, `02` §5.3) | **Ruled: not in M3.** Pops, 24 Nov 2026 (decision card, "All three out of M3"): iCloud refills a fresh store, and the Files copy is the safety net, not a second source. Parked with no milestone, as Hide or Archive is |
 | RV-18 | `10`'s TS-5, TS-10, TS-11, TS-15 | **Ruled: all four as `10` §5 recommends.** Pops, 23 Nov 2026 (decision card, "All four as recommended"): page noise in no field, kept in `ocrText`, contact details never lifted (TS-5); an alternate method as a second step group with its printed heading (TS-10); titles kept as printed, no trimming (TS-11); unreadable handwriting shown as its piece of the photo, with "Couldn't read this" and a way to type it (TS-15, built in M3-6) |
 | RV-19 | The spike's leftovers (`11` §1) | **Ruled: all in M3-1.** Pops, 23 Nov 2026 (decision card, "All of them in M3-1"): SP-20's two title fixes, the header area in the report, one fraction table, `GeneratedRecipe` removed, the fallback's noisy warnings dropped. The spike screen stays, behind its flag (SLT-093) |
-| RV-20 | Vision's newer document reading for columns (`11` §1) | **Not in M3** *(rec.)*; tried only if M3-5's spike check shows the column pages fail |
+| RV-20 | Vision's newer document reading for columns (`11` §1) | **Ruled: not in M3.** Pops, 24 Nov 2026 (decision card, "All three out of M3"); tried only if M3-5's spike check shows the column pages fail |
 | RV-21 | Where the review screens are designed | **Ruled: `13` v0.18.** Pops, 24 Nov 2026 (decision card, "In 13, as version 0.18"); `13` already says M3's screens come "in a later version of this document"; drawn after RV-8 to RV-16 are ruled |
-| RV-22 | The duplicate check (`01` §2, "a matching title and similar ingredients") | **Not in M3** *(rec.)*; built with sharing (M6), which needs it for imports (SLT-103) |
+| RV-22 | The duplicate check (`01` §2, "a matching title and similar ingredients") | **Ruled: not in M3.** Pops, 24 Nov 2026 (decision card, "All three out of M3"); built with sharing (M6), which needs it for imports (SLT-103) |
 | RV-23 | The device-only store's shape (found writing M3-2) | **A.** Its own small container, `"SylantroLocal"`, opened by the queue; if it won't open, the queue logs it and runs from memory for that launch (its jobs are rebuilt from the synced marks anyway). Only `ExtractionJobModel`; `DeviceStateModel` waits until something needs it. **B.** As `02` §5.1 says: a second configuration in the one container, with both models; a broken device-only store then shows the recovery screen, and Start Fresh must also set it aside | **Ruled: A.** Pops, 24 Nov 2026 (decision card, "Yes, its own store"). A broken job list never keeps her from her recipes; `02` §5.1 updated (v0.17) |
 | RV-24 | A recipe that keeps failing to read or structure | **A.** Three tries, 1 and then 5 minutes apart; then its pages are marked failed and it stays "New recipe" until review offers Try Again (M3-3). **B.** Keep trying at every launch. **C.** One try | **Ruled: A.** Pops, 24 Nov 2026 (decision card, "Three tries, then wait"). Try Again comes with review (M3-3) |
 | RV-25 | A title holding the author's name (found on device, 24 Nov 2026: "Lydia Faust's Texas Kolaches" came out "kolaches."). `HeaderArea.isSideLine` skips any line *containing* the author's two-word name, so the true title and the subtitle were skipped and the subtitle's wrapped tail was matched (SP-23) | **A.** A small fix task before M3-3: the author's line is a side line only when it is mostly the name ("By Lydia Faust"), with a unit test and a spike run. **B.** Fold it into M3-3. **C.** No fix; she corrects it in review | **Ruled: A.** Pops, 24 Nov 2026 (decision card, "Small fix task before M3-3") |
 | RV-26 | A wrong "Continues on a page not scanned" (found on device, 24 Nov 2026: a 5-page recipe whose footers read "Page n of 5" kept it). Only the camera's page-2 question sets the flag (Save Without It); structuring keeps it (`ExtractionPlanner.merged`) | **A.** Structuring clears it when the last page's footer reads "Page n of n", and she can dismiss it in review. **B.** Footer only. **C.** Review only. **D.** As now | **Ruled: A.** Pops, 24 Nov 2026 (decision card, "Clear on Page n of n, and in review"). The footer half goes in the RV-25 fix task; the dismiss is M3-3's, drawn in `13` v0.18 |
 | RV-27 | A recipe's Files folder after its title changes (found on device, 24 Nov 2026: every folder stayed `new-recipe-<id>` after reading). `02` §5.4 says a rename renames its folder; `MirrorWriter.write` reuses the folder it finds by id and never renames it | **A.** Rename it to the title, as `02` says, in the RV-25 fix task. **B.** Keep the first name and change `02` | **Ruled: A.** Pops, 24 Nov 2026 (decision card, "Yes, rename it") |
 | RV-28 | Saying the missing pages don't matter (Pops, 24 Nov 2026: a printout's last page may be only ads, so its footer reads "4 of 5" and no rescan clears the warning) | **A.** At the camera and in review: "Is there another page?" gets a third button meaning "that's all of it", saving with no warning; the review dismiss (RV-26) stays for recipes already flagged. A dismissed or never-set warning stays off on a re-read (`merged` keeps only a warning that is still on). **B.** Review only. **C.** Save Without It no longer warns | **Ruled: A.** Pops, 24 Nov 2026 (decision card, "At the camera, and in review"). In M3-3; the button's words in `13` v0.18 (a plain centered alert, SLT-088) |
+| RV-29 | An ingredient line the model's answer skipped (found on device, 24 Nov 2026: the kolaches rescan lost "1 1/2 Tbsp. active dry yeast…", first under "Kolaches:"; its "unused ingredient line" warning tinted the whole list) (SP-24) | **A.** In M3-3a: a skipped line that starts like an ingredient (`WrapJoiner.startsIngredient`) and sits between a group's name or first item and its last item goes back in its place, made as any item is, flagged on that ingredient only. **B.** Flag the missing line, don't add it. **C.** No change | **Ruled: A.** Pops, 24 Nov 2026 (decision card, "Yes, in M3-3a") |
+| RV-30 | A step that runs across a page break (found on device, 24 Nov 2026: kolaches step 1 "Bloom yeast" ends page 2 and continues on page 3; it was flagged "Not found on the page" and had no position) (SP-22, `10` §7) | **A.** In M3-3a: the found-on-the-page check and `SourceLocator` skip page clutter (footers, headers) where one page ends and the next begins, so the step is found; its position is the part on its first page. **B.** Later, with M3-5 | **Ruled: A.** Pops, 24 Nov 2026 (decision card, "Yes, in M3-3a") |
+| RV-31 | Where the title is on the page (M3-3 note a: `Recipe` had no box for it, so a tap on the title showed page 1 whole; Pops, 24 Nov 2026: "Recipe titles need to be review like any other row in the list anyways.") | **A.** In M3-3a: `Recipe` gains `titleBox`, saved inside the recipe as ingredients' and steps' boxes are (no `SylantroSchemaV1` change), placed by `SourceLocator` at reading. A tap on the title outlines it like any row. Older recipes get it on Read Again (M3-4) or a rescan; until then page 1 whole. Pops, 24 Nov 2026 (decision card, "Yes, saved with the recipe, in M3-3a") |
+| RV-32 | A page that isn't a recipe (Pops's trick scan of a floss box, 24 Nov 2026: read as a recipe titled "FDA", the box copy as ingredients and steps, one row flagged) | **A, ruled.** A rule after the model, no prompt change: a reading with no ingredient line carrying an amount or unit, or with most of its lines not found on the page, gets a whole-recipe flag S-52m "This may not be a recipe. Check it." and stays in Needs Review; in M3-5, with the other structurer work. Pops, 24 Nov 2026 (decision card, "A simple rule, in M3-5"). *Not chosen:* ask the model (a prompt change and a spike run); not in M3 |
 
 When Pops rules, the rulings are filed in the ledger at this document's close-out, as `14`'s were.
 
@@ -1002,6 +1397,24 @@ When Pops rules, the rulings are filed in the ledger at this document's close-ou
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.48 | RV-32 ruled: A, a rule after the model, in M3-5 (S-52m proposed in `13`) | Pops, 24 Nov 2026 (decision card, "A simple rule, in M3-5") |
+| 0.47 | RV-32 proposed: a page that isn't a recipe | Pops's trick scan, 24 Nov 2026 |
+| 0.46 | M3-3a and M3-3b status: all their wording approved (S-63 to S-71) | `13` v0.36; Pops, 24 Nov 2026: "Yes" |
+| 0.45 | M3-3b part 4 item 5: New Scans, a first library section for recipes not read yet (SC-21, S-71). Tests unchanged (184) | Pops, 24 Nov 2026: "Seems like new scans should be in their own section at the top of the list." Then decision card, "Own section on top: New Scans" |
+| 0.44 | M3-3b part 4 (tests now part 5): Add Page and Edit move into ⋯; in Edit the toolbar is Done only (SC-20, S-70). Tests unchanged (184) | Pops, 24 Nov 2026: "I think the add page toolbar button can be in the menu. Not needed much after initial scan. Same for edit button. Less clutter." |
+| 0.43 | Task M3-3b written in full: editing a row in a sheet (SC-19; 184 tests), after M3-3a | Pops, 24 Nov 2026: "Editing is useless as is… Tap a row, see a new sheet for editing it. Save cancel. Boom. Maybe starting with medium sheet that can be large would work." Then decision card, "Edit mode: tap opens the sheet" |
+| 0.42 | RV-31 added and ruled: the title's place on the page, saved with the recipe, in M3-3a (part 3 item 7, two tests: 181) | Pops, 24 Nov 2026 (decision card, "Yes, saved with the recipe, in M3-3a") |
+| 0.41 | M3-3a part 3 item 6: the recipe screen's bar is a small view title (SC-18, S-63 to S-65); Done when 4 and check 3a to match | `13` v0.31; Pops, 24 Nov 2026, after a screen recording of the title sliding over the scan |
+| 0.40 | M3-4 and M3-3a status: their wording (S-52l, S-60 to S-62) is approved, nothing waits on Pops | `13` v0.30; Pops, 24 Nov 2026: "Yes" |
+| 0.39 | Task M3-3a written in full (SC-14 to SC-17, RV-29, RV-30; 179 tests), after M3-4 | Pops, 24 Nov 2026, after using M3-3 on device |
+| 0.38 | RV-30 added and ruled: SP-22 (a step across a page break) in M3-3a | Pops, 24 Nov 2026 (decision card, "Yes, in M3-3a") |
+| 0.37 | RV-29 added and ruled: skipped ingredient lines put back, flagged on their own row (SP-24), in M3-3a | Pops, 24 Nov 2026 (decision card, "Yes, in M3-3a") |
+| 0.36 | RV-17, RV-20 and RV-22 ruled: not in M3 (restore from Files parked; column reading only if M3-5's spike needs it; duplicate check with sharing, M6). Every RV is ruled | Pops, 24 Nov 2026 (decision card, "All three out of M3") |
+| 0.35 | RV-16 ruled: search by title and ingredient text, newest first stays | Pops, 24 Nov 2026 (decision card, "Search titles and ingredients") |
+| 0.34 | RV-14 ruled: several recipes on a page are picked from a list of the titles found, each cut from its title to the next and read again; a spike check first | Pops, 24 Nov 2026 (decision card, "Pick titles from a list") |
+| 0.33 | Task M3-4 written in full: reorder and remove pages in Edit, read again after (RV-7), the Files copy rewritten in the new order; 172 tests | `13` v0.25 §4.6; Pops, 24 Nov 2026 |
+| 0.32 | RV-15 ruled: pages reordered and removed in Edit, removal after a plain alert, then RV-7 | Pops, 24 Nov 2026 (decision card, "Edit on the pages") |
+| 0.31 | M3-3 complete (163 tests), checked against its Done when; notes (a) to (o) accepted, (a) and (g) left for later rulings | Pops, 24 Nov 2026: "Task M3-3 done" |
 | 0.30 | Task M3-3 written in full: Domain `ReviewEdit`, the writers' review calls, Needs Review, the review screen, the third button, `recipe.md`'s sections; 163 tests | `13` v0.22 accepted (SC-9 to SC-12); Pops, 24 Nov 2026 |
 | 0.29 | RV-28 added and ruled: a third button at the page question saves with no warning; the review dismiss stays; both in M3-3 | Pops, 24 Nov 2026 (decision card, "At the camera, and in review") |
 | 0.28 | M3-2a complete (149 tests), checked against its Done when; notes (a) to (f) accepted | Pops, 24 Nov 2026: "Task M3-2a: done" |

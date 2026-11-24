@@ -1,8 +1,8 @@
 # Sylantro — Implementation Plan
 
 **The build, in milestones, and where every feature document lands**
-Version 0.15 · 24 November 2026 · **Draft: the order is Claude's proposal for Pops, except 1.0's
-contents (IP-7, ruled: everything designed so far, M1 to M8).** Otherwise only what a ledger row already rules is decided (SLT-021,
+Version 0.17 · 24 November 2026 · **Draft: the order is Claude's proposal for Pops, except 1.0's
+contents (IP-7, ruled: everything designed so far, M1 to M8, except the PKU features: M5 and phenylalanine follow 1.0).** Otherwise only what a ledger row already rules is decided (SLT-021,
 SLT-090, SLT-093, SLT-100); every proposal is marked
 *(rec.)* and listed in §6. M0 done; M1 done (SLT-156; six spike runs scored); M2 done (SLT-160; every device check passed)
 
@@ -70,11 +70,11 @@ order (IP-3).
 | 3 | 2 | Capture and storage *(done, SLT-160)* | Tap +, photograph a recipe's pages, Save, and see it in the library on iPhone, iPad and Mac, synced; the page question (SLT-046); Delete (all gone, SLT-157); the photos and a plain copy in Files; the recovery screen if the store won't open | `14` (M2-1 to M2-6, fixes M2-4a to M2-4g ✓), `14A` (SyLib ✓) | M1; `02` and `05` accepted; a Screens document for the library, camera and recipe (`02` §7); the iCloud Documents capability (Pops, before the mirror task, `00B` §7); NI-5 and P-1, P-2 settled (§4) |
 | 4 | 3 | Extraction and review | Scan twenty pages without waiting, then work through the review inbox: each recipe read and structured in the background, flagged fields, tap a line to see it on the photo, pick which recipes to keep from a page with several (SLT-047), reorder and remove a recipe's pages (`14` MT-29, MT-31) | `15` (M3-1 to M3-7, draft); review screens in `13` | M2; the spike's findings (§4); `10`'s TS-5, TS-10, TS-11, TS-15; the review inbox's screens |
 | 5 | 6 | Sharing a recipe | Send one recipe by AirDrop, Messages or Mail and open it in another Sylantro, with the duplicate check (SLT-100, SLT-103) | its own document; design `04` | M3; `04` accepted, SH-1 to SH-6 |
-| 6 | 4 | Nutrition | Protein and phenylalanine per serving on every recipe, from USDA data on the device, each food match confirmed by her | its own document(s); design `03` | M3; `03` accepted, N-1 to N-10; the nutrition spike (`03` §12); the clinic's food list question |
-| 7 | 5 | PKU tools | A phenylalanine budget view; low-protein substitutions that make variant recipes, before and after per serving | its own document(s); a substitutions design, not yet written (`03` §11) | M4 |
+| 6 | 4 | Nutrition | Protein and general nutrition per serving on every recipe, from USDA data on the device, each food match confirmed by her. **No phenylalanine in 1.0** (IP-7; `03` §16); whether general nutrition itself is in 1.0 is IP-10 | its own document(s); design `03` | M3; `03` accepted, N-1 to N-13; the nutrition spike (`03` §12) |
+| 11 | 5 | PKU tools *(after 1.0; on hold, `03` §16)* | Phenylalanine per serving; a phenylalanine budget view; low-protein substitutions that make variant recipes, before and after per serving. Pops experiments with these once other work is done; how, or whether, they ship is `03` N-13 | its own document(s); a substitutions design, not yet written (`03` §11) | M4; M9 (1.0 shipped); Pops lifts `03` §16's hold |
 | 8 | 7 | Web and Apple News import | Share a recipe from Apple News (or any site, NI-2) and find it in the review inbox; screenshots when the page can't be read (SLT-120) | its own document; design `08` | M3; `08` accepted, NI-2 to NI-7; its spike (`08` §7); a share extension and App Group (Pops, entitlements) |
 | 9 | 8 | Meals | Gather recipes into a named meal (Thanksgiving) and reuse it next year; the shopping list and meal totals later | its own document; design `09` | M3 (basic meal); M4 (totals, shopping-list unit math); ML-1 to ML-8 |
-| 10 | 9 | Ship 1.0 | App Store listing (**when its copy starts, on the way to RC0, turn the accuracy spike's flag off**, SLT-093), the Production schema deployed (SLT-015), the pre-archive checklist (`00B` §6), About's copy checked against what was built (SLT-087), TestFlight, then the App Store | its own document | M1 to M8: 1.0 holds everything designed so far (IP-7, Pops, 22 Nov 2026) |
+| 10 | 9 | Ship 1.0 | App Store listing (**when its copy starts, on the way to RC0, turn the accuracy spike's flag off**, SLT-093), the Production schema deployed (SLT-015), the pre-archive checklist (`00B` §6), About's copy checked against what was built (SLT-087), TestFlight, then the App Store | its own document | M1 to M8 except M5 and phenylalanine (IP-7, Pops, 22 and 24 Nov 2026) |
 
 **Alongside, not milestones** (desk work that needs no code):
 
@@ -84,11 +84,11 @@ order (IP-3).
 - **The photo sync check** (`05` §7): done in M2-6, passed (`14` §2).
 - **The icon on device** (`07`): the 29 px check on his Home Screen, any time.
 
-**Why this order** *(rec.)*: 1.0 holds M1 to M8 (IP-7), so Ship (M9) is last and the question is
-only the order inside 1.0. M2 and M3 are `01` §7's and the first priority (SLT-021), and nothing
+**Why this order** *(rec.)*: 1.0 holds M1 to M8 except the PKU features (IP-7), so Ship (M9) comes
+after them, PKU tools (M5) follow 1.0, and the question is only the order inside 1.0. M2 and M3 are `01` §7's and the first priority (SLT-021), and nothing
 else is useful until recipes exist. Sharing (M6) is small once `recipe.json` and the photos exist,
-and finishes the ruled MVP (SLT-100). Nutrition (M4) and PKU tools (M5) come next, the largest and
-most clinical piece, with time for their own spike and the clinic's input. Web import (M7) and
+and finishes the ruled MVP (SLT-100). Nutrition (M4) comes next, general nutrition only, with time for its own spike;
+PKU tools (M5) wait until after 1.0 (IP-7, `03` §16). Web import (M7) and
 Meals (M8) come last because each still has most of its decisions open; either can move ahead of
 M4, since each needs only M3, and Meals' totals need M4.
 
@@ -116,13 +116,21 @@ row here in the same change (IP-4).
 | 12 | `12_IMPLEMENTATION_PLAN.md` | Plan | — | this document |
 | 13 | `13_SCREENS.md` | Design | M2 (library, camera, recipe, recovery); M3's review screens (v0.22, accepted) | M2's first screen task |
 | 14 | `14_MILESTONE_2_CAPTURE.md` | Tasks | M2 (M2-1 to M2-6) | closed, v1.0 (SLT-160) |
-| 15 | `15_MILESTONE_3_REVIEW.md` | Tasks | M3 (M3-1 to M3-7, plan ruled) | draft, v0.30; M3-1 (123 tests), M3-2 (142) and M3-2a (149) complete; M3-3 ready |
+| 15 | `15_MILESTONE_3_REVIEW.md` | Tasks | M3 (M3-1 to M3-7, plan ruled) | draft, v0.31; M3-1 (123 tests), M3-2 (142), M3-2a (149) and M3-3 (163) complete; M3-4, M3-3a and M3-3b ready |
+| 16 | `16_FEATURE_IDEAS.md` | Ideas | not placed: cook mode and scaling are in 1.0 (SLT-170, SLT-171), the rest open (FI-1 to FI-10) | when Pops places each feature |
 
 **Ideas, not yet placed** (Pops decides where they go):
 
 | Idea | Raised | Notes |
 |---|---|---|
-| *(none yet: `08` and `09` are placed as M7 and M8, proposed)* | | |
+| **Cook mode** (`16` §2.1): screen awake, one step at a time, ingredient ticks, timers from step text. **In 1.0** (SLT-170) | Pops, 24 Nov 2026 | Milestone open (`16` FI-1): a milestone of its own after M3 *(rec.)*. Needs structured recipes (M3) and its screens in `13` |
+| **Scaling** (`16` §2.2): servings or a factor, kitchen fractions, the recipe never edited. **In 1.0** (SLT-171) | Pops, 24 Nov 2026 | Milestone open (FI-1), with cook mode *(rec.)*. Meals (M8) reuses it; unit conversion is FI-4 |
+| Grocery list (`16` §2.3) | Pops, 24 Nov 2026 | FI-5; overlaps `09`'s shopping list |
+| Tags, favorites, ratings, her notes, cooked-on dates (`16` §2.4) | Pops, 24 Nov 2026 | FI-6 |
+| Import from other recipe apps (`16` §2.5) | Pops, 24 Nov 2026 | **Eventually, lowest priority** (SLT-172); FI-7 |
+| Pantry (`16` §2.6) | Pops, 24 Nov 2026 | FI-8: park *(rec.)* |
+| Siri, Shortcuts, Spotlight, widgets, Watch (`16` §2.7) | Pops, 24 Nov 2026 | FI-9; a Watch app reopens SLT-012 |
+| Export and print (`16` §2.8) | Pops, 24 Nov 2026 | FI-10; overlaps `04` SH-3 |
 
 ---
 
@@ -155,8 +163,10 @@ the iCloud Documents capability and `NSUbiquitousContainers` before the mirror t
 **Before M3:** the review inbox's screens and copy; how a recipe is restored from the mirror, if
 the recovery screen offers it (`02` §5.3).
 
-**Before M4:** `03` accepted, N-1 to N-10; the clinic's phenylalanine list, if there is one; the
+**Before M4:** `03` accepted, N-1 to N-13; IP-10 (whether general nutrition is in 1.0); the
 nutrition spike's results.
+
+**Before M5 (after 1.0):** Pops lifts `03` §16's hold, after talking to their employer; `03` N-13; the clinic's phenylalanine list, if there is one.
 
 **Before M6:** `04`'s SH-1 to SH-6; `05`'s P-6 (dish photos in the file).
 
@@ -164,7 +174,7 @@ nutrition spike's results.
 
 **Before M8:** `09`'s ML-1 to ML-8.
 
-**Before M9:** M1 to M8 done, which is what 1.0 holds (IP-7); every feature About names is built (SLT-087).
+**Before M9:** M1 to M8 done except M5 and phenylalanine, which is what 1.0 holds (IP-7); every feature About names is built (SLT-087).
 
 ---
 
@@ -195,7 +205,8 @@ v1.0, their rulings in the ledger.
 | IP-4 | How a new feature document is placed | It enters §3's ideas list; Pops places it in §2 *(rec.)* |
 | IP-5 | When design documents are accepted | Each at its milestone's start (§3) *(rec.)* |
 | IP-6 | When sync comes in | With M2's first model task *(rec.)* |
-| IP-7 | What 1.0 holds | **Ruled: everything designed so far,** M1 to M8 (the binder, sharing, nutrition, PKU tools, web and Apple News import, meals); Ship (M9) comes last — Pops, 22 Nov 2026: "i want all of what we talked about to be in 1.0" (the card's "Binder app plus sharing" was a misread, withdrawn) |
+| IP-7 | What 1.0 holds | **Ruled: everything designed so far,** M1 to M8 (the binder, sharing, nutrition, web and Apple News import, meals), **except the PKU features:** phenylalanine and PKU tools (M5) are not in the initial App Store release and follow it; Ship (M9) comes after the rest — Pops, 22 Nov 2026: "i want all of what we talked about to be in 1.0" (the card's "Binder app plus sharing" was a misread, withdrawn) → Pops, 24 Nov 2026: "It’s just not gonna be part of mvp inital App Store release. I do wanna play around with it. Just build other stuff first." |
+| IP-10 | Whether general nutrition (M4: protein, calories and the rest per serving, no phe) is in 1.0 | Open. Pops, 24 Nov 2026: "I do think things like protein per serving would be possible"; Pops's call, likely after talking to their employer |
 | IP-8 | The order after M3 | §2's: M6, M4, M5, M7, M8, then M9 *(rec.)*; M7 or M8 may move ahead of M4 |
 | IP-9 | When NI-5 and P-1, P-2 are settled | Before M2's first model task *(rec.)* |
 
@@ -208,6 +219,8 @@ this document's close-out.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.17 | `16_FEATURE_IDEAS.md` added to §3 and its features to the ideas list; cook mode and scaling are in 1.0 (SLT-170, SLT-171) with their milestone open; import from other apps eventually (SLT-172) | Pops, 24 Nov 2026: "Note them all somewhere appropriate. Cook mode and scaling seems mvp, import least interesting to me but good to include eventually" |
+| 0.16 | IP-7 narrowed: phenylalanine and PKU tools (M5) are not in 1.0 and follow it; M5 moves after M9 in §2; M4 is general nutrition, with IP-10 (whether it is in 1.0) opened | Pops, 24 Nov 2026: "It’s just not gonna be part of mvp inital App Store release. I do wanna play around with it. Just build other stuff first." |
 | 0.15 | §3 row 15: M3-1, M3-2 and M3-2a complete | Pops, 24 Nov 2026: "M3-2 is complete" |
 | 0.14 | §3: `15_MILESTONE_3_REVIEW.md` added, M3's tasks (draft) | IP-2; Pops, 23 Nov 2026: "are we ready to start planning milestone 3?" |
 | 0.13 | M2 closed: §2 row done, §4 what M3 inherits and what is parked, §3 row 14 closed | SLT-160 (Pops, 23 Nov 2026: "close out m2") |

@@ -13,8 +13,9 @@ enum RecipeEditorError: Error, Equatable {
 }
 
 /// The writer for recipes (`02` §5.2, SLT-082, `14` MT-8). M2-3 gives it what capture needs, M3-2
-/// the queue's structured reading; review's edits come later in M3. Only `delete` saves: for the
-/// rest, the caller saves once.
+/// the queue's structured reading, M3-3 review's three changes. `delete`, `markReviewed`,
+/// `saveEdits` and `dismissPageTwoWarning` save (the last three then write the Files copy); the
+/// others don't: their caller saves once.
 @MainActor
 final class RecipeEditor {
     private let log = AppLogger(category: "RecipeEditor")
@@ -158,5 +159,79 @@ final class RecipeEditor {
             model.hydrate(from: ExtractionPlanner.merged(structured, into: recipe, lastPageEnds: lastPageEnds, now: now))
         }
         log.info(self, "recipe \(recipeID): structured, \(models.count) copies")
+    }
+
+    // MARK: Review (`15` M3-3)
+
+    /// Looks Good (RV-13): reviewed, unless she has edited it, which it stays. Saves.
+    func markReviewed(_ recipeID: UUID, now: Date) throws {
+        try change(recipeID, "marked reviewed") { recipe in
+            if recipe.reviewState != .edited {
+                recipe.reviewState = .reviewed
+            }
+            recipe.updatedAt = now
+        }
+    }
+
+    /// Done in review's Edit (RV-12, SC-10): her edit applied, the recipe marked edited. Saves.
+    func saveEdits(_ edit: ReviewEdit, to recipeID: UUID, now: Date) throws {
+        try change(recipeID, "edits saved") { recipe in
+            recipe = edit.applied(to: recipe, now: now)
+        }
+    }
+
+    /// That's All of It (S-53, RV-26): the page-2 warning removed for good. Saves.
+    func dismissPageTwoWarning(_ recipeID: UUID, now: Date) throws {
+        try change(recipeID, "page-2 warning dismissed") { recipe in
+            recipe.continuesOnUnscannedPage = false
+            recipe.updatedAt = now
+        }
+    }
+
+    /// Every copy of the recipe, changed by `body`, after checking every copy can be read (as
+    /// `applyStructure`); then saved and its Files copy written.
+    private func change(_ recipeID: UUID, _ what: String, _ body: (inout Recipe) -> Void) throws {
+        let models = try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == recipeID }))
+        guard !models.isEmpty else {
+            throw RecipeEditorError.recipeNotFound(recipeID)
+        }
+        var changed: [(model: RecipeModel, recipe: Recipe)] = []
+        for model in models {
+            guard var recipe = model.toDomain() else {
+                throw RecipeEditorError.recipeUnreadable(recipeID)
+            }
+            body(&recipe)
+            changed.append((model, recipe))
+        }
+        for (model, recipe) in changed {
+            model.hydrate(from: recipe)
+        }
+        try saveAndMirror(recipeID: recipeID)
+        log.info(self, "recipe \(recipeID): \(what), \(models.count) copies")
+    }
+
+    /// Saves, then writes the recipe's copy in Files as `CaptureRecorder` does after its saves; a
+    /// failed save is rolled back, logged and rethrown.
+    private func saveAndMirror(recipeID: UUID) throws {
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            log.error(self, "recipe \(recipeID): not saved: \(error)")
+            throw error
+        }
+        guard let mirror else { return }
+        var descriptor = FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == recipeID })
+        descriptor.fetchLimit = 1
+        guard let recipe = (try? context.fetch(descriptor))?.first?.toDomain() else {
+            log.error(self, "recipe \(recipeID): no copy in Files: not readable")
+            return
+        }
+        do {
+            guard let snapshot = try MirrorSnapshot.make(for: [recipe], in: context).first else { return }
+            Task { await mirror.write(snapshot) }
+        } catch {
+            log.error(self, "recipe \(recipeID): no copy in Files: \(error)")
+        }
     }
 }

@@ -3,7 +3,7 @@
 *One row per locked design decision, always showing the **current** ruling. Sylantro's documents
 are rewritten in place (`00A` §1); this ledger is where a reversal survives. This file is HEAD.*
 
-**Version 0.56** · 23 November 2026 · Companion to all numbered Sylantro documents
+**Version 0.60** · 24 November 2026 · Companion to all numbered Sylantro documents
 
 ---
 
@@ -190,6 +190,16 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | SLT-156 | **Milestone 1 closes: on-device reading and structuring are good enough to go on.** After six spike runs (`10` §7): print read near perfect; 91% of printed ingredient lines found, 95% of quantities and 90% of units right; titles 14 of 22, each shown in review with its warning; every capture finished in runs 3 to 6. No cloud engine (SLT-040 stays closed). Title fixes found in run 6, several recipes on a page and handwriting go to Milestone 3. | Pops, 22 Nov 2026: "close out milestone 1"; "ok we will finish the spike" → `10` §7, `11`, `12` |
 | SLT-157 | **Delete means all gone.** Delete Recipe, after its plain alert, removes the recipe, its pages, their photo files and its folder in Files, from every device, with no undo and no Recently Deleted. A page another recipe still lists is kept. Pages without a recipe are no longer written. M3's removing a page (MT-31) works the same way. Hiding or archiving a recipe is parked for later. *Why:* a kept copy the app never shows is clutter, not safety; "Delete" should mean what it says. Supersedes `13` SC-5's kept pages and `14` MT-16. | Pops, 23 Nov 2026: "delete for real, I think we can have a Hide/Archive recipe later. Delete should mean all gone." (after the decision card) |
 
+## Features from other recipe apps
+
+*SLT-170 to SLT-179 are reserved for `16_FEATURE_IDEAS.md`'s rulings.*
+
+| ID | Current ruling | Source → chain |
+|---|---|---|
+| SLT-170 | **Cook mode is in 1.0:** a view for cooking from (`16` §2.1). What it holds and which milestone builds it are open (`16` FI-1, FI-2). | Pops, 24 Nov 2026: "Note them all somewhere appropriate. Cook mode and scaling seems mvp, import least interesting to me but good to include eventually" |
+| SLT-171 | **Scaling a recipe is in 1.0** (`16` §2.2): the scaled amounts are shown, the recipe is never edited. How it scales and which milestone builds it are open (FI-1, FI-3); US and metric conversion is a separate question (FI-4). | Pops, 24 Nov 2026: "Note them all somewhere appropriate. Cook mode and scaling seems mvp, import least interesting to me but good to include eventually" |
+| SLT-172 | **Importing from other recipe apps (Paprika, Mela and the like) comes eventually, at the lowest priority** (`16` §2.5); not placed in a milestone. | Pops, 24 Nov 2026: "Note them all somewhere appropriate. Cook mode and scaling seems mvp, import least interesting to me but good to include eventually" |
+
 ## Implementation plan
 
 | ID | Current ruling | Source → chain |
@@ -222,11 +232,16 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | Phe shown in mg or exchanges, whose exchange size, and the rounding of protein and phe | `03` §13, N-6 and N-7 (Pops, with the clinic) |
 | The nutrition caveat's wording and placement, and whether the clinic reviews the method before release | `03` §1, N-8 and N-10 (Pops) |
 | A phenylalanine warning on recipes containing aspartame *(proposed)* | `03` §8, N-9 (Pops) |
+| Whether to pursue a recipe estimate from a nutrition label, and when *(proposed: after M4, unscheduled)* | `03` §15.1, N-11 (Pops) |
+| Whether to pursue a recipe from a dish photo or menu description *(proposed: photo path parked unless SLT-040 is reopened)* | `03` §15.2, N-12 (Pops) |
+| **On hold (Pops, 24 Nov 2026):** the phenylalanine and diet features. They are not in the initial App Store release (`12` IP-7) and follow it; Pops will experiment with them after other work. How, or whether, they ship after 1.0: family-only behind a flag, data only with no advice, no phe in the store build, no nutrition in the store build, or a family-only app | `03` §16, N-13 (Pops) |
+| Whether general nutrition (protein and the rest per serving, no phe) is in 1.0 | `12` IP-10 (Pops) |
 | Dish photos in a shared file (P-6); everything else in `05` is ruled in `05` (P-1 to P-5, P-7, IS-1, IS-2, IS-4) and filed at its close-out; SLT-053 and SLT-054 already filed | `05` §9, P-6 (Pops, at M6's start) |
 | *(Settled by SLT-053: no photo bytes in the store, so the asset-or-bytes question no longer applies)* | `05` IS-3 |
 | Apple News import (the way in is SLT-120): any website or Apple News only; when; what stands in for the original; the schema's web source and address; unreadable pages; a spike first | `08` §9, NI-2 to NI-7 (Pops) |
 | Meals (a meal made of recipes, like Thanksgiving): whether to take it forward and how far; meal, tag or collection; sections; a deleted recipe in a meal; which extensions (reuse, shopping list, PKU totals, timeline) and when; the writer; the mirror | `09` §5, ML-1 to ML-8 (Pops) |
 | The implementation plan's proposals: a thin slice first, milestone documents, numbers as names with the order kept in `12` §2, placing new feature documents, accepting designs at their milestone, sync from M2, the order after M3 (what 1.0 holds is ruled in `12` IP-7: everything designed so far, M1 to M8, Ship last; filed at close-out), when NI-5 and P-1, P-2 are settled | `12` §6, IP-1 to IP-9 (Pops); filed as SLT-094 onward |
+| Feature ideas from popular recipe apps: where cook mode and scaling are built and what they hold, unit conversion, a grocery list, organizing, which apps to import from, the pantry, Apple extras (a Watch app reopens SLT-012), export and print | `16` §4, FI-1 to FI-10 (Pops); filed as SLT-173 onward |
 
 ---
 
@@ -234,6 +249,10 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.60 | Features from other recipe apps heading added, SLT-170 to SLT-179 reserved for `16`; SLT-170 (cook mode in 1.0), SLT-171 (scaling in 1.0), SLT-172 (import from other apps eventually, lowest priority); FI-1 to FI-10 listed as open | Pops, 24 Nov 2026: "Note them all somewhere appropriate. Cook mode and scaling seems mvp, import least interesting to me but good to include eventually" |
+| 0.59 | The PKU hold's open decision restated: out of 1.0, after it; IP-10 (general nutrition in 1.0) added | Pops, 24 Nov 2026 |
+| 0.58 | Open decision N-13 added: the phe and diet features on hold, with `03` §16's options; no rulings filed | Pops, 24 Nov 2026 |
+| 0.57 | Open decisions N-11 and N-12 added from `03` v0.2 §15 (label and dish-photo ideas); no rulings filed | Pops, 24 Nov 2026 |
 | 0.56 | Milestone 2 closed (SLT-160); its rulings filed: SLT-046 rewritten (the page question), SLT-158 (how the Files copy is written), SLT-159 (a page's one photo, thumbnails in memory) | Pops, 23 Nov 2026: "close out m2" |
 | 0.55 | SLT-157 added: Delete Recipe removes everything; SLT-030 narrowed to match | Pops, 23 Nov 2026: "delete for real… Delete should mean all gone." |
 | 0.54 | SLT-045 rewritten: a pause with Next Recipe or Done after Save | Pops, 23 Nov 2026: "what is the green check in. the camera view for? it take it as an I'm done scanning, but when I tap it the camera stays on the screen. and it typically get another scan of the same document."; decision card, "Pause: Next Recipe or Done" |

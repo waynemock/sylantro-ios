@@ -24,6 +24,10 @@ import SyLibCore
     @ObservationIgnored private let reader = TextReader()
     @ObservationIgnored private let structurer = RecipeStructurer()
 
+    /// The recipe whose job is running, from its start to its end, for "Reading…" (S-45,
+    /// `15` M3-3); nil otherwise.
+    private(set) var currentRecipeID: UUID?
+
     private var isActive = false
     private var isRunning = false
     /// A refusal outlasted its retries: nothing runs until the scene is active again (SLT-144).
@@ -209,6 +213,8 @@ import SyLibCore
     private func runJob(_ job: ExtractionJob) async {
         let recipeID = job.recipeID
         log.info(self, "recipe \(recipeID): job started, \(job.attempts) failed attempts so far")
+        currentRecipeID = recipeID
+        defer { currentRecipeID = nil }
         guard let recipe = fetchRecipe(recipeID), recipe.reviewState != .edited,
               pages(recipe.sourcePageIDs).values.contains(where: { $0.structuringState == .waiting }) else {
             log.info(self, "recipe \(recipeID): gone, edited or not waiting; job removed")

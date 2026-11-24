@@ -90,4 +90,22 @@ struct ReviewFlagTests {
             ReviewFlag(kind: .droppedNotOnPage, field: .attribution),
         ])
     }
+
+    // MARK: Review (`15` M3-3)
+
+    @Test("the lines")
+    func flagLines() {
+        #expect(ReviewFlag.line(for: .noTitle) == "No title found. Add one.")
+        #expect(ReviewFlag.line(for: .unreadableLine(page: 2)) == "A line on page 2 couldn't be read.")
+        #expect(ReviewFlag.line(for: .mayHoldOtherRecipes(["A", "B"])) == "This page may hold other recipes: A, B.")
+        #expect(ReviewFlag.line(for: .other("a made-up warning")) == "Check this.")
+    }
+
+    @Test("needs review")
+    func needsReview() {
+        #expect(!Recipe(reviewState: .needsReview).needsReview)
+        #expect(Recipe(reviewState: .needsReview, extraction: Extraction()).needsReview)
+        #expect(!Recipe(reviewState: .reviewed, extraction: Extraction()).needsReview)
+        #expect(!Recipe(reviewState: .edited, extraction: Extraction()).needsReview)
+    }
 }

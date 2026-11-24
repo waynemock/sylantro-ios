@@ -65,6 +65,8 @@ struct CaptureFlowView: View {
         .alert("Is there another page?", isPresented: $isAskingPageTwo) {
             Button("Add Page") { addPage() }
             Button("Save Without It") { save(continuesOnUnscannedPage: true) }
+            // RV-28: the missing pages don't matter, so no warning (S-53).
+            Button("That's All of It") { save(continuesOnUnscannedPage: false) }
         } message: {
             Text("This page looks like it keeps going.")
         }

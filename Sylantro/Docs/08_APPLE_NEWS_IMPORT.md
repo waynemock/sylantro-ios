@@ -1,7 +1,7 @@
 # Sylantro — Apple News Recipe Import
 
 **Design document · bringing the recipes she and Pops saved in Apple News into Sylantro**
-Version 0.3 · 22 November 2026 · **Draft; one ruling in (SLT-120, the way in).** Everything else is
+Version 0.5 · 24 November 2026 · **Draft; one ruling in (SLT-120, the way in).** Everything else is
 an option for Pops, marked *(rec.)* where Claude recommends one. No task is written from an open
 option.
 
@@ -82,6 +82,35 @@ Option A reads schema.org `Recipe` data, which most recipe websites carry. The s
 extension, offered for any web link, would import from Safari too. That is a product expansion
 (the binder app becomes a web clipper as well), so it is Pops's question, NI-2 *(rec.: build A for
 any `https` link, since the work is the same, and present it as "Apple News and the web")*.
+
+### 2.3 A QR code on a scanned page (NI-8, ruled: with web import, after M3)
+
+Found by Pops on a trick scan (a floss box with a QR code), 24 Nov 2026. A printed page sometimes
+carries a QR code, and on a recipe it usually points to the recipe's web page.
+
+- **Finding it is on device.** Vision's barcode request (`DetectBarcodesRequest`) runs in the same
+  pass as text reading and gives each code's payload and box. Nothing leaves the phone (SLT-040).
+- **Following it is web import.** A code whose payload is an `https` link is offered to her as the
+  recipe's web page, and read through this document's link-first path (SLT-120: that one page
+  only, its schema.org recipe data). Never followed without her asking.
+- **Not in M3.** It lands with web import (NI-3), after Milestone 3. Open details for then: offer
+  only when the page reads as a recipe, or for any code; whether the link is also kept under the
+  recipe's Source; codes that aren't links are ignored.
+
+### 2.4 A recipe from photos in Photos (NI-9, ruled: with web import, after M3)
+
+Asked by Pops, 24 Nov 2026: photos of a recipe she already has (taken earlier, sent by a friend,
+a magazine page) brought in without the camera. Built with §2.1 option B's screenshots, since both
+are images that aren't scans.
+
+- **The way in:** the + button and Add Page offer the camera or **Choose from Photos**, Apple's
+  photo picker (no permission prompt; only the photos she picks are shared). Photos picked
+  together are one recipe's pages, in the order picked; the page-2 question applies as for scans.
+- **What is kept:** each photo as a `SourcePage` of kind `screenshot` (NI-5) or a new `photo`
+  kind (open for then), its image as `pageOriginal` in HEIC (SLT-159 kept that field for this),
+  with no document-camera crop or flattening.
+- **Reading:** the same queue and review as a scan. A straight-on photo reads well; a crooked one
+  reads worse, and a crop step (Vision's document detection) is open for then.
 
 ---
 
@@ -230,6 +259,8 @@ Claude can write this up as a checklist for Pops, or as a spike task with a resu
 | NI-4 | What is kept as the original of a web recipe | §3.1: A, the JSON-LD and address *(rec.)*; B, plus a page snapshot; C, plus a rendered image |
 | NI-5 | *Ruled:* a kind of `SourcePage` (scan, screenshot, web); a web one keeps its address, fetch date and the recipe data as fetched; the address also in `attribution.sourceURL` (built in M1-1). Pops, 22 Nov 2026 (decision card, "A kind of SourcePage") |
 | NI-6 | A paywalled or unreadable page | §3 step 5: flag "Needs screenshots" *(rec.)*; or try Foundation Models on the page text |
+| ~~NI-8~~ | ~~QR codes found in scans~~ | **Decided: with web import, after M3** (§2.3): found on device, offered as the recipe's web page, read through SLT-120's path |
+| ~~NI-9~~ | ~~A recipe from photos in Photos~~ | **Decided: with web import, after M3** (§2.4), beside the screenshot path |
 | NI-7 | Run the spike in §7 first | Yes, as a checklist for Pops *(rec.)*; as a spike task doc |
 
 When Pops rules, the rulings are filed in the ledger as SLT-120 onward at this document's close-out.
@@ -240,6 +271,8 @@ When Pops rules, the rulings are filed in the ledger as SLT-120 onward at this d
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.5 | §2.4 added: a recipe from photos in Photos; NI-9 ruled, with web import after M3 | Pops, 24 Nov 2026: "What about adding a recipe from photos… Photos of a recipe" Then decision card, "With web import, after M3" |
+| 0.4 | §2.3 added: QR codes found in scans; NI-8 ruled, with web import after M3 | Pops, 24 Nov 2026: "We should decide qr codes found in the scans." Then decision card, "With web import, after M3" |
 | 0.3 | NI-5 ruled: a web original is a kind of `SourcePage`; the kind enters with M2's first model task | Pops, 22 Nov 2026 (decision card, "A kind of SourcePage") |
 | 0.2 | SLT-120: link first, screenshots as the fallback; fetching only the shared page is allowed; NI-1 closed | Pops, 21 Nov 2026 (decision card, "Link first, screenshots fallback") |
 | 0.1 | First version: what Apple News provides (a link only, no export), five ways in, the network question, duplicates, the original's stand-in, a spike, and open decisions NI-1 to NI-7 | Pops, 21 Nov 2026: "importing recipes from apple news… i suspect its just a link. start a new design doc for this idea." |

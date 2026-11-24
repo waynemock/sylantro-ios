@@ -2,7 +2,7 @@
 
 **Design document · protein, phenylalanine and general nutrition for recipes that don't print it,
 computed on the device**
-Version 0.1 · 21 November 2026 · **Draft: not accepted.** Every option marked *(rec.)* is
+Version 0.4 · 24 November 2026 · **Draft: not accepted. Phenylalanine and diet features on hold and out of 1.0 (§16).** Every option marked *(rec.)* is
 Claude's recommendation, waiting for Pops. Nothing here is a ruling until Pops makes it, and no
 task is written from it until then (`00B` §0).
 
@@ -369,6 +369,9 @@ This is `01` §7's Milestone 4 (nutrition) and the start of 5 (PKU tools). Propo
 | N-8 | The caveat's wording and placement (§1) | Pops's copy, in the three places listed |
 | N-9 | The aspartame warning (§8) | Yes |
 | N-10 | Whether the clinic reviews the method before nutrition ships | Yes, if they're willing |
+| N-11 | Whether to pursue a recipe estimate from a nutrition label (§15.1), and when | A candidate for after Milestone 4; not in any milestone now |
+| N-12 | Whether to pursue a recipe from a dish photo or menu description (§15.2) | Park the photo path unless SLT-040 is reopened; the menu-text path only as an editable starting list |
+| N-13 | How, or whether, phe and PKU tools ship after 1.0, once the hold is lifted (§16) | None: Pops's call after talking to their manager. Not in 1.0 either way (`12` IP-7) |
 
 Already open in the ledger and still needed here: whether the clinic uses a specific phe food list.
 
@@ -376,7 +379,7 @@ Already open in the ledger and still needed here: whether the clinic uses a spec
 
 ## 14. Sources
 
-Checked 21 November 2026.
+Sources 1 to 9 checked 21 November 2026.
 
 1. USDA FoodData Central, *API Guide* (license, CC0 1.0; attribution requested; API key and rate
    limits). https://fdc.nal.usda.gov/api-guide
@@ -400,11 +403,155 @@ Checked 21 November 2026.
    foods from the protein content." *Journal of Food Composition and Analysis* 42, 117–119.
    doi:10.1016/j.jfca.2015.03.001 (read from its abstract only).
    https://agris.fao.org/search/ru/records/65df573db766d82b180145b5
+10. 21 CFR 101.4, *Food; designation of ingredients* (descending order of predominance by weight;
+    the 2 percent or less provision; compound ingredients in parentheses). Checked 24 Nov 2026.
+    https://www.law.cornell.edu/cfr/text/21/101.4
+11. 21 CFR 101.9, *Nutrition labeling of food* (rounding of calories, fat and sodium read
+    verbatim; protein, carbohydrate, sugars and fiber from a summary of the page, to be confirmed
+    against the official text). Checked 24 Nov 2026. https://www.law.cornell.edu/cfr/text/21/101.9
+12. 21 CFR 172.804, *Aspartame* (the "PHENYLKETONURICS: CONTAINS PHENYLALANINE" statement).
+    Checked 24 Nov 2026. https://www.law.cornell.edu/cfr/text/21/172.804
 
 ---
 
-## 15. Decision log
+## 15. Ideas, not scheduled: working backward to a recipe
+
+Two ideas from Pops (24 Nov 2026), captured so they aren't lost. **Neither is in any milestone,
+and neither is in Milestone 3's scope** (`15_MILESTONE_3_REVIEW.md`). Both depend on this
+document's food data, matching and estimate (§3 to §8) existing first, so the earliest either
+could start is after Milestone 4. Nothing here is a ruling.
+
+### 15.1 From a nutrition label: estimate a product's recipe
+
+**The idea.** She photographs a packaged food's Nutrition Facts panel and ingredient list (a
+cracker, a sauce, a low-protein bread mix). Sylantro estimates how much of each ingredient is in
+it, as a starting point for a home version, and gives a better phenylalanine estimate than the
+label alone.
+
+**Why it is feasible on the device.** Each step uses pieces this design and ingestion already need:
+
+1. **Read the label** with Vision (SLT-040), as a page is read. The panel is a fixed, regulated
+   layout, which helps; it is still a spike question how reliably Vision reads small print on a
+   curved package.
+2. **The ingredient list is ordered.** US labels list ingredients "in descending order of
+   predominance by weight" [10]. That ordering is a hard constraint: the first ingredient
+   weighs at least as much as the second, and so on. Two exceptions shape the math: ingredients
+   at 2% or less (or a stated lower threshold) may come at the end, in any order, after a phrase
+   such as "Contains 2 percent or less of" [10], and a compound ingredient may list its own
+   ingredients in parentheses [10].
+3. **Match each ingredient to a food** (§5), the same as a recipe line.
+4. **Solve for proportions.** The unknowns are the grams of each ingredient per serving. The
+   label's numbers (calories, fat, saturated fat, carbohydrate, fiber, sugars, protein, sodium)
+   must each fall within its **rounding band**: for example, fat is declared to the nearest 0.5 g
+   below 5 g and calories to the nearest 5 or 10 [11], and protein to the nearest gram, with
+   under 0.5 g allowed to show as zero [8][11]. With the ordering constraints, that is a small
+   linear program, a dozen or so unknowns, solvable in plain Swift in Domain with no new
+   dependency (`00B` §2).
+5. **Report a range, not an answer.** Many mixes fit the same label. Sylantro shows the range
+   for each ingredient ("flour 45 to 60%") and the phe range that follows from it.
+
+**PKU relevance.** This is where the idea earns its place:
+
+- **A tighter phe estimate.** The label gives protein only. §8's rule (about 50 mg phe per g
+  protein) applied to it is rough [9]. Working out the likely mix lets each ingredient's own phe
+  ratio from SR Legacy (§3) apply, so a product that is mostly starch and fruit gets a fruit-like
+  ratio rather than a flat 50.
+- **The label's own rounding is the floor.** A label showing 0 g protein can still hold up to
+  0.49 g a serving [8]; the solver's range makes that visible instead of hiding it.
+- **Aspartame is caught directly.** Products with aspartame must carry "PHENYLKETONURICS:
+  CONTAINS PHENYLALANINE" [12]. Reading that statement, or "aspartame" in the list, triggers §8's
+  warning (N-9) without any math.
+- **A path to her own foods.** The result can become a custom food (§9), flagged as estimated.
+
+**Limits, stated plainly.**
+
+- Ingredients the food data doesn't know (flavorings, "natural flavors", gums, specialty
+  low-protein starches) can't be matched, so they widen the range or stay unknown.
+- Processing changes weight (baking loses water), so proportions are of the ingredients as
+  bought, not of the product as eaten. Per serving protein and phe are unaffected (§7.1).
+- Manufacturers may declare a value somewhat off the true one; FDA's compliance rules allow
+  some tolerance (not verified in this pass), which widens every band.
+- The result is a formula estimate, not a method: it has no steps, temperatures or times.
+- Everything it shows is an estimate under §1's caveat, never a measurement.
+
+**What it would add to the schema** *(rec., additive only)*: a `LabelScan` (the photo, its OCR,
+the parsed panel and list), and on a custom food (§9) the solved range and a link to its scan.
+No change to `Recipe`.
+
+### 15.2 From a photo of a dish, or a menu description
+
+**The idea.** She photographs a plate at a restaurant, or types or photographs the menu's
+description ("pan-seared salmon, lemon butter, wild rice pilaf"), and Sylantro proposes a likely
+recipe and an estimate of protein and phe.
+
+**Far less certain than 15.1.** A label carries numbers and an ordered list; a plate carries
+neither. Sylantro would have to guess the ingredients, their amounts and the portion from what
+the food looks like, and every guess compounds. For phe, where a budget is counted in tens of
+milligrams, an estimate that can be off by half is not one to plan a day on.
+
+**It probably needs a bigger model than SLT-040 allows.**
+
+- Reading a dish from a photo needs a vision-language model. Apple's on-device Foundation Models
+  takes text, as Sylantro uses it today *(image input is not verified either way for iOS 27)*,
+  and Vision's built-in image classification gives broad labels ("salmon", "salad") with no
+  amounts.
+- A cloud vision model would do it far better, but SLT-040 rules extraction on-device only, and
+  says the cloud question is reopened only if Pops asks. Pursuing the photo version is that
+  question.
+
+**What on the device could do:** the **menu text** path. A menu description is text, so the
+on-device model could suggest a starting ingredient list for her to edit, with no amounts it
+can't justify; she would weigh or estimate the portion herself. Every number would carry §7.3's
+"≈" mark and §1's caveat.
+
+**Recommendation** *(rec.)*: keep 15.1 as a candidate for after Milestone 4; park 15.2's photo
+path unless Pops reopens SLT-040; consider 15.2's menu-text path only as a "start a recipe from a
+description" helper, never as a source of trusted phe numbers.
+
+---
+
+## 16. On hold: how PKU features might ship, options for later
+
+**Pops put the phenylalanine and diet features on hold on 24 Nov 2026**, for two reasons in their
+own framing: they need to clear an app that veers into medical territory with their employer first,
+and giving advice on PKU diets is outside their expertise, so the feature may stay within the
+family.
+
+**What the hold means (Pops, 24 Nov 2026):** the PKU features are not part of the MVP's initial
+App Store release, but Pops still wants to experiment with them, after other work is built first.
+General figures such as protein per serving seem possible for 1.0 (whether they are in it is
+`12`'s IP-10). Direct PKU features, such as converting a recipe to a low-protein version (§11),
+come later. In `12`, PKU tools (M5) now follow 1.0 (IP-7).
+
+Until Pops lifts the hold, nothing in this document that touches phenylalanine, diet
+budgets, substitutions or §15's phe estimates is expanded, scheduled or turned into a task. The
+parts that are general nutrition (§2 to §7 without phe, §9's custom foods) stay as designed.
+
+The options below are for Pops to consider later. **None is recommended and none is a decision.**
+They can be combined.
+
+| Option | What ships in the App Store build | What the family gets | Notes |
+|---|---|---|---|
+| A. Phe family-only, behind a flag | General nutrition (calories, protein, fat, carbohydrate, fiber, sugars, sodium) per serving | The same build with phe and the PKU tools switched on, by a build flag or a family TestFlight build | The flag is a build-time switch, not a hidden setting a stranger could find. Protein stays public, since it is ordinary nutrition |
+| B. Phe as data only, no advice | Phe per serving shown as a food-table number with its source and "≈" mark, like any other nutrient | Same as the store | No budgets, targets, "safe" or "low" labels, warnings framed as guidance, or substitution suggestions; the app reports numbers and never recommends |
+| C. No phe in the store build | General nutrition only | Phe and PKU tools in a family build (as A) | The simplest store app to explain; the schema's phe fields stay, empty and unused in the store build, so nothing migrates later |
+| D. No nutrition in the store build at all | The binder app only (`12`'s IP-7, which puts nutrition in 1.0, would be revisited) | A family build with nutrition and PKU tools | Removes every nutrition question from the public app; costs the most if nutrition is wanted publicly later |
+| E. Family-only app | Nothing nutrition-related; or no store release of these features ever | Everything, in a build that never goes to the App Store | Keeps Sylantro's public scope where it is today |
+
+**What doesn't change under any option:** the schema's slots (`01` §6, §10 here) stay, because
+they are additive and empty, and the ingestion work in Milestones 1 to 3 is unaffected.
+
+**What this document doesn't answer:** whether any option counts as medical software, and what
+their employer's policy allows. Those are questions for their manager and, if needed, someone who
+knows the regulations; Claude has not researched them and offers no view on them.
+
+---
+
+## 17. Decision log
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.4 | §16: the hold clarified. The PKU features are out of the initial App Store release and follow it; Pops will experiment with them after other work; protein per serving may be in 1.0 (`12` IP-10); converting a recipe comes later. N-13 reworded | Pops, 24 Nov 2026: "It’s just not gonna be part of mvp inital App Store release. I do wanna play around with it. Just build other stuff first." |
+| 0.3 | §16 added: the phe and diet features put on hold by Pops pending their employer and the question of giving diet advice; five options for how they might ship (A to E), none recommended; N-13 | Pops, 24 Nov 2026: "giving advice on pku diets is way outside my wheelhouse. Might need to keep this feature within the family." |
+| 0.2 | §15 added: two unscheduled ideas, a recipe estimate from a nutrition label (feasible on the device; tighter phe from the ingredient order and label rounding) and a recipe from a dish photo or menu description (far less certain; the photo path needs a model SLT-040 rules out); N-11 and N-12; sources 10 to 12. Neither idea is in Milestone 3 or any milestone | Pops, 24 Nov 2026: "Scan a foods nutrition label and try to reverse engineer its recipe." and "Or even from a photo of a dish and maybe menu description." |
 | 0.1 | First draft: USDA SR Legacy as the source, a trimmed bundled copy, matching with her confirmation, grams from portions and densities, protein and phe per serving with provenance, the 50 mg per g estimate flagged, custom foods, and substitutions as variants. Not accepted; open decisions N-1 to N-10 | Pops, 21 Nov 2026: "Start a write up for this." |
