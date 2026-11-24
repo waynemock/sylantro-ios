@@ -3,10 +3,6 @@ import Foundation
 /// Joins ingredient lines that wrap onto the next line, by rule, before the model numbers them
 /// (SLT-146).
 nonisolated enum WrapJoiner {
-    /// `06` M1-2's unicode fractions. The same table as `IngredientLineParser`'s and
-    /// `TextMatch`'s, both private to their files (`11` §1).
-    private static let unicodeFractions: Set<Character> = ["¼", "½", "¾", "⅓", "⅔", "⅕", "⅙", "⅛", "⅜", "⅝", "⅞"]
-
     /// A line ending with one of these words, as a whole word, continues on the next.
     private static let continuingWords: Set<String> = ["and", "or", "as", "plus", "of", "with", "to", "for", "into", "in"]
 
@@ -24,12 +20,14 @@ nonisolated enum WrapJoiner {
         return joined
     }
 
-    /// A line that starts an ingredient: a digit, a unicode fraction, or a bullet and a space.
+    /// A line that starts an ingredient: a digit, a unicode fraction (a key of
+    /// `IngredientLineParser`'s table), or a bullet and a space.
     static func startsIngredient(_ line: String) -> Bool {
         guard let first = line.first else {
             return false
         }
-        return ("0"..."9").contains(first) || unicodeFractions.contains(first) || PageSplitter.removingBullet(line) != line
+        return ("0"..."9").contains(first) || IngredientLineParser.unicodeFractions.keys.contains(first)
+            || PageSplitter.removingBullet(line) != line
     }
 
     /// This line starts with a lowercase letter or `(`, or the line before ends with `,`, `-` or a

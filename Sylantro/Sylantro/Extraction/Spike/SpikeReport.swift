@@ -58,4 +58,6 @@ nonisolated struct SpikeCaptureResult: Codable, Sendable {
     var modelTitle: String?
     /// The header answer's `otherTitles`, as returned (`11` M1-9).
     var otherTitles: [String]
+    /// The lines the header step showed the model, each with its text and size (`15` M3-1).
+    var headerArea: [HeaderArea.HeaderLine]
 }

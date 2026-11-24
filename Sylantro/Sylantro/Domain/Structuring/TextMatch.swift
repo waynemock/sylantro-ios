@@ -3,20 +3,14 @@ import Foundation
 /// The one text normalization the structuring rules use (`11` M1-4), so a value and the page text
 /// compare the same way.
 nonisolated enum TextMatch {
-    /// `06` M1-2's unicode fractions, as ` n/d`. The same table as `IngredientLineParser`'s, which
-    /// is private to that file.
-    private static let unicodeFractions: [Character: String] = [
-        "¼": " 1/4", "½": " 1/2", "¾": " 3/4", "⅓": " 1/3", "⅔": " 2/3", "⅕": " 1/5",
-        "⅙": " 1/6", "⅛": " 1/8", "⅜": " 3/8", "⅝": " 5/8", "⅞": " 7/8",
-    ]
-
-    /// Unicode fractions as ` n/d`; a word broken by a hyphen at a line end joined; lowercased;
-    /// every run of characters other than letters, digits, `/` and `.` as one space; trimmed.
+    /// Unicode fractions (`IngredientLineParser`'s table) as ` n/d`; a word broken by a hyphen at a
+    /// line end joined; lowercased; every run of characters other than letters, digits, `/` and `.`
+    /// as one space; trimmed.
     static func normalize(_ text: String) -> String {
         var expanded: [Character] = []
         for character in text {
-            if let fraction = unicodeFractions[character] {
-                expanded.append(contentsOf: fraction)
+            if let fraction = IngredientLineParser.unicodeFractions[character] {
+                expanded.append(contentsOf: " \(fraction.numerator)/\(fraction.denominator)")
             } else {
                 expanded.append(character)
             }

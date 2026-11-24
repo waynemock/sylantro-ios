@@ -22,6 +22,8 @@ nonisolated struct StructuringOutcome: Sendable {
     var modelTitle: String?
     /// The header answer's `otherTitles`, as returned.
     var otherTitles: [String]
+    /// The lines the header step showed the model, with their sizes (`15` M3-1).
+    var headerArea: [HeaderArea.HeaderLine]
 }
 
 /// Structuring failed with something other than a rate limit. It carries what was learned before
@@ -89,7 +91,8 @@ nonisolated struct RecipeStructurer: Sendable {
 
     func structure(_ readings: [PageReading], pageIDs: [UUID]) async throws -> StructuringOutcome {
         var outcome = StructuringOutcome(recipes: [], path: "parts", partMillis: [:], usedLineLabels: false,
-                                         partErrors: [:], retried: [], fallbacks: [], headerTitle: nil, modelTitle: nil, otherTitles: [])
+                                         partErrors: [:], retried: [], fallbacks: [], headerTitle: nil, modelTitle: nil, otherTitles: [],
+                                         headerArea: [])
         do {
             try await structure(readings, pageIDs: pageIDs, into: &outcome)
             return outcome
@@ -146,6 +149,7 @@ nonisolated struct RecipeStructurer: Sendable {
         // 3. The header, from the top of page 1 with each line's size (SLT-148).
         let firstPage = (pageLines.first ?? []).map { (text: $0.text, height: $0.box.height) }
         let area = HeaderArea.lines(firstPage, stopAt: stopAt)
+        outcome.headerArea = area
         var header: GeneratedHeader?
         if !area.isEmpty {
             header = try await call("header", prompt: Self.headerPrompt(area), generating: GeneratedHeader.self,
@@ -197,7 +201,7 @@ nonisolated struct RecipeStructurer: Sendable {
                 let mapped = Self.ingredientGroups(from: part, lines: joinedLines)
                 ingredientGroups = mapped.groups
                 warnings.append("ingredients from whole page")
-                warnings.append(contentsOf: mapped.warnings)
+                warnings.append(contentsOf: Self.fallbackWarnings(mapped.warnings))
             }
         }
         if steps == nil || split.steps.isEmpty {
@@ -210,11 +214,34 @@ nonisolated struct RecipeStructurer: Sendable {
             }
         }
 
-        // 7 and 8. Assemble, then check against the readable lines.
+        // 7 and 8. Assemble, check against the readable lines, then place each ingredient and step
+        // on its page (`15` M3-1).
         let recipe = Self.assemble(title: title, header: header,
                                    ingredientGroups: ingredientGroups ?? [], steps: steps, split: split, rules: rules,
                                    pageIDs: pageIDs, unreadableAreas: unreadableAreas, warnings: warnings)
-        outcome.recipes = [RecipeValidator.check(recipe, pageText: pageText)]
+        let checked = RecipeValidator.check(recipe, pageText: pageText)
+        outcome.recipes = [SourceLocator.locate(checked, lines: Self.locatorLines(pageLines, pageIDs: pageIDs))]
+    }
+
+    /// Every readable line, in page then reading order, its box on its page. A page with no page
+    /// ID adds no lines.
+    private static func locatorLines(_ pageLines: [[PageReading.ReadLine]], pageIDs: [UUID]) -> [SourceLocator.Line] {
+        var lines: [SourceLocator.Line] = []
+        for (pageIndex, page) in pageLines.enumerated() where pageIndex < pageIDs.count {
+            for line in page {
+                lines.append(SourceLocator.Line(text: line.text, box: SourceBox(
+                    pageID: pageIDs[pageIndex], x: line.box.x, y: line.box.y,
+                    width: line.box.width, height: line.box.height
+                )))
+            }
+        }
+        return lines
+    }
+
+    /// The ingredients fallback's warnings, less its `unused ingredient line ` ones: asked over the
+    /// whole page, every line that isn't an ingredient is unused (`11` §1).
+    static func fallbackWarnings(_ warnings: [String]) -> [String] {
+        warnings.filter { !$0.hasPrefix("unused ingredient line ") }
     }
 
     /// `may hold other recipes: ` and the titles joined with `; `, or nil when there are none
@@ -453,47 +480,6 @@ nonisolated struct RecipeStructurer: Sendable {
             reviewState: .needsReview,
             extraction: Extraction(promptVersion: 3, warnings: warnings)
         )
-    }
-
-    /// M1-3's one-shot reading as a `Recipe`, needing review. Empty strings are nil.
-    static func makeRecipe(from generated: GeneratedRecipe, pageIDs: [UUID]) -> Recipe {
-        let author = nonEmpty(generated.author)
-        let publisher = nonEmpty(generated.publisher)
-        let sourceURL = nonEmpty(generated.sourceURL)
-        let attribution = (author == nil && publisher == nil && sourceURL == nil)
-            ? nil
-            : Attribution(author: author, publisher: publisher, sourceURL: sourceURL)
-
-        return Recipe(
-            title: generated.title,
-            yield: nonEmpty(generated.yieldText).map { Yield(rawText: $0) },
-            times: nonEmpty(generated.timesText).map { Times(rawText: $0) },
-            ingredientGroups: generated.ingredientGroups.map(makeGroup),
-            steps: makeSteps(generated.steps),
-            notes: nonEmpty(generated.notes),
-            attribution: attribution,
-            printedNutrition: nonEmpty(generated.printedNutrition),
-            equipment: generated.equipment,
-            sourcePageIDs: pageIDs,
-            reviewState: .needsReview,
-            extraction: Extraction(modelID: nil, promptVersion: 1, extractedAt: nil)
-        )
-    }
-
-    /// A group, its quantities and units from `IngredientLineParser` on each `rawText`.
-    private static func makeGroup(_ group: GeneratedGroup) -> IngredientGroup {
-        IngredientGroup(name: nonEmpty(group.name), ingredients: group.lines.map { line in
-            let parsed = IngredientLineParser.parse(line.rawText)
-            return Ingredient(
-                rawText: line.rawText,
-                quantity: parsed.quantity,
-                unit: parsed.unit,
-                item: nonEmpty(line.item),
-                preparation: nonEmpty(line.preparation),
-                isOptional: line.isOptional,
-                note: nonEmpty(line.note)
-            )
-        })
     }
 
     /// Steps indexed from 0.

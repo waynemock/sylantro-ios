@@ -114,4 +114,36 @@ struct StructuringRulesTests {
         #expect(snapped.title == "")
         #expect(!snapped.snapped)
     }
+
+    // MARK: SP-20's two title fixes (`15` M3-1)
+
+    @Test("a one-word author")
+    func oneWordAuthorIsNotASideLine() {
+        let area = Self.area([("Example Test Soup", 2.0), ("Serves 2", 1.0)])
+
+        let snapped = HeaderArea.snappedTitle("Example Test Soup", area: area, author: "Example")
+
+        #expect(snapped.title == "Example Test Soup")
+        #expect(snapped.snapped)
+    }
+
+    @Test("a two-word author")
+    func twoWordAuthorIsASideLine() {
+        let area = Self.area([("Test Soup", 2.0), ("By Pat Example", 2.0), ("Serves 2", 1.0)])
+
+        let snapped = HeaderArea.snappedTitle("Test Soup\nBy Pat Example", area: area, author: "Pat Example")
+
+        #expect(snapped.title == "Test Soup")
+        #expect(snapped.snapped)
+    }
+
+    @Test("a step as the largest line")
+    func stepAsLargestLineIsNoTitle() {
+        let area = Self.area([("Example Kitchen", 1.0), ("1. Preheat the oven", 2.0), ("Serves 2", 1.0)])
+
+        let snapped = HeaderArea.snappedTitle("Made-up Title", area: area)
+
+        #expect(snapped.title == "")
+        #expect(!snapped.snapped)
+    }
 }

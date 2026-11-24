@@ -19,4 +19,24 @@ struct SpikeRunnerTests {
         let names = ["TP-06.jpeg", "TP-05.jpeg", "TP-01.jpeg", "TP-07.JPG", "notes.txt", "TP-01 copy.jpeg", "TP-17.jpeg"]
         #expect(TestSetGroups.captures(fileNames: names) == [["TP-01.jpeg"], ["TP-05.jpeg", "TP-06.jpeg"], ["TP-07.JPG"], ["TP-17.jpeg"]])
     }
+
+    @Test("the header area in the report")
+    func headerAreaIsInTheReport() throws {
+        let result = SpikeCaptureResult(
+            fileNames: ["TP-01.jpeg"], readings: [], readMillis: [], bottomReadMillis: nil, bottomText: nil,
+            structureMillis: nil, recipes: [], error: nil, path: nil, partMillis: [:], usedLineLabels: false,
+            partErrors: [:], waits: 0, warnings: [], retried: [], fallbacks: [], unreadableLines: 0,
+            rateLimitRetries: 0, headerTitle: nil, modelTitle: nil, otherTitles: [],
+            headerArea: [HeaderArea.HeaderLine(text: "Test Soup", size: 2.0)]
+        )
+        let report = SpikeReport(runAt: Date(timeIntervalSince1970: 0), deviceModel: "iPhone0,0", systemVersion: "26.5",
+                                 modelAvailable: false, captures: [result])
+
+        let json = try #require(try JSONSerialization.jsonObject(with: report.encoded()) as? [String: Any])
+        let captures = try #require(json["captures"] as? [[String: Any]])
+        let area = try #require(captures.first?["headerArea"] as? [[String: Any]])
+        try #require(area.count == 1)
+        #expect(area[0]["text"] as? String == "Test Soup")
+        #expect(area[0]["size"] as? Double == 2.0)
+    }
 }

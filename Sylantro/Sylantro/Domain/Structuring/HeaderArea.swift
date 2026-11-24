@@ -4,7 +4,7 @@ import Foundation
 /// page's usual text (SLT-148).
 nonisolated enum HeaderArea {
     /// One candidate line. `size` is its height over the page's median line height, to one decimal.
-    nonisolated struct HeaderLine: Equatable, Sendable {
+    nonisolated struct HeaderLine: Codable, Equatable, Sendable {
         var text: String
         var size: Double
     }
@@ -64,7 +64,7 @@ nonisolated enum HeaderArea {
     /// isn't a side line and either starts lowercase or is the model's next line at 0.8 to 1.25
     /// times the start's size. A title starting with a step number is no title. An answer with no
     /// line left, or none found, gives the largest line (the first of equal ones), with `snapped`
-    /// false; an empty area gives `""`.
+    /// false; an empty area gives `""`, and so does a largest line starting with a step number.
     static func snappedTitle(_ text: String, area: [HeaderLine], author: String? = nil,
                              sourceHost: String? = nil) -> (title: String, snapped: Bool) {
         // 1. Empty.
@@ -80,7 +80,9 @@ nonisolated enum HeaderArea {
 
         // 3. The start: one area line, else a run of 2 or 3.
         guard let firstModelLine = modelLines.first, let start = startRun(of: firstModelLine, in: area) else {
-            return (largestLine(area), false)
+            // The largest line, unless it is a step.
+            let largest = largestLine(area)
+            return (startsWithStepNumber(largest) ? "" : largest, false)
         }
 
         // 4. The next lines.
@@ -134,7 +136,7 @@ nonisolated enum HeaderArea {
     }
 
     /// A line that is the site's name (its letters and digits, at least 4, found in the host
-    /// without dots) or holds the author's name.
+    /// without dots) or holds the author's name. A one-word author name is ignored (`15` M3-1).
     private static func isSideLine(_ line: String, author: String?, sourceHost: String?) -> Bool {
         if let sourceHost {
             let letters = String(line.lowercased().filter { $0.isLetter || ("0"..."9").contains($0) })
@@ -144,7 +146,7 @@ nonisolated enum HeaderArea {
         }
         if !TextMatch.isEmptyAnswer(author), let author {
             let name = TextMatch.normalize(author)
-            if !name.isEmpty, TextMatch.normalize(line).contains(name) {
+            if name.contains(" "), TextMatch.normalize(line).contains(name) {
                 return true
             }
         }

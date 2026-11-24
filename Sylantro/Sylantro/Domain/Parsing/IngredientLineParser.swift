@@ -10,8 +10,9 @@ nonisolated enum IngredientLineParser {
     /// Rule 2, tried in this order, matched case-insensitively.
     private static let approximatePrefixes = ["about ", "approximately ", "approx. ", "approx ", "~"]
 
-    /// Rule 3's unicode fractions.
-    private static let unicodeFractions: [Character: (numerator: Int, denominator: Int)] = [
+    /// Rule 3's unicode fractions: the one table, also read by `TextMatch` and `WrapJoiner`
+    /// (`00A` §10).
+    static let unicodeFractions: [Character: (numerator: Int, denominator: Int)] = [
         "¼": (1, 4), "½": (1, 2), "¾": (3, 4), "⅓": (1, 3), "⅔": (2, 3), "⅕": (1, 5),
         "⅙": (1, 6), "⅛": (1, 8), "⅜": (3, 8), "⅝": (5, 8), "⅞": (7, 8),
     ]

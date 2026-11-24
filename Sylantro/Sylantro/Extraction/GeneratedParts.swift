@@ -66,6 +66,16 @@ nonisolated struct GeneratedStepPart {
     var steps: [GeneratedStep]
 }
 
+/// One method step.
+@Generable
+nonisolated struct GeneratedStep {
+    @Guide(description: "The step's words exactly as printed.")
+    var text: String
+
+    @Guide(description: "The heading the step is printed under, if any.")
+    var groupName: String?
+}
+
 /// A label for each numbered line of a page with no headings.
 @Generable
 nonisolated struct GeneratedLineLabels {

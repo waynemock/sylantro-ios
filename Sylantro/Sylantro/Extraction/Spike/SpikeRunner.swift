@@ -205,7 +205,8 @@ import UIKit
             rateLimitRetries: 0,
             headerTitle: nil,
             modelTitle: nil,
-            otherTitles: []
+            otherTitles: [],
+            headerArea: []
         )
         captures[index].status = .reading
         log.info(self, "capture \(index): reading")
@@ -300,7 +301,7 @@ import UIKit
     }
 
     /// The outcome's part times, part errors, retries, fallbacks, line-label use, header title,
-    /// model title and other titles, which a failed capture keeps too.
+    /// model title, other titles and header area, which a failed capture keeps too.
     private static func copyDiagnostics(_ outcome: StructuringOutcome, into result: inout SpikeCaptureResult) {
         result.partMillis = outcome.partMillis
         result.partErrors = outcome.partErrors
@@ -310,6 +311,7 @@ import UIKit
         result.headerTitle = outcome.headerTitle
         result.modelTitle = outcome.modelTitle
         result.otherTitles = outcome.otherTitles
+        result.headerArea = outcome.headerArea
     }
 
     /// The wait before structuring again after the `count`th refusal in a row while in front:
