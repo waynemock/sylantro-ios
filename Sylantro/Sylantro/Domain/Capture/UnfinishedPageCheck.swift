@@ -54,6 +54,32 @@ nonisolated enum UnfinishedPageCheck {
         return nil
     }
 
+    // MARK: The last page
+
+    /// Whether the lines say this is the last page (`15` M3-2a, RV-26): a line, lowercased and
+    /// split on spaces, holding the words `page`, n, `of`, m in a row, n and m whole numbers with
+    /// n == m ≥ 1. "5/5" and "5 of 5" without `page` don't count: a date or an ingredient could read
+    /// that way.
+    static func saysLastPage(_ lines: [String]) -> Bool {
+        lines.contains { line in
+            let words = line.lowercased().split(separator: " ").map(String.init)
+            guard words.count >= 4 else { return false }
+            return (0...(words.count - 4)).contains { start in
+                guard words[start] == "page", words[start + 2] == "of",
+                      let n = wholeNumber(words[start + 1]), let m = wholeNumber(words[start + 3]) else {
+                    return false
+                }
+                return n == m && n >= 1
+            }
+        }
+    }
+
+    /// The value of a word of ASCII digits only, or nil.
+    private static func wholeNumber(_ word: String) -> Int? {
+        guard !word.isEmpty, word.allSatisfy(\.isASCIIDigit) else { return nil }
+        return Int(word)
+    }
+
     // MARK: Footers
 
     /// A line containing a web address anywhere, a line that is or ends with "Page n of m", "n/m" or

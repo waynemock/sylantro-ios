@@ -2,7 +2,7 @@
 
 **A Syzygy Softwerks engineering contract · how the app is put together, and the rules every task
 follows**
-Version 0.16 · 23 November 2026 · **Accepted** (Pops, 22 Nov 2026), including the App-layer names in §2
+Version 0.17 · 24 November 2026 · **Accepted** (Pops, 22 Nov 2026), including the App-layer names in §2
 and §8 (`RecipeEditor`, `CaptureRecorder`, `ExtractionQueue`, `MirrorWriter`) and §5.1, §5.2, §5.4 and
 §5.5 as written; §3's Domain names by SLT-091. **Still open:** the recovery screen's copy
 (§5.3, `13` §6), and the photo details §5.7 points to (`05`). No app code is written from those until Pops rules.
@@ -49,7 +49,7 @@ Inspect what is already in the source tree and extend it.
 | Capture | VisionKit's `VNDocumentCameraViewController`, hosted in SwiftUI *(rec.)* |
 | Reading | Vision text recognition *(rec.: the request API is chosen in the spike)* |
 | Structuring | FoundationModels, guided generation into `@Generable` mirrors of the Domain types (SLT-040) |
-| Background | A main-actor `ExtractionQueue` while the app runs, and a `BGProcessingTask` for work left over, as SydeTwo's `DiscogsEnrichmentCoordinator` does *(rec.)* |
+| Background | A main-actor `ExtractionQueue`, only while Sylantro is open; no `BGProcessingTask` (`15` RV-5, ruled) |
 | Mirror | `MirrorWriter`, file-coordinated writes into the iCloud ubiquity container's `Documents`, or the app's own `Documents` with iCloud off (SLT-032, SLT-050) |
 | Look | SyLibUI (`SyTheme`, `Chip`, `CapsuleButton`, `IconButton`, `EmptyStateView`, `FlowLayout`, `SettingRow`, `AboutView`) |
 | iCloud status | SyLibCloud (`CloudAccountStatus`, `ICloudStatusButton`, `ICloudInfoSheet`) |
@@ -110,9 +110,13 @@ plain values and no camera, model, store or view. That is Milestone 1's half tha
 - **Capture** saves each page through `CaptureRecorder` the moment the camera returns it: the
   original and the cropped image, a `SourcePage` in the session's `ScanSession`, then a queue entry
   and a mirror write. Nothing else runs on the capture path (SLT-041).
-- **`ExtractionQueue`** takes waiting pages one at a time: read (Vision), then structure
-  (FoundationModels, in parts for a long recipe, retried on a schema refusal), then hand the result
-  to `RecipeEditor` as a draft with `reviewState = needsReview`.
+- **`ExtractionQueue`** takes waiting recipes one at a time, oldest first: read each unread page
+  (Vision), kept once on the page through `CaptureRecorder` (`15` RV-4), then structure the recipe
+  (FoundationModels, in parts), then hand the result to `CaptureRecorder.finishStructuring`, which
+  has `RecipeEditor` fill in the recipe with `reviewState = needsReview` and marks its pages
+  structured, in one save. The device that scanned a recipe goes first; another capable device takes
+  it after 10 minutes (`15` RV-3). Three failed tries mark its pages failed (`15` RV-24). The detail
+  is `15` M3-2.
 - **Availability.** On a device where `SystemLanguageModel` is unavailable, pages are read but not
   structured, and stay marked as waiting on the synced `SourcePage` (SLT-044). The queue on a
   capable device rebuilds itself from those marks at launch and when sync delivers pages.
@@ -125,12 +129,15 @@ plain values and no camera, model, store or view. That is Milestone 1's half tha
 
 ### 5.1 The containers (SLT-050, SLT-051) *(rec.)*
 
-One `ModelContainer` with two configurations, as SydeTwo builds its own:
+Two containers (`15` RV-23, ruled):
 
 - **Synced**: `SylantroApp.syncedModels` (`ScanSessionModel`, `SourcePageModel`, `RecipeModel`) on
   `.private("iCloud.com.syzygysoftwerksllc.Sylantro")`, under `SylantroSchemaV1` (`VersionedSchema`).
-- **Device-only**: `SylantroApp.localModels` (`ExtractionJobModel`, `DeviceStateModel`), named
-  `"SylantroLocal"`, with `cloudKitDatabase: .none`.
+- **Device-only**: its own small `ModelContainer`, `"SylantroLocal"`, with `cloudKitDatabase:
+  .none`, holding only `ExtractionJobModel`, opened by `ExtractionQueue`. If it won't open, the
+  queue logs it and runs from memory for that launch; it is never deleted or moved, and the recovery
+  screen is about the synced store only. Its jobs are rebuilt from the synced pages' marks at every
+  launch. A `DeviceStateModel` joins it only when something needs one.
 - The schema push is `CloudKitSchema.initializeDevelopment(models: syncedModels, configuration:
   syncedConfig, containerIdentifier:)`, synced models only, inside `#if DEBUG` behind
   `AppConfig.DebugCloudKit.runSchemaExercise` (SLT-015).
@@ -203,10 +210,10 @@ SyLibCache's `ImageCache` (on each device, never stored), HEIC copies from `Mirr
 
 ## 6. The root *(rec.)*
 
-`SylantroApp` owns, as `@State`: `CloudAccountStatus(containerIdentifier:)`, `AppUpdateState`,
-`CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`. It sets `AppLogger.appName = "Sylantro"`,
-registers the `BGProcessingTask` in `init`, and caps Dynamic Type at AX2 with
-`sceneDynamicTypeCeiling` (`00A` §5).
+`SylantroApp` sets `AppLogger.appName = "Sylantro"`, opens the synced store, and caps Dynamic Type
+at AX2 (`00A` §5). `RootView` owns, as `@State`, `CloudAccountStatus(containerIdentifier:)`,
+`AppUpdateState`, `PhotoFiles`, `RecipeEditor`, `CaptureRecorder` and `ExtractionQueue`, made once
+in its launch task (as built in M2), and tells the queue when the scene is active (SLT-144).
 
 ---
 
@@ -225,8 +232,9 @@ Sylantro/
     StoreRecovery/ StoreOpener, StoreState, StoreSetAside (`14` M2-2, MT-6)
     Settings/     SettingsKey, AppPalette (built, SLT-086)
   Capture/        CaptureRecorder, PhotoFiles (`14` MT-3), the camera host
-  Extraction/     ExtractionQueue, TextReader, RecipeStructurer
-  Store/          the @Model twins, SylantroSchemaV1, RecipeEditor
+  Extraction/     ExtractionQueue, TextReader, RecipeStructurer, PageReading (`15` M3-2)
+  Store/          the @Model twins, SylantroSchemaV1, RecipeEditor, SylantroLocalSchema (`15` M3-2)
+  Domain/Extraction/ ExtractionJob, ExtractionPlanner (`15` M3-2)
   Domain/Capture/ ScanSession, SourcePage, Photo and their parts, PhotoEncoding, CaptureJSON (built, `14` M2-1), UnfinishedPageCheck (`14` M2-4)
   Mirror/         MirrorWriter
   Domain/         Recipe values, IngredientLineParser, RecipeValidator, RecipeRendering,
@@ -265,6 +273,7 @@ SylantroTests/    Domain tests first; fixtures are made up
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.17 | §1, §4, §5.1, §6, §8: the queue only while open, no `BGProcessingTask`; the device-only store its own container with only `ExtractionJobModel`; the root as built; M3-2's files | `15` RV-5 and RV-23 (Pops, 24 Nov 2026 (decision cards, "No, only while it's open", "Yes, its own store")) |
 | 0.16 | §5.4: Pages without a recipe no longer written; a deleted recipe's folder is removed (SLT-157) | Pops, 23 Nov 2026 |
 | 0.15 | §8: `Domain/Capture/` (built by M2-1), and M2-2's recovery folders | `14` v0.4 |
 | 0.14 | §5.4, §5.7: the mirror's photos are HEIC copies | `05` P-5, Pops, 22 Nov 2026 (decision card, "HEIC copies") |

@@ -8,10 +8,13 @@ enum RecipeEditorError: Error, Equatable {
     case recipeNotFound(UUID)
     /// The recipe's data couldn't be read, so it is left as it is.
     case recipeUnreadable(UUID)
+    /// She has edited the recipe, so a new reading doesn't replace it (RV-7).
+    case recipeEdited(UUID)
 }
 
-/// The writer for recipes (`02` §5.2, SLT-082, `14` MT-8). M2-3 gives it only what capture needs;
-/// review's edits come in M3. Neither call saves: the caller saves once.
+/// The writer for recipes (`02` §5.2, SLT-082, `14` MT-8). M2-3 gives it what capture needs, M3-2
+/// the queue's structured reading; review's edits come later in M3. Only `delete` saves: for the
+/// rest, the caller saves once.
 @MainActor
 final class RecipeEditor {
     private let log = AppLogger(category: "RecipeEditor")
@@ -130,5 +133,30 @@ final class RecipeEditor {
         recipe.updatedAt = now
         model.hydrate(from: recipe)
         log.info(self, "recipe \(recipeID): \(pageIDs.count) pages added, \(recipe.sourcePageIDs.count) in all")
+    }
+
+    /// Every copy of the recipe becomes `structured` as its reading (`ExtractionPlanner.merged`,
+    /// `15` M3-2), its page-2 warning cleared when `lastPageEnds` (M3-2a). Every copy is checked
+    /// before any changes, so a throw changes nothing: no copy, a copy that can't be read, or one
+    /// she has edited (RV-7). Does not save.
+    func applyStructure(_ structured: Recipe, to recipeID: UUID, lastPageEnds: Bool, now: Date) throws {
+        let models = try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == recipeID }))
+        guard !models.isEmpty else {
+            throw RecipeEditorError.recipeNotFound(recipeID)
+        }
+        var existing: [(model: RecipeModel, recipe: Recipe)] = []
+        for model in models {
+            guard let recipe = model.toDomain() else {
+                throw RecipeEditorError.recipeUnreadable(recipeID)
+            }
+            existing.append((model, recipe))
+        }
+        guard !existing.contains(where: { $0.recipe.reviewState == .edited }) else {
+            throw RecipeEditorError.recipeEdited(recipeID)
+        }
+        for (model, recipe) in existing {
+            model.hydrate(from: ExtractionPlanner.merged(structured, into: recipe, lastPageEnds: lastPageEnds, now: now))
+        }
+        log.info(self, "recipe \(recipeID): structured, \(models.count) copies")
     }
 }

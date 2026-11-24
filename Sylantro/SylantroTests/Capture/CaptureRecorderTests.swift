@@ -181,4 +181,173 @@ struct CaptureRecorderTests {
         #expect(try context.fetch(FetchDescriptor<PhotoModel>()).isEmpty)
         #expect(try context.fetch(FetchDescriptor<RecipeModel>()).isEmpty)
     }
+
+    // MARK: The queue's writes (`15` M3-2)
+
+    /// Inserts `count` copies of a waiting page with no reading, and saves.
+    static func insertPageCopies(_ page: SourcePage, count: Int, in context: ModelContext) throws {
+        for _ in 0..<count {
+            let model = SourcePageModel()
+            model.hydrate(from: page)
+            context.insert(model)
+        }
+        try context.save()
+    }
+
+    static func word(_ text: String, pageID: UUID) -> OCRWord {
+        OCRWord(text: text, box: SourceBox(pageID: pageID, x: 0.125, y: 0.25, width: 0.5, height: 0.0625), confidence: 0.5)
+    }
+
+    @Test("the reading is written")
+    func readingIsWritten() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (recorder, context, container) = try Self.makeRecorder(photoRoot: folder)
+        _ = container
+        let page = SourcePage(capturedAt: Self.now)
+        try Self.insertPageCopies(page, count: 2, in: context)
+        let words = [Self.word("Test Soup", pageID: page.id), Self.word("2 cups water", pageID: page.id)]
+
+        try recorder.recordReading(pageID: page.id, text: "Test Soup\n2 cups water", words: words)
+
+        let copies = try context.fetch(FetchDescriptor<SourcePageModel>()).compactMap { $0.toDomain() }
+        #expect(copies.count == 2)
+        for copy in copies {
+            #expect(copy.ocrText == "Test Soup\n2 cups water")
+            #expect(copy.ocrWords == words)
+        }
+    }
+
+    @Test("read once")
+    func readOnce() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (recorder, context, container) = try Self.makeRecorder(photoRoot: folder)
+        _ = container
+        let first = [Self.word("Test Soup", pageID: UUID())]
+        let page = SourcePage(capturedAt: Self.now, ocrText: "Test Soup", ocrWords: first)
+        try Self.insertPageCopies(page, count: 1, in: context)
+
+        try recorder.recordReading(pageID: page.id, text: "Made-up Other Text",
+                                   words: [Self.word("Made-up Other Text", pageID: page.id)])
+
+        let copy = try #require(try context.fetch(FetchDescriptor<SourcePageModel>()).first?.toDomain())
+        #expect(copy.ocrText == "Test Soup")
+        #expect(copy.ocrWords == first)
+    }
+
+    @Test("structured")
+    func structuredRecipeIsSaved() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (recorder, context, container) = try Self.makeRecorder(photoRoot: folder)
+        _ = container
+        let image = try #require(PhotoFilesTests.makeImage(width: 40, height: 60))
+        let sessionID = try recorder.startSession(now: Self.now)
+        let recipeID = try recorder.saveCapture([image, image], sessionID: sessionID, continuesOnUnscannedPage: false, now: Self.now)
+        let structured = Recipe(title: "Test Soup", steps: [Step(text: "Boil the water.")])
+
+        let saved = try recorder.finishStructuring(structured, recipeID: recipeID, lastPageEnds: false, now: Self.now.addingTimeInterval(60))
+
+        #expect(saved)
+        let recipe = try #require(try context.fetch(FetchDescriptor<RecipeModel>()).first?.toDomain())
+        #expect(recipe.id == recipeID)
+        #expect(recipe.title == "Test Soup")
+        #expect(recipe.steps.map(\.text) == ["Boil the water."])
+        let pages = try context.fetch(FetchDescriptor<SourcePageModel>()).compactMap { $0.toDomain() }
+        #expect(pages.count == 2)
+        #expect(pages.allSatisfy { $0.structuringState == .structured })
+    }
+
+    @Test("already done")
+    func alreadyDoneIsNotSaved() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (recorder, context, container) = try Self.makeRecorder(photoRoot: folder)
+        _ = container
+        let image = try #require(PhotoFilesTests.makeImage(width: 40, height: 60))
+        let sessionID = try recorder.startSession(now: Self.now)
+        let recipeID = try recorder.saveCapture([image], sessionID: sessionID, continuesOnUnscannedPage: false, now: Self.now)
+        _ = try recorder.finishStructuring(Recipe(title: "Test Soup"), recipeID: recipeID, lastPageEnds: false, now: Self.now)
+        let before = try #require(try context.fetch(FetchDescriptor<RecipeModel>()).first?.toDomain())
+
+        let saved = try recorder.finishStructuring(Recipe(title: "Made-up Other Title"), recipeID: recipeID, lastPageEnds: false,
+                                                   now: Self.now.addingTimeInterval(60))
+
+        #expect(!saved)
+        let after = try #require(try context.fetch(FetchDescriptor<RecipeModel>()).first?.toDomain())
+        #expect(after == before)
+    }
+
+    @Test("failed")
+    func pagesAreMarkedFailed() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (recorder, context, container) = try Self.makeRecorder(photoRoot: folder)
+        _ = container
+        let page = SourcePage(capturedAt: Self.now)
+        let other = SourcePage(capturedAt: Self.now)
+        try Self.insertPageCopies(page, count: 2, in: context)
+        try Self.insertPageCopies(other, count: 1, in: context)
+
+        try recorder.markFailed(pageIDs: [page.id])
+
+        let pages = try context.fetch(FetchDescriptor<SourcePageModel>()).compactMap { $0.toDomain() }
+        #expect(pages.filter { $0.id == page.id }.map(\.structuringState) == [.failed, .failed])
+        #expect(pages.filter { $0.id == other.id }.map(\.structuringState) == [.waiting])
+    }
+
+    @Test("the queue is told")
+    func queueIsTold() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (recorder, _, container) = try Self.makeRecorder(photoRoot: folder)
+        _ = container
+        var told: [UUID] = []
+        recorder.onRecipeSaved = { told.append($0) }
+        let image = try #require(PhotoFilesTests.makeImage(width: 40, height: 60))
+        let sessionID = try recorder.startSession(now: Self.now)
+
+        let recipeID = try recorder.saveCapture([image], sessionID: sessionID, continuesOnUnscannedPage: false, now: Self.now)
+        try recorder.addPages([image], to: recipeID, sessionID: sessionID, now: Self.now)
+
+        #expect(told == [recipeID, recipeID])
+    }
+
+    @Test("an edited recipe is kept")
+    func editedRecipeIsKept() throws {
+        let container = try ModelTwinTests.makeContainer()
+        let context = container.mainContext
+        let edited = Recipe(title: "Her Test Soup", reviewState: .edited, createdAt: Self.now, updatedAt: Self.now)
+        let model = RecipeModel()
+        model.hydrate(from: edited)
+        context.insert(model)
+        try context.save()
+
+        #expect(throws: RecipeEditorError.recipeEdited(edited.id)) {
+            try RecipeEditor(context: context).applyStructure(Recipe(title: "Test Soup"), to: edited.id, lastPageEnds: false, now: Self.now)
+        }
+
+        let after = try #require(try context.fetch(FetchDescriptor<RecipeModel>()).first?.toDomain())
+        #expect(after == edited)
+    }
+
+    @Test("the warning is cleared")
+    func warningIsCleared() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (recorder, context, container) = try Self.makeRecorder(photoRoot: folder)
+        _ = container
+        let image = try #require(PhotoFilesTests.makeImage(width: 40, height: 60))
+        let sessionID = try recorder.startSession(now: Self.now)
+        // Saved with Save Without It: the page-2 warning is on.
+        let recipeID = try recorder.saveCapture([image], sessionID: sessionID, continuesOnUnscannedPage: true, now: Self.now)
+
+        let saved = try recorder.finishStructuring(Recipe(title: "Test Soup"), recipeID: recipeID, lastPageEnds: true,
+                                                   now: Self.now.addingTimeInterval(60))
+
+        #expect(saved)
+        let recipe = try #require(try context.fetch(FetchDescriptor<RecipeModel>()).first?.toDomain())
+        #expect(recipe.continuesOnUnscannedPage == false)
+    }
 }

@@ -146,4 +146,27 @@ struct StructuringRulesTests {
         #expect(snapped.title == "")
         #expect(!snapped.snapped)
     }
+
+    // MARK: The author's line (`15` M3-2a, RV-25)
+
+    @Test("a title holding the author's name")
+    func titleHoldingAuthorsName() {
+        let area = Self.area([("Pat Example's Test Soup", 2.0), ("Pat Example makes this for her", 1.0),
+                              ("family.", 1.0), ("By Pat Example", 1.0)])
+
+        let snapped = HeaderArea.snappedTitle("Pat Example's Test Soup", area: area, author: "Pat Example")
+
+        #expect(snapped.title == "Pat Example's Test Soup")
+        #expect(snapped.snapped)
+    }
+
+    @Test("the author's name alone")
+    func authorsNameAlone() {
+        let area = Self.area([("Test Soup", 2.0), ("Pat Example", 1.0)])
+
+        let snapped = HeaderArea.snappedTitle("Test Soup\nPat Example", area: area, author: "Pat Example")
+
+        #expect(snapped.title == "Test Soup")
+        #expect(snapped.snapped)
+    }
 }

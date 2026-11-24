@@ -127,9 +127,38 @@ struct MirrorWriterTests {
 
         await fixture.mirror.write(snapshot)
 
+        // Found by its id and moved back to the title's name (RV-27: the title wins).
+        let titledName = RecipeRendering.folderName(title: snapshot.recipe.title, id: snapshot.recipe.id)
         let names = try FileManager.default.contentsOfDirectory(atPath: fixture.recipesFolder.path(percentEncoded: false))
-        #expect(names == [renamed.lastPathComponent])
-        #expect(FileManager.default.fileExists(atPath: renamed.appending(path: "recipe.md").path(percentEncoded: false)))
+        #expect(names == [titledName])
+        let titled = fixture.recipesFolder.appending(path: titledName, directoryHint: .isDirectory)
+        #expect(FileManager.default.fileExists(atPath: titled.appending(path: "recipe.md").path(percentEncoded: false)))
+    }
+
+    @Test("a folder follows the title")
+    func folderFollowsTheTitle() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let snapshot = Self.snapshot(fileNames: [try fixture.writePhoto()])
+        let recipeID = snapshot.recipe.id
+        await fixture.mirror.write(snapshot)
+        let draftFolder = try #require(try fixture.recipeFolder(recipeID))
+        #expect(draftFolder.lastPathComponent == "new-recipe-" + RecipeRendering.idPrefix(recipeID))
+        let pageOne = draftFolder.appending(path: "pages/page-1.heic")
+        let bytesBefore = try Data(contentsOf: pageOne)
+        let dateBefore = try Self.modificationDate(pageOne)
+
+        var titled = snapshot.recipe
+        titled.title = "Test Soup"
+        await fixture.mirror.write(MirrorSnapshot(recipe: titled, pages: snapshot.pages))
+
+        let names = try FileManager.default.contentsOfDirectory(atPath: fixture.recipesFolder.path(percentEncoded: false))
+        #expect(names == ["test-soup-" + RecipeRendering.idPrefix(recipeID)])
+        let movedName = try #require(names.first)
+        let movedPage = fixture.recipesFolder.appending(path: movedName, directoryHint: .isDirectory)
+            .appending(path: "pages/page-1.heic")
+        #expect(try Data(contentsOf: movedPage) == bytesBefore)
+        #expect(try Self.modificationDate(movedPage) == dateBefore)
     }
 
     @Test("deleting removes the recipe's folder")

@@ -22,6 +22,10 @@ struct RootView: View {
     @State private var photoFiles: PhotoFiles?
     @State private var recipeEditor: RecipeEditor?
     @State private var captureRecorder: CaptureRecorder?
+    /// Reads and structures waiting recipes while the scene is active (`02` §4, `15` M3-2); nil
+    /// until launch has made it.
+    @State private var extractionQueue: ExtractionQueue?
+    @Environment(\.scenePhase) private var scenePhase
     /// The selected recipe's id.
     @State private var selection: UUID?
 
@@ -97,7 +101,14 @@ struct RootView: View {
             let mirror = await MirrorWriter.live(photoFiles: files)
             let editor = RecipeEditor(context: modelContext, mirror: mirror, photoFiles: files)
             recipeEditor = editor
-            captureRecorder = CaptureRecorder(context: modelContext, photoFiles: files, recipeEditor: editor, mirror: mirror)
+            let recorder = CaptureRecorder(context: modelContext, photoFiles: files, recipeEditor: editor, mirror: mirror)
+            captureRecorder = recorder
+            // The queue on the same store, told of each capture saved here (`15` M3-2).
+            let queue = ExtractionQueue.live(syncedContext: modelContext, captureRecorder: recorder, photoFiles: files)
+            recorder.onRecipeSaved = { [weak queue] recipeID in queue?.enqueue(recipeID: recipeID) }
+            extractionQueue = queue
+            // `.onChange`'s initial call came before the queue existed.
+            queue.setSceneActive(scenePhase == .active)
             catchUpMirror(mirror)
             await cloudStatus.refresh()
             await updateState.check()
@@ -112,6 +123,10 @@ struct RootView: View {
         }
         .onChange(of: tintKey) { WindowTint.apply(UIColor(theme.primaryAccent)) }
         .onChange(of: colorSchemeSetting) { applyAppearance() }
+        // Extraction runs only while the scene is active (SLT-144).
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            extractionQueue?.setSceneActive(phase == .active)
+        }
         // AX2 at most; every presented view repeats the cap, since presentations don't take it.
         .appTextSizeCap()
     }

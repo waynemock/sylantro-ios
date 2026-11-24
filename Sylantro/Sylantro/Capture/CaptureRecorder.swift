@@ -7,11 +7,15 @@ import SyLibCore
 enum CaptureRecorderError: Error, Equatable {
     /// A capture with no pages.
     case noPages
+    /// No page has this id.
+    case pageNotFound(UUID)
 }
 
 /// The writer for captures (`02` §5.2, SLT-082): it saves a capture's pages, their photos and one
 /// new recipe (SC-1) in one save, and only ever adds. Photo files are written first, so a capture
 /// is never saved without them; files already written are kept even when the save fails (SLT-030).
+/// For the queue (`15` M3-2) it also writes a page's reading once, its structuring state, and a
+/// structured recipe with its pages in one save.
 @MainActor
 final class CaptureRecorder {
     private let log = AppLogger(category: "Capture")
@@ -20,6 +24,9 @@ final class CaptureRecorder {
     private let recipeEditor: RecipeEditor
     /// The copy in Files, written after each save on this device (MT-15); nil writes none.
     private let mirror: MirrorWriter?
+    /// Told the recipe's id after each capture or Add Page saved here, so the queue takes it first
+    /// (RV-3); never after a failure.
+    var onRecipeSaved: ((UUID) -> Void)?
 
     init(context: ModelContext, photoFiles: PhotoFiles, recipeEditor: RecipeEditor, mirror: MirrorWriter? = nil) {
         self.context = context
@@ -56,6 +63,7 @@ final class CaptureRecorder {
             try context.save()
             log.info(self, "capture saved: \(pages.count) pages, recipe \(recipe.id)")
             mirrorAfterSave(recipe)
+            onRecipeSaved?(recipe.id)
             return recipe.id
         } catch {
             context.rollback()
@@ -78,6 +86,83 @@ final class CaptureRecorder {
             throw error
         }
         mirrorAfterSave(recipeID: recipeID)
+        onRecipeSaved?(recipeID)
+    }
+
+    // MARK: The queue's writes (`15` M3-2)
+
+    /// Writes the page's reading on every copy that has none, and saves; a copy already read is
+    /// left as it is (`01` §3.2, RV-4). Throws when no copy of the page exists.
+    func recordReading(pageID: UUID, text: String, words: [OCRWord]) throws {
+        let models = try context.fetch(FetchDescriptor<SourcePageModel>(predicate: #Predicate { $0.id == pageID }))
+        guard !models.isEmpty else {
+            throw CaptureRecorderError.pageNotFound(pageID)
+        }
+        var written = 0
+        for model in models where model.ocrText == nil {
+            guard var page = model.toDomain() else { continue }
+            page.ocrText = text
+            page.ocrWords = words
+            model.hydrate(from: page)
+            written += 1
+        }
+        try save("page \(pageID): reading not saved")
+        log.info(self, "page \(pageID): reading written on \(written) of \(models.count) copies, \(words.count) lines")
+    }
+
+    /// Saves the queue's structured reading of the recipe (RV-3): false, changing nothing, when
+    /// none of its pages is waiting any more (another device got there first). Otherwise the recipe
+    /// becomes the reading (`RecipeEditor.applyStructure`) and every copy of its pages is marked
+    /// structured, in one save, then its copy in Files is written. `lastPageEnds` clears its page-2
+    /// warning (M3-2a, RV-26). A failed save is rolled back and rethrown.
+    func finishStructuring(_ structured: Recipe, recipeID: UUID, lastPageEnds: Bool, now: Date) throws -> Bool {
+        let recipeModels = try context.fetch(FetchDescriptor<RecipeModel>(predicate: #Predicate { $0.id == recipeID }))
+        let pageIDs = Set(recipeModels.compactMap { $0.toDomain() }.flatMap(\.sourcePageIDs))
+        let pages = try pageModels(pageIDs)
+        guard pages.contains(where: { $0.structuringStateRaw == StructuringState.waiting.rawValue }) else {
+            log.info(self, "recipe \(recipeID): not saved, no page waiting")
+            return false
+        }
+        do {
+            try recipeEditor.applyStructure(structured, to: recipeID, lastPageEnds: lastPageEnds, now: now)
+            for page in pages {
+                page.structuringStateRaw = StructuringState.structured.rawValue
+            }
+            try context.save()
+        } catch {
+            context.rollback()
+            log.error(self, "recipe \(recipeID): structured reading not saved: \(error)")
+            throw error
+        }
+        log.info(self, "recipe \(recipeID): structured, \(pages.count) page copies marked")
+        mirrorAfterSave(recipeID: recipeID)
+        return true
+    }
+
+    /// Marks every copy of the pages failed (RV-24), and saves.
+    func markFailed(pageIDs: [UUID]) throws {
+        let pages = try pageModels(Set(pageIDs))
+        for page in pages {
+            page.structuringStateRaw = StructuringState.failed.rawValue
+        }
+        try save("pages not marked failed")
+        log.info(self, "\(pages.count) page copies marked failed")
+    }
+
+    /// Every copy of the pages with these ids.
+    private func pageModels(_ pageIDs: Set<UUID>) throws -> [SourcePageModel] {
+        try context.fetch(FetchDescriptor<SourcePageModel>()).filter { pageIDs.contains($0.id) }
+    }
+
+    /// Saves, or rolls back, logs and rethrows.
+    private func save(_ failure: String) throws {
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            log.error(self, "\(failure): \(error)")
+            throw error
+        }
     }
 
     // MARK: The copy in Files

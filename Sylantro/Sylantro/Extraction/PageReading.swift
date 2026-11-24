@@ -31,4 +31,13 @@ nonisolated struct PageReading: Codable, Sendable, Equatable {
         meanConfidence = confidences.isEmpty ? nil : confidences.reduce(0, +) / Double(confidences.count)
         minConfidence = confidences.min()
     }
+
+    /// A page's kept reading as read again: one line per word, in order, each `OCRWord` being one
+    /// line (RV-4); a word with no confidence reads as 0.
+    init(words: [OCRWord]) {
+        self.init(lines: words.map { word in
+            ReadLine(text: word.text, confidence: word.confidence ?? 0,
+                     box: .init(x: word.box.x, y: word.box.y, width: word.box.width, height: word.box.height))
+        })
+    }
 }

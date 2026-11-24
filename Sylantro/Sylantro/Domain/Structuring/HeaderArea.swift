@@ -58,7 +58,8 @@ nonisolated enum HeaderArea {
     }
 
     /// The model's title snapped to the page (SLT-148), in order: an empty answer is no title,
-    /// `("", false)`. The answer's lines, less side lines (the site's name or the author's), give
+    /// `("", false)`. The answer's lines, less side lines (the site's name, or the author's line:
+    /// the name alone, or `by` and the name), give
     /// the start: the first area line equal to the first of them, else the first run of 2 or 3
     /// lines matching it. The title takes in the following area lines, up to 3 in all, while each
     /// isn't a side line and either starts lowercase or is the model's next line at 0.8 to 1.25
@@ -136,7 +137,8 @@ nonisolated enum HeaderArea {
     }
 
     /// A line that is the site's name (its letters and digits, at least 4, found in the host
-    /// without dots) or holds the author's name. A one-word author name is ignored (`15` M3-1).
+    /// without dots) or the author's line: the name alone, or `by` and the name, compared
+    /// normalized (`15` M3-2a, RV-25). A title that merely holds the name isn't one.
     private static func isSideLine(_ line: String, author: String?, sourceHost: String?) -> Bool {
         if let sourceHost {
             let letters = String(line.lowercased().filter { $0.isLetter || ("0"..."9").contains($0) })
@@ -146,7 +148,8 @@ nonisolated enum HeaderArea {
         }
         if !TextMatch.isEmptyAnswer(author), let author {
             let name = TextMatch.normalize(author)
-            if name.contains(" "), TextMatch.normalize(line).contains(name) {
+            let normalizedLine = TextMatch.normalize(line)
+            if !name.isEmpty, normalizedLine == name || (" " + normalizedLine + " ").contains(" by " + name + " ") {
                 return true
             }
         }

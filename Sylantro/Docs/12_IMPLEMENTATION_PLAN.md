@@ -1,7 +1,7 @@
 # Sylantro — Implementation Plan
 
 **The build, in milestones, and where every feature document lands**
-Version 0.14 · 23 November 2026 · **Draft: the order is Claude's proposal for Pops, except 1.0's
+Version 0.15 · 24 November 2026 · **Draft: the order is Claude's proposal for Pops, except 1.0's
 contents (IP-7, ruled: everything designed so far, M1 to M8).** Otherwise only what a ledger row already rules is decided (SLT-021,
 SLT-090, SLT-093, SLT-100); every proposal is marked
 *(rec.)* and listed in §6. M0 done; M1 done (SLT-156; six spike runs scored); M2 done (SLT-160; every device check passed)
@@ -114,9 +114,9 @@ row here in the same change (IP-4).
 | 10 | `10_ACCURACY_TEST_SET.md` | Test plan | M1 (scored in §7) | M1's close |
 | 11 | `11_MILESTONE_1_SPIKE.md` | Tasks | M1 (M1-3, M1-4) | — |
 | 12 | `12_IMPLEMENTATION_PLAN.md` | Plan | — | this document |
-| 13 | `13_SCREENS.md` | Design | M2 (library, camera, recipe, recovery); M3's review screens later | M2's first screen task |
+| 13 | `13_SCREENS.md` | Design | M2 (library, camera, recipe, recovery); M3's review screens (v0.22, accepted) | M2's first screen task |
 | 14 | `14_MILESTONE_2_CAPTURE.md` | Tasks | M2 (M2-1 to M2-6) | closed, v1.0 (SLT-160) |
-| 15 | `15_MILESTONE_3_REVIEW.md` | Tasks | M3 (M3-1 to M3-7, plan ruled) | draft, v0.7; RV-1, RV-10, RV-18 and RV-19 ruled; M3-1 complete (123 tests) |
+| 15 | `15_MILESTONE_3_REVIEW.md` | Tasks | M3 (M3-1 to M3-7, plan ruled) | draft, v0.30; M3-1 (123 tests), M3-2 (142) and M3-2a (149) complete; M3-3 ready |
 
 **Ideas, not yet placed** (Pops decides where they go):
 
@@ -208,6 +208,7 @@ this document's close-out.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.15 | §3 row 15: M3-1, M3-2 and M3-2a complete | Pops, 24 Nov 2026: "M3-2 is complete" |
 | 0.14 | §3: `15_MILESTONE_3_REVIEW.md` added, M3's tasks (draft) | IP-2; Pops, 23 Nov 2026: "are we ready to start planning milestone 3?" |
 | 0.13 | M2 closed: §2 row done, §4 what M3 inherits and what is parked, §3 row 14 closed | SLT-160 (Pops, 23 Nov 2026: "close out m2") |
 | 0.12 | §1's SyLib queue gains its first row, `ImageCache`'s memory-only store (`14A`, task M2-4a) | M2-4 run 1 found the gap; Pops, 22 Nov 2026 (decision card, "Add memory-only to SyLib first") |

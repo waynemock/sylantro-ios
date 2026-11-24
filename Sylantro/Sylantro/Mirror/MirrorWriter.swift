@@ -44,7 +44,8 @@ extension MirrorSnapshot {
 
 /// The plain copy of every recipe in Files (`02` §5.4, SLT-050): `Recipes/<folder>/recipe.json`,
 /// `recipe.md` and `pages/page-<n>.heic`. Written by the device that made the change (MT-15), after
-/// its save, never blocking or undoing it; never read back as the app's data (SLT-052). Page copies
+/// its save, never blocking or undoing it; never read back as the app's data (SLT-052). A title
+/// change renames its folder (`02` §5.4, RV-27); an iCloud placeholder is never moved. Page copies
 /// are never replaced; a recipe she deletes has its whole folder removed (SLT-157). The mirror never
 /// changes anything in `PhotoFiles`' folder. HEIC only (SLT-054).
 actor MirrorWriter {
@@ -103,8 +104,8 @@ actor MirrorWriter {
 
     // MARK: Writing a recipe
 
-    /// Copies the recipe: its folder, page copies not already there, and `recipe.json` and
-    /// `recipe.md` replaced. A failure or a page not yet on this device leaves it pending. Never
+    /// Copies the recipe: its folder (moved to its title's name when that changed), page copies not
+    /// already there, and `recipe.json` and `recipe.md` replaced. A failure or a page not yet on this device leaves it pending. Never
     /// throws.
     func write(_ snapshot: MirrorSnapshot) {
         let recipeID = snapshot.recipe.id
@@ -112,9 +113,24 @@ actor MirrorWriter {
         do {
             let fileManager = FileManager.default
             try fileManager.createDirectory(at: recipesFolder, withIntermediateDirectories: true)
-            let folder = existingFolder(for: recipeID)
-                ?? recipesFolder.appending(path: RecipeRendering.folderName(title: snapshot.recipe.title, id: recipeID),
-                                           directoryHint: .isDirectory)
+            let titledName = RecipeRendering.folderName(title: snapshot.recipe.title, id: recipeID)
+            let titled = recipesFolder.appending(path: titledName, directoryHint: .isDirectory)
+            var folder = titled
+            if let existing = existingFolder(for: recipeID) {
+                folder = existing
+                // A title change renames its folder (`02` §5.4, RV-27), when nothing is at the new
+                // name. A failed move writes into the old folder. Logged by recipe id only.
+                if existing.lastPathComponent != titledName, !exists(titled) {
+                    do {
+                        try move(existing, to: titled)
+                        folder = titled
+                        log.info(self, "recipe \(recipeID): folder renamed to follow its title")
+                    } catch {
+                        let nsError = error as NSError
+                        log.error(self, "recipe \(recipeID): folder not renamed (\(nsError.domain) \(nsError.code)); written in place")
+                    }
+                }
+            }
             let pagesFolder = folder.appending(path: "pages", directoryHint: .isDirectory)
             try fileManager.createDirectory(at: pagesFolder, withIntermediateDirectories: true)
 
@@ -249,6 +265,25 @@ actor MirrorWriter {
         NSFileCoordinator().coordinate(writingItemAt: url, options: .forReplacing, error: &coordinationError) { target in
             do {
                 try data.write(to: target, options: .atomic)
+            } catch {
+                operationError = error
+            }
+        }
+        if let error = coordinationError ?? operationError { throw error }
+    }
+
+    /// Moves a recipe's folder to its title's name (RV-27), telling the coordinator of the move.
+    private func move(_ source: URL, to destination: URL) throws {
+        var coordinationError: NSError?
+        var operationError: (any Error)?
+        let coordinator = NSFileCoordinator()
+        coordinator.coordinate(writingItemAt: source, options: .forMoving,
+                               writingItemAt: destination, options: .forReplacing,
+                               error: &coordinationError) { from, to in
+            coordinator.item(at: from, willMoveTo: to)
+            do {
+                try FileManager.default.moveItem(at: from, to: to)
+                coordinator.item(at: from, didMoveTo: to)
             } catch {
                 operationError = error
             }

@@ -2,8 +2,8 @@
 
 **Design document · the spike's 25 real binder pages: how they are scored, what makes them hard,
 and the design questions they raise**
-Version 0.25 · 22 November 2026 · **Draft, not accepted; proposals TS-5, TS-10, TS-11 and TS-15 are
-Pops's to decide; the rest are settled (SLT-045 to SLT-048, SLT-062 to SLT-065, SLT-070, SLT-071) and TS-12 is
+Version 0.26 · 24 November 2026 · **Draft, not accepted; TS-5, TS-10, TS-11 and TS-15 ruled in `15` RV-18 (filed at M3's close);
+SP-21 and SP-22 open; the rest are settled (SLT-045 to SLT-048, SLT-062 to SLT-065, SLT-070, SLT-071) and TS-12 is
 done.** Not for the agent until a task names it.
 
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md` and `00B_SYLANTRO_GUARDRAILS.md`.
@@ -521,6 +521,38 @@ one word doesn't make a line a side line; the step-number check also applies to 
 pages with several recipes (SLT-047); handwriting; and the open proposals TS-5, TS-10, TS-11 and
 TS-15.
 
+### Run 7 · 24 November 2026 (Milestone 3, task M3-1)
+
+On `15` M3-1's build (line positions, review flags, SP-20's two title fixes, the header area in the
+report). Per-page notes outside git (`SPIKE_7_SCORING.md`). Greedy sampling gave the same
+ingredients, quantities, units and steps as run 6 on every capture, so those scores carry over.
+
+| Measure | Run 6 | Run 7 |
+|---|---|---|
+| Captures finished | 22 of 22, no errors | 22 of 22, no errors, retries, fallbacks or rate limits |
+| Titles right | 14 of 22 | **16 of 22** |
+| Ingredient lines found / quantity / unit | 151 of 166 / 139 / 132 of 146 | unchanged |
+| Ingredients with a position on the page | (not measured) | **185 of 193** (96%) |
+| Steps with a position on the page | (not measured) | **63 of 74** (85%) |
+
+Why:
+- **Fixed:** the page whose one-word author answer dropped the title line (TP-04), and the page
+  with no title that got a step as its title (TP-22, now `no title`, as the key expects).
+- **Positions not found** are almost all values the validator already flags as not on the page:
+  8 ingredients, and 10 of the 11 steps whose wording the model changed. The eleventh is a step
+  that runs from one page onto the next, and a position never crosses a page.
+- **Traced with the header area:** on the labels path, a page's area can end after its first line,
+  because the first labelled ingredient or step is line 2 (TP-15), so the title's continuation is
+  never offered. The other wrong titles are still the model's choice (a deck, a sidebar, a prize
+  label, breadcrumbs) or a handwriting misread, for review.
+
+### Proposals from run 7 (SP-21, SP-22): open
+
+| # | Proposal | Why |
+|---|---|---|
+| SP-21 | On the labels path, the header area always holds at least the first 5 lines, or up to the first line labelled `step` if that is later, so a title's continuation is offered | TP-15's title is cut to its first word; the labels end the area at line 2 |
+| SP-22 | A step not found within one page is looked for as a run that may cross into the next page; its position is the part on the first page | One step in the set runs onto the next page and gets no position |
+
 ---
 
 
@@ -528,6 +560,7 @@ TS-15.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.26 | §7: run 7 scored (M3-1's build): titles 16 of 22, positions for 96% of ingredients and 85% of steps; SP-21 and SP-22 proposed | `15` M3-1; Pops, 24 Nov 2026: "ok run 7 done, check it out" |
 | 0.25 | §7: run 6's results and Milestone 1's verdict; SP-20 carried to Milestone 3 | SLT-156 (Pops, 22 Nov 2026: "close out milestone 1"; "ok we will finish the spike") |
 | 0.24 | §7: SP-19 accepted | Pops, 22 Nov 2026 (decision card, "SP-19, then run 6") |
 | 0.23 | §7: run 5's results (no recipe content) and proposal SP-19 | Pops, 22 Nov 2026: "ok next results ready" |

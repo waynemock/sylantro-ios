@@ -66,6 +66,23 @@ struct ModelTwinTests {
         #expect(fetched.title == RecipeJSONTests.full.title)
     }
 
+    @Test("a job survives the store")
+    func jobSurvives() throws {
+        // The device-only store's schema, in memory (`15` M3-2).
+        let schema = Schema([ExtractionJobModel.self])
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+        let container = try ModelContainer(for: schema, configurations: [configuration])
+        let context = container.mainContext
+        let job = ExtractionJob(recipeID: UUID(), scannedHere: true, attempts: 2, lastError: "made-up error",
+                                notBefore: Date(timeIntervalSince1970: 1_795_000_000))
+        let model = ExtractionJobModel()
+        model.hydrate(from: job)
+        context.insert(model)
+        try context.save()
+        let fetched = try #require(try context.fetch(FetchDescriptor<ExtractionJobModel>()).first)
+        #expect(fetched.toDomain() == job)
+    }
+
     @Test("no model holds image data")
     func noModelHoldsImageData() throws {
         let container = try Self.makeContainer()

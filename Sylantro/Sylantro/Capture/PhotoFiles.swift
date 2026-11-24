@@ -139,6 +139,24 @@ nonisolated struct PhotoFiles: Sendable {
         return CGImageSourceCreateThumbnailAtIndex(source, 0, options)
     }
 
+    /// `fileName` upright at its full size, for reading (`15` M3-2), or nil when the file isn't
+    /// available or can't be read. As `SpikeRunner.loadImage`, with no security scope.
+    func fullImage(of fileName: String) -> CGImage? {
+        guard availability(of: fileName) == .available,
+              let source = CGImageSourceCreateWithURL(url(for: fileName) as CFURL, nil),
+              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+              let width = properties[kCGImagePropertyPixelWidth] as? Int,
+              let height = properties[kCGImagePropertyPixelHeight] as? Int else {
+            return nil
+        }
+        let options = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: max(width, height),
+        ] as CFDictionary
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options)
+    }
+
     /// Whether `fileName` is on this device. An iCloud file not here yet is asked for and reads as
     /// `.downloading`; one with no file at all reads as `.missing`, never as deleted (SLT-030).
     func availability(of fileName: String) -> PhotoAvailability {

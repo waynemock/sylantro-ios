@@ -63,4 +63,20 @@ struct UnfinishedPageCheckTests {
         #expect(UnfinishedPageCheck.reason(["Bake until golden.", "Page 1 of 2"]) == .pageNOfM)
         #expect(UnfinishedPageCheck.reason(["2 cups oats*", "Bake 20 minutes."]) == .footnoteAsterisk)
     }
+
+    // MARK: The last page (`15` M3-2a, RV-26)
+
+    @Test("the last page says so")
+    func lastPageSaysSo() {
+        #expect(UnfinishedPageCheck.saysLastPage(["Stir.", "Page 5 of 5"]))
+        #expect(UnfinishedPageCheck.saysLastPage(["https://example.com/x Page 1 of 1"]))
+    }
+
+    @Test("not the last page")
+    func notTheLastPage() {
+        #expect(!UnfinishedPageCheck.saysLastPage(["Page 4 of 5"]))
+        #expect(!UnfinishedPageCheck.saysLastPage(["5/5"]))
+        #expect(!UnfinishedPageCheck.saysLastPage(["5 of 5"]))
+        #expect(!UnfinishedPageCheck.saysLastPage([]))
+    }
 }
