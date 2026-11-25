@@ -142,6 +142,18 @@ nonisolated struct PhotoFiles: Sendable {
     /// `fileName` upright at its full size, for reading (`15` M3-2), or nil when the file isn't
     /// available or can't be read. As `SpikeRunner.loadImage`, with no security scope.
     func fullImage(of fileName: String) -> CGImage? {
+        decoded(fileName, maxPixelSize: nil)
+    }
+
+    /// `fileName` upright, its long edge at most `maxPixelSize` and never larger than the file's,
+    /// for showing on screen (`15` M3-3g); nil as `fullImage`.
+    func displayImage(of fileName: String, maxPixelSize: Int) -> CGImage? {
+        decoded(fileName, maxPixelSize: maxPixelSize)
+    }
+
+    /// The file decoded upright by ImageIO, its long edge the smaller of `maxPixelSize` (none: no
+    /// limit) and the file's; nil when it isn't available or can't be read.
+    private func decoded(_ fileName: String, maxPixelSize: Int?) -> CGImage? {
         guard availability(of: fileName) == .available,
               let source = CGImageSourceCreateWithURL(url(for: fileName) as CFURL, nil),
               let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
@@ -149,24 +161,32 @@ nonisolated struct PhotoFiles: Sendable {
               let height = properties[kCGImagePropertyPixelHeight] as? Int else {
             return nil
         }
+        let longEdge = max(width, height)
         let options = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: max(width, height),
+            kCGImageSourceThumbnailMaxPixelSize: min(maxPixelSize ?? longEdge, longEdge),
         ] as CFDictionary
         return CGImageSourceCreateThumbnailAtIndex(source, 0, options)
     }
 
-    /// Whether `fileName` is on this device. An iCloud file not here yet is asked for and reads as
-    /// `.downloading`; one with no file at all reads as `.missing`, never as deleted (SLT-030).
+    /// Whether a file's copy is on this device (`15` M3-3g): not an iCloud item, or one whose
+    /// status is `.current` or `.downloaded` (a page photo never changes once written, `05`, so a
+    /// local copy is the photo); not for `.notDownloaded` or no status.
+    static func isOnDevice(isUbiquitous: Bool?, status: URLUbiquitousItemDownloadingStatus?) -> Bool {
+        guard isUbiquitous == true else { return true }
+        return status == .current || status == .downloaded
+    }
+
+    /// Whether `fileName` is on this device (`isOnDevice`). An iCloud file not here yet is asked for
+    /// and reads as `.downloading`; one with no file at all reads as `.missing`, never as deleted
+    /// (SLT-030).
     func availability(of fileName: String) -> PhotoAvailability {
         let fileURL = url(for: fileName)
         let fileManager = FileManager.default
         if fileManager.fileExists(atPath: fileURL.path(percentEncoded: false)) {
             let values = try? fileURL.resourceValues(forKeys: [.isUbiquitousItemKey, .ubiquitousItemDownloadingStatusKey])
-            guard values?.isUbiquitousItem == true,
-                  let status = values?.ubiquitousItemDownloadingStatus,
-                  status != .current else {
+            if Self.isOnDevice(isUbiquitous: values?.isUbiquitousItem, status: values?.ubiquitousItemDownloadingStatus) {
                 return .available
             }
             return requestDownload(of: fileURL) ? .downloading : .available

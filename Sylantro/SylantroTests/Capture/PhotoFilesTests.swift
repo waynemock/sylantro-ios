@@ -81,6 +81,47 @@ struct PhotoFilesTests {
         #expect(try Data(contentsOf: photoFiles.url(for: "page.heic")) == firstBytes)
     }
 
+    // MARK: Display size and on the device (`15` M3-3g)
+
+    @Test("display size")
+    func displaySize() throws {
+        let (photoFiles, folder) = try Self.makePhotoFiles()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let image = try #require(Self.makeImage(width: 4000, height: 3000))
+        try photoFiles.write(image, fileName: "page.heic")
+
+        let display = try #require(photoFiles.displayImage(of: "page.heic", maxPixelSize: 2560))
+        #expect(display.width == 2560)
+        #expect(display.height == 1920)
+
+        // Never larger than the file.
+        let larger = try #require(photoFiles.displayImage(of: "page.heic", maxPixelSize: 8000))
+        #expect(larger.width == 4000)
+        #expect(larger.height == 3000)
+    }
+
+    @Test("on the device")
+    func onTheDevice() {
+        #expect(PhotoFiles.isOnDevice(isUbiquitous: false, status: nil))
+        #expect(PhotoFiles.isOnDevice(isUbiquitous: true, status: .current))
+        #expect(PhotoFiles.isOnDevice(isUbiquitous: true, status: .downloaded))
+        #expect(!PhotoFiles.isOnDevice(isUbiquitous: true, status: .notDownloaded))
+        #expect(!PhotoFiles.isOnDevice(isUbiquitous: true, status: nil))
+    }
+
+    @Test("full size unchanged")
+    func fullSizeUnchanged() throws {
+        let (photoFiles, folder) = try Self.makePhotoFiles()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let image = try #require(Self.makeImage(width: 4000, height: 3000))
+        try photoFiles.write(image, fileName: "page.heic")
+
+        let full = try #require(photoFiles.fullImage(of: "page.heic"))
+
+        #expect(full.width == 4000)
+        #expect(full.height == 3000)
+    }
+
     @Test("a thumbnail is no bigger than asked")
     func thumbnailIsNoBiggerThanAsked() throws {
         let (photoFiles, folder) = try Self.makePhotoFiles()

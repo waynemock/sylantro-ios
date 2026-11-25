@@ -2,9 +2,9 @@
 
 **Design document · the library, the camera, a recipe and its review, and the recovery screen,
 with every word she reads**
-Version 0.40 · 25 November 2026 · **M2's screens and copy accepted (SC-1 to SC-8). M3's review
+Version 0.42 · 25 November 2026 · **M2's screens and copy accepted (SC-1 to SC-8). M3's review
 screens drawn (§2, §3.2, §4.4, §4.5; `15` RV-8 to RV-13, RV-26, RV-28 ruled); SC-9 to SC-12 ruled; S-44 to S-53
-approved.** Accepted for M3-3. M3-4's pages (§4.6, SC-13, S-54 to S-60) accepted; M3-3a's S-52l, S-61 and S-62 approved; SC-18 to SC-21 ruled, S-63 to S-71 approved; S-52m, SC-22 and S-74 to S-77 proposed for M3-5. Every
+approved.** Accepted for M3-3. M3-4's pages (§4.6, SC-13, S-54 to S-60) accepted; M3-3a's S-52l, S-61 and S-62 approved; SC-18 to SC-21 ruled, S-63 to S-71 approved; S-52m, SC-22 and S-74 to S-77 proposed for M3-5; SC-23 ruled, S-78 proposed for M3-3f. Every
 string in §6 is Claude's proposal. The layout
 and the copy are Pops's (`02` §7, `00B` §2). No task is written from an open proposal.
 
@@ -52,7 +52,7 @@ has a dish photo, `05` P-1), the title, and one line under it:
 | The recipe | Title line | Under it |
 |---|---|---|
 | Saved, not read yet (all of M2) | "New recipe" (S-2) | "Scanned Nov 22 · 2 pages" (S-3) |
-| Being read now (M3) | "New recipe" (S-2) | "Reading…" (S-45) |
+| Being read now (M3) | "New recipe" (S-2) | "Reading…" (S-45), with a thin progress bar under it (SC-23, M3-3f) |
 | Couldn't be read (M3, RV-24) | "New recipe" (S-2) | "Couldn't read these pages" (S-46) |
 | Read and structured (M3 on) | its title | its source or author; S-3 when it has neither |
 | Photo not downloaded yet | as above | as above; the thumbnail is a placeholder (SC-6) |
@@ -128,7 +128,7 @@ order:
 - **Edit** (S-70), once the recipe is read.
 - **Add Page** (S-22): opens the camera, adds the pages to this recipe (SLT-045).
 - **View Pages** (S-62), when the scan strip isn't shown (SC-14).
-- **Read Again** (S-59, M3-3c), once read: reads the pages again, asking first (S-57, S-73) if she has edited the recipe.
+- **Read Again** (S-59, M3-3c), once read: reads the pages again, **always asking first** (SC-23, M3-3f): a plain alert, S-57 with S-78 and Read Again and Cancel; with S-73 and Read Again and Keep My Edits if she has edited the recipe.
 - **Delete Recipe** (S-23), after a divider, SC-5 (ruled).
 
 ### 4.3 Deleting a recipe (SC-5, ruled; rewritten by SLT-157)
@@ -151,7 +151,10 @@ from the library, whether or not it still needs review. Nothing else to learn.
 - **iPad and Mac:** the page photos on the left, scrolling, at full width of their column; the
   fields on the right.
 - **A recipe still being read:** its pages, with "Reading…" (S-45) under the title in place of
-  "Waiting to be read".
+  "Waiting to be read", and a progress bar under it (SC-23, M3-3f) that moves as each page is
+  read and as each part (the title and header, the ingredients, the steps) is done; it can pause
+  during a long part. A recipe already read that is being read again (Read Again, a page change)
+  shows the same: "Reading…" and the bar as a whole-recipe line under the title (M3-3i).
 - **A recipe that couldn't be read** (RV-24's three tries): its pages, with S-47 under the title
   and a **Try Again** button (S-48), which puts it back in the queue.
 
@@ -343,6 +346,7 @@ Every string she reads in M2. Pops approves or rewrites each; the agent pastes t
 | S-75 | Several recipes, the sheet's title (SC-22) | Recipes on This Page *(proposed)* |
 | S-76 | Several recipes, the line under the list (SC-22) | Each one you keep becomes its own recipe. *(proposed)* |
 | S-77 | Several recipes, the button at the bottom of the sheet (SC-22) | It's All One Recipe *(proposed)* |
+| S-78 | Read again from ⋯, alert message, when she hasn't edited the recipe (SC-23, M3-3f) | This replaces the current reading of this recipe. *(proposed)* |
 | S-73 | Read again from ⋯, alert message, when she has edited the recipe (`15` RV-33, M3-3c) | Reading the pages again replaces your edits to this recipe. *(proposed)* |
 | S-41 | Camera permission (`NSCameraUsageDescription`, iOS's own prompt) | Sylantro uses the camera to photograph the pages of your recipes. *(approved: Pops, 23 Nov 2026, decision card "Photograph binder pages")* |
 
@@ -372,6 +376,7 @@ Every string she reads in M2. Pops approves or rewrites each; the agent pastes t
 | SC-20 | The recipe screen's toolbar | **Ruled: only ⋯.** Edit and Add Page move into ⋯ (with View Pages and Delete Recipe); in Edit the toolbar is Done only. Pops, 24 Nov 2026: "I think the add page toolbar button can be in the menu. Not needed much after initial scan. Same for edit button. Less clutter." |
 | SC-21 | Where scans still being read sit in the library | **Ruled: their own section on top.** Waiting, reading and couldn't-read scans sit under S-71 above Needs Review, newest first; read, they move to Needs Review. Pops, 24 Nov 2026: "Seems like new scans should be in their own section at the top of the list." Then decision card, "Own section on top: New Scans" |
 | SC-15 | When dish photos come (05 P-1), for the hero of SC-14 | **Ruled: after M3, as P-1 says.** Until then a read recipe, once reviewed, starts at its title with no photo at the top; the scans are under ⋯ (View Pages, S-62). Pops, 24 Nov 2026 (decision card, "After M3, as P-1 says") |
+| SC-23 | Read Again's question, and progress while reading (Pops, 25 Nov 2026: "the re-read menu item should confirm before starting, also, can we have a progress bar on the reading?") | **Ruled: always ask; a bar by steps on the recipe and its row.** Read Again always asks (S-57 with S-78, Read Again and Cancel; edited: S-73, Read Again and Keep My Edits). A determinate bar under "Reading…" on the recipe screen and thin on its library row, moving by pages read and parts done (the model gives no progress within a part). Pops, 25 Nov 2026 (decision card, "A bar by steps, screen and row") |
 | SC-22 | Where she picks the recipes on a page (`15` RV-14) | **Proposed:** a Choose Recipes button on the "may hold other recipes" line opens a sheet listing every title found, all checked; ✓ keeps the checked ones, each its own recipe; It's All One Recipe clears the line for good (§4.4). *Other:* the list shown in the review screen itself, under the title, with no sheet *(rec. the sheet: it matches the edit sheet, and the review screen stays as it is)* |
 | SC-13 | M3-4's copy | **Ruled: as drafted.** S-54 to S-59 approved. Pops, 24 Nov 2026 (decision card, "As drafted") |
 | SC-12 | M3's copy | **Ruled: as drafted.** S-44 to S-53 approved. Pops, 24 Nov 2026 (decision card, "As drafted") |
@@ -384,6 +389,8 @@ When Pops rules, the rulings are filed in the ledger at this document's close-ou
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.42 | §4.4: a recipe read again shows "Reading…" and the bar under its title (SC-23, in M3-5) | M3-3f note b: the review screen had no "Reading…" line |
+| 0.41 | SC-23 ruled: Read Again always asks (S-78 proposed); a progress bar by steps while reading, on the recipe and its row (M3-3f) | Pops, 25 Nov 2026: "the re-read menu item should confirm before starting, also, can we have a progress bar on the reading?"; decision card, "A bar by steps, screen and row" |
 | 0.40 | §4.4: several recipes on a page drawn (SC-22 proposed, S-74 to S-77 proposed) and the not-a-recipe line placed | `15` RV-14, RV-35, RV-36 (Pops, 25 Nov 2026, decision cards "Model list, join adjacent lines", "Each gets its own copy") |
 | 0.39 | §4.2: Read Again in ⋯; S-73 proposed; a line is zoomed at most 2.5× (`15` RV-33, M3-3c) | Pops, 24 Nov 2026, after a screen recording of M3-3b (decision card, "Both, as task M3-3c") |
 | 0.38 | S-72 "Pages" approved: the heading of Edit's Pages section (§4.6), for M3-3b | M3-4 note a; Pops, 24 Nov 2026: "sure add the heading in 3b" |

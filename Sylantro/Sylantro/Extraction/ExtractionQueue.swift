@@ -27,6 +27,11 @@ import SyLibCore
     /// The recipe whose job is running, from its start to its end, for "Reading…" (S-45,
     /// `15` M3-3); nil otherwise.
     private(set) var currentRecipeID: UUID?
+    /// How far that job is, 0 to 1, by pages read and parts structured (SC-23, `15` M3-3f); nil
+    /// with no job, or while one waits.
+    private(set) var progress: Double?
+    /// The steps behind `progress`.
+    @ObservationIgnored private var reading: ReadingProgress?
 
     private var isActive = false
     private var isRunning = false
@@ -214,13 +219,19 @@ import SyLibCore
         let recipeID = job.recipeID
         log.info(self, "recipe \(recipeID): job started, \(job.attempts) failed attempts so far")
         currentRecipeID = recipeID
-        defer { currentRecipeID = nil }
+        defer {
+            currentRecipeID = nil
+            setReading(nil)
+        }
         guard let recipe = fetchRecipe(recipeID), recipe.reviewState != .edited,
               pages(recipe.sourcePageIDs).values.contains(where: { $0.structuringState == .waiting }) else {
             log.info(self, "recipe \(recipeID): gone, edited or not waiting; job removed")
             removeJob(job.id)
             return
         }
+        // The bar starts at 0; pages already read (RV-4) aren't counted.
+        let unread = pages(recipe.sourcePageIDs).values.filter { $0.ocrText == nil }.count
+        setReading(ReadingProgress(pagesToRead: unread))
 
         do {
             // Read each unread page, in order.
@@ -245,6 +256,7 @@ import SyLibCore
                                 confidence: line.confidence)
                     }
                     try captureRecorder.recordReading(pageID: pageID, text: reading.text, words: words)
+                    advanceReading { $0.pageRead() }
                     log.info(self, "recipe \(recipeID): page \(pageID) read in \(Self.millis(since: start)) ms, \(words.count) lines")
                 }
             }
@@ -263,7 +275,10 @@ import SyLibCore
             while true {
                 do {
                     let start = ContinuousClock.now
-                    let outcome = try await structurer.structure(readings, pageIDs: recipe.sourcePageIDs)
+                    let outcome = try await structurer.structure(readings, pageIDs: recipe.sourcePageIDs) { part in
+                        // Back on the main actor; the queue lives as long as the app.
+                        Task { @MainActor in self.partDone(part, recipeID: recipeID) }
+                    }
                     guard let structured = outcome.recipes.first else {
                         throw JobError.noRecipe
                     }
@@ -279,10 +294,17 @@ import SyLibCore
                     return
                 } catch where RecipeStructurer.isRateLimit(error) {
                     refusals += 1
+                    // A job that waits shows no bar (M3-3f).
+                    let pagesToRead = reading?.pagesToRead ?? 0
+                    setReading(nil)
                     if isActive, let delay = Self.rateLimitDelay(afterRefusal: refusals) {
                         log.info(self, "recipe \(recipeID): refused (\(refusals)); waits 30 s")
                         try? await Task.sleep(for: delay)
                         if isActive, !Task.isCancelled {
+                            // Structuring again: the pages are read, the parts start over.
+                            var again = ReadingProgress(pagesToRead: pagesToRead)
+                            for _ in 0..<pagesToRead { again.pageRead() }
+                            setReading(again)
                             continue
                         }
                     }
@@ -294,6 +316,26 @@ import SyLibCore
         } catch {
             fail(job, pageIDs: recipe.sourcePageIDs, error: error)
         }
+    }
+
+    // MARK: Progress (`15` M3-3f)
+
+    private func setReading(_ value: ReadingProgress?) {
+        reading = value
+        progress = value?.fraction
+    }
+
+    private func advanceReading(_ step: (inout ReadingProgress) -> Void) {
+        guard var value = reading else { return }
+        step(&value)
+        setReading(value)
+    }
+
+    /// A part the structurer finished, for the job still running on this recipe; a late one after
+    /// the job ended, or while it waits, changes nothing.
+    private func partDone(_ part: String, recipeID: UUID) {
+        guard currentRecipeID == recipeID else { return }
+        advanceReading { $0.partDone(part) }
     }
 
     /// A failed read, structuring or save: one more attempt counted, and either a wait by

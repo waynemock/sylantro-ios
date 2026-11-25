@@ -69,6 +69,8 @@ struct RecipeView: View {
     @State private var isAskingReadAgain = false
     /// Read Again from ⋯ on a recipe she edited (RV-33, S-73).
     @State private var isAskingReadAgainFromMenu = false
+    /// Read Again from ⋯ on a recipe she hasn't edited (SC-23, S-78).
+    @State private var isAskingReadAgainNotEdited = false
     /// Add Page saved pages: RV-7 runs once the camera has closed.
     @State private var pagesWereAdded = false
     /// She has tapped a line, so S-61's hint no longer shows on this device (SC-16): device-only,
@@ -215,6 +217,13 @@ struct RecipeView: View {
         } message: {
             Text("Reading the pages again replaces your edits to this recipe.")
         }
+        // SC-23: Read Again from ⋯ always asks; not edited (S-57, S-78, S-59 and Cancel).
+        .alert("Read the Pages Again?", isPresented: $isAskingReadAgainNotEdited) {
+            Button("Read Again") { readAgainAfterAsking() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This replaces the current reading of this recipe.")
+        }
         .fullScreenCover(isPresented: $isAddingPages, onDismiss: pagesAddedCameraClosed) {
             if let captureRecorder {
                 CaptureFlowView(mode: .addPages(recipeID: recipeID), captureRecorder: captureRecorder,
@@ -255,6 +264,13 @@ struct RecipeView: View {
                 if extractionQueue?.currentRecipeID == recipe.id {
                     Text("Reading…")
                         .foregroundStyle(.secondary)
+                    // SC-23: a bar under it, the line's width, moving step by step.
+                    if let progress = extractionQueue?.progress {
+                        ProgressView(value: progress)
+                            .tint(syTheme.primaryAccent)
+                            .frame(maxWidth: .infinity)
+                            .animation(.easeInOut, value: progress)
+                    }
                 } else if hasFailedPage(recipe) {
                     // RV-24's three tries are spent: Try Again puts it back in the queue.
                     Text("Sylantro couldn't read these pages. Check that they're in focus, or try again.")
@@ -296,6 +312,8 @@ struct RecipeView: View {
                               accent: syTheme.primaryAccent) {
                         withAnimation(.easeInOut) { isStripExpanded.toggle() }
                     }
+                    // A fresh strip for each page, so its image is that page's (RV-11, M3-3e).
+                    .id(stripPhoto(recipe)?.sourcePageID)
                     .frame(height: isStripExpanded ? geometry.size.height : geometry.size.height / 3)
                     if !isStripExpanded {
                         fields(recipe)
@@ -492,6 +510,21 @@ struct RecipeView: View {
                 .buttonStyle(.plain)
                 .accessibilityHint("Show on page")
                 .flaggedRow(titleFlags)
+            }
+
+            // Read again (M3-3i, SC-23): while the queue reads this read recipe, "Reading…" and
+            // M3-3f's bar, first under the title, as a whole-recipe line, not tinted; not in Edit.
+            if !isEditing, recipe.extraction != nil, extractionQueue?.currentRecipeID == recipe.id {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Reading…")
+                        .foregroundStyle(.secondary)
+                    if let progress = extractionQueue?.progress {
+                        ProgressView(value: progress)
+                            .tint(syTheme.primaryAccent)
+                            .frame(maxWidth: .infinity)
+                            .animation(.easeInOut, value: progress)
+                    }
+                }
             }
 
             // The whole-recipe lines (S-52h, S-52i, S-52j, S-52k).
@@ -845,6 +878,13 @@ struct RecipeView: View {
     /// Her first tap ends the hint (SC-16).
     private func show(_ box: SourceBox?, _ recipe: Recipe) {
         reviewHintSeen = true
+        // RV-11's trace (M3-3e): the tapped box's page and the page photo shown for it, by page
+        // number and file name only, no recipe text.
+        let shownPageID = box?.pageID ?? recipe.sourcePageIDs.first
+        let shown = shownPageID.flatMap(photo(forPage:))
+        let boxPage = box.flatMap { box in recipe.sourcePageIDs.firstIndex(of: box.pageID).map { $0 + 1 } }
+        let shownPage = shown?.sourcePageID.flatMap { recipe.sourcePageIDs.firstIndex(of: $0) }.map { $0 + 1 }
+        log.info(self, "tap: box on page \(boxPage.map(String.init) ?? "none"), showing page \(shownPage.map(String.init) ?? "none") (\(shown?.fileName ?? "no photo"))")
         if horizontalSizeClass == .compact && !showsStrip(recipe) {
             viewedPage = ViewedPage(startPageID: box?.pageID ?? recipe.sourcePageIDs.first, box: box)
             return
@@ -923,14 +963,14 @@ struct RecipeView: View {
         needsReadAgain = false
     }
 
-    /// Read Again in ⋯ (RV-33): at once, or after asking (S-73) when she has edited the recipe. A
-    /// failed read again shows S-14.
+    /// Read Again in ⋯ (RV-33, SC-23): always asks first, with S-73 when she has edited the
+    /// recipe, else S-78. A failed read again shows S-14.
     private func readAgainFromMenu(_ recipe: Recipe) {
         if recipe.reviewState == .edited {
             isAskingReadAgainFromMenu = true
-            return
+        } else {
+            isAskingReadAgainNotEdited = true
         }
-        readAgainAfterAsking()
     }
 
     /// Read Again at RV-7's or RV-33's question.
@@ -1205,6 +1245,7 @@ private struct RowEditSheet: View {
                     if let box {
                         PageStrip(photo: photo, selectedBox: box, showsWholePage: false, isExpanded: false,
                                   photoFiles: photoFiles, accent: accent, isInteractive: false) {}
+                            .id(photo?.sourcePageID)
                             .frame(height: Self.cropHeight)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
@@ -1358,12 +1399,13 @@ private struct PageStrip: View {
     private func load() async {
         image = nil
         guard let photoFiles, let fileName = photo?.fileName else { return }
-        while !Task.isCancelled {
-            if let loaded = await PagePhotoView.loadImage(fileName, from: photoFiles) {
-                image = loaded
-                return
-            }
-            try? await Task.sleep(for: .seconds(2))
+        // At display size, shared and retried smaller if a decode fails (M3-3g).
+        let loaded = await PagePhotoView.loadImageRetrying(fileName, from: photoFiles)
+        // A load the strip has moved on from (its decode is detached, so not cancelled with it)
+        // never overwrites the new page's image (M3-3e).
+        guard !Task.isCancelled else { return }
+        if let loaded {
+            image = loaded
         }
     }
 }

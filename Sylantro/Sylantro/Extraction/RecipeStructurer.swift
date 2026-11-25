@@ -89,12 +89,14 @@ nonisolated struct RecipeStructurer: Sendable {
         return false
     }
 
-    func structure(_ readings: [PageReading], pageIDs: [UUID]) async throws -> StructuringOutcome {
+    /// `onPartDone` is told each part's name after its call returns, whatever it gave (`15` M3-3f).
+    func structure(_ readings: [PageReading], pageIDs: [UUID],
+                   onPartDone: (@Sendable (String) -> Void)? = nil) async throws -> StructuringOutcome {
         var outcome = StructuringOutcome(recipes: [], path: "parts", partMillis: [:], usedLineLabels: false,
                                          partErrors: [:], retried: [], fallbacks: [], headerTitle: nil, modelTitle: nil, otherTitles: [],
                                          headerArea: [])
         do {
-            try await structure(readings, pageIDs: pageIDs, into: &outcome)
+            try await structure(readings, pageIDs: pageIDs, onPartDone: onPartDone, into: &outcome)
             return outcome
         } catch where Self.isRateLimit(error) {
             throw error
@@ -104,7 +106,8 @@ nonisolated struct RecipeStructurer: Sendable {
     }
 
     /// The steps of `structure`, filling `outcome` as they go so a failure keeps what was learned.
-    private func structure(_ readings: [PageReading], pageIDs: [UUID], into outcome: inout StructuringOutcome) async throws {
+    private func structure(_ readings: [PageReading], pageIDs: [UUID], onPartDone: (@Sendable (String) -> Void)?,
+                           into outcome: inout StructuringOutcome) async throws {
         var warnings: [String] = []
 
         // 1. Lines. A line in non-Latin letters is taken out as an unreadable area (SLT-150).
@@ -138,7 +141,7 @@ nonisolated struct RecipeStructurer: Sendable {
         if !split.hasIngredientsAndSteps {
             outcome.usedLineLabels = true
             if let labels = try await call("lineLabels", prompt: Self.numbered(allLines), generating: GeneratedLineLabels.self,
-                                            cap: TokenCap.lineLabels(forLineCount: allLines.count), outcome: &outcome) {
+                                            cap: TokenCap.lineLabels(forLineCount: allLines.count), onPartDone: onPartDone, outcome: &outcome) {
                 split = Self.labelled(allLines, labels: labels, keeping: split)
                 stopAt = labels.labels
                     .filter { $0.kind == "ingredient" || $0.kind == "step" }
@@ -155,7 +158,7 @@ nonisolated struct RecipeStructurer: Sendable {
         var header: GeneratedHeader?
         if !area.isEmpty {
             header = try await call("header", prompt: Self.headerPrompt(area), generating: GeneratedHeader.self,
-                                    cap: TokenCap.header, outcome: &outcome)
+                                    cap: TokenCap.header, onPartDone: onPartDone, outcome: &outcome)
         }
         // The model's title, snapped to the page's lines; else the largest line, flagged (SLT-148).
         let snapped = HeaderArea.snappedTitle(header?.title ?? "", area: area, author: header?.author,
@@ -180,7 +183,7 @@ nonisolated struct RecipeStructurer: Sendable {
         let ingredientLines = WrapJoiner.join(split.ingredients)
         if !split.ingredients.isEmpty,
            let part = try await call("ingredients", prompt: Self.ingredientsPrompt(ingredientLines),
-                                     generating: GeneratedIngredientLines.self, cap: TokenCap.ingredients, outcome: &outcome) {
+                                     generating: GeneratedIngredientLines.self, cap: TokenCap.ingredients, onPartDone: onPartDone, outcome: &outcome) {
             let mapped = Self.ingredientGroups(from: part, lines: ingredientLines)
             ingredientGroups = mapped.groups
             warnings.append(contentsOf: mapped.warnings)
@@ -190,7 +193,7 @@ nonisolated struct RecipeStructurer: Sendable {
         var steps: GeneratedStepPart?
         if !split.steps.isEmpty {
             steps = try await call("steps", prompt: split.steps.joined(separator: "\n"),
-                                   generating: GeneratedStepPart.self, cap: TokenCap.steps, outcome: &outcome)
+                                   generating: GeneratedStepPart.self, cap: TokenCap.steps, onPartDone: onPartDone, outcome: &outcome)
         }
 
         // 6. A part still missing is asked over every readable line, not retried (SLT-147).
@@ -199,7 +202,7 @@ nonisolated struct RecipeStructurer: Sendable {
             let joinedLines = WrapJoiner.join(allLines)
             if let part = try await call("ingredients fallback", prompt: Self.ingredientsPrompt(joinedLines),
                                          generating: GeneratedIngredientLines.self, cap: TokenCap.ingredients,
-                                         retrying: false, outcome: &outcome) {
+                                         retrying: false, onPartDone: onPartDone, outcome: &outcome) {
                 let mapped = Self.ingredientGroups(from: part, lines: joinedLines)
                 ingredientGroups = mapped.groups
                 warnings.append("ingredients from whole page")
@@ -210,7 +213,7 @@ nonisolated struct RecipeStructurer: Sendable {
             outcome.fallbacks.append("steps")
             if let part = try await call("steps fallback", prompt: allLines.joined(separator: "\n"),
                                          generating: GeneratedStepPart.self, cap: TokenCap.steps,
-                                         retrying: false, outcome: &outcome) {
+                                         retrying: false, onPartDone: onPartDone, outcome: &outcome) {
                 steps = part
                 warnings.append("steps from whole page")
             }
@@ -262,6 +265,7 @@ nonisolated struct RecipeStructurer: Sendable {
         generating type: Content.Type,
         cap: Int,
         retrying: Bool = true,
+        onPartDone: (@Sendable (String) -> Void)?,
         outcome: inout StructuringOutcome
     ) async throws -> Content? {
         let start = ContinuousClock.now
@@ -269,22 +273,28 @@ nonisolated struct RecipeStructurer: Sendable {
             outcome.partMillis[part] = Self.millis(since: start)
         }
         do {
-            return try await Self.respond(to: prompt, generating: type, cap: cap)
+            let content = try await Self.respond(to: prompt, generating: type, cap: cap)
+            onPartDone?(part)
+            return content
         } catch where Self.isRateLimit(error) {
             throw error
         } catch {
             outcome.partErrors[part] = String(describing: error)
         }
         guard retrying else {
+            onPartDone?(part)
             return nil
         }
         outcome.retried.append(part)
         do {
-            return try await Self.respond(to: prompt, generating: type, cap: cap * 2)
+            let content = try await Self.respond(to: prompt, generating: type, cap: cap * 2)
+            onPartDone?(part)
+            return content
         } catch where Self.isRateLimit(error) {
             throw error
         } catch {
             outcome.partErrors["\(part) retry"] = String(describing: error)
+            onPartDone?(part)
             return nil
         }
     }
@@ -361,10 +371,14 @@ nonisolated struct RecipeStructurer: Sendable {
     /// (SLT-146). A group's name is its `nameLine` only when that line is in range, isn't any
     /// item's line, doesn't start like an ingredient (`WrapJoiner.startsIngredient`) and isn't too
     /// long; a group after the first with no name joins the group before it. Each line is used by
-    /// one item at most. Lines the model skipped (RV-29, `15` M3-3a): a group with no name takes an
-    /// unused heading line (ending `:`) just before its span; an unused line inside a group's span
-    /// that starts like an ingredient is put back among its ingredients, in line order, with
-    /// `put back: ingredient n`. Warnings for numbers out of range, a long group name, a repeated
+    /// one item at most. Lines the model skipped (RV-29, `15` M3-3a, M3-3e): unused lines just before
+    /// a group's first line that start like an ingredient are put back, the span starting at them;
+    /// then a group with no name takes an unused heading line (ending `:`) just before its span; an
+    /// unused line inside a group's span that starts like an ingredient is put back too. Each goes
+    /// among the group's ingredients in line order, with `put back: ingredient n`. When the section
+    /// prints group headings (`IngredientHeadings`, RV-38, M3-3h), they make the groups: skipped
+    /// ingredient lines after the first heading are put back, and every ingredient goes under the
+    /// last heading before it. Warnings for numbers out of range, a long group name, a repeated
     /// line, each line put back, and every line nothing used.
     static func ingredientGroups(from part: GeneratedIngredientLines, lines: [String]) -> (groups: [IngredientGroup], warnings: [String]) {
         var warnings: [String] = []
@@ -441,6 +455,27 @@ nonisolated struct RecipeStructurer: Sendable {
             made.append(Made(name: name, ingredients: ingredients, span: span))
         }
 
+        // Lines just before a group's first line that start like an ingredient are put back too,
+        // walking back to a used line, a heading (`:`), a line that isn't an ingredient's, or line
+        // 1; the span starts at the first one (RV-29, `15` M3-3e).
+        var putBack = Set<UUID>()
+        for index in made.indices {
+            guard let span = made[index].span else { continue }
+            var start = span.lowerBound
+            var number = start - 1
+            while number >= 1, !used.contains(number) {
+                let text = lines[number - 1].trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !text.hasSuffix(":"), WrapJoiner.startsIngredient(text) else { break }
+                let ingredient = Self.putBackIngredient(text)
+                made[index].ingredients.append((number, ingredient))
+                putBack.insert(ingredient.id)
+                used.insert(number)
+                start = number
+                number -= 1
+            }
+            made[index].span = start...span.upperBound
+        }
+
         // A group with no name takes an unused heading just before its span (RV-29).
         for index in made.indices where made[index].name == nil {
             guard let span = made[index].span, span.lowerBound >= 2, !used.contains(span.lowerBound - 1) else { continue }
@@ -453,16 +488,12 @@ nonisolated struct RecipeStructurer: Sendable {
         }
 
         // An unused line inside a group's span that starts like an ingredient is put back (RV-29).
-        var putBack = Set<UUID>()
         for index in made.indices {
             guard let span = made[index].span else { continue }
             for number in span where !used.contains(number) {
                 let text = lines[number - 1].trimmingCharacters(in: .whitespacesAndNewlines)
                 guard WrapJoiner.startsIngredient(text) else { continue }
-                let parsed = IngredientLineParser.parse(text)
-                let rest = parsed.rest.trimmingCharacters(in: .whitespacesAndNewlines)
-                let ingredient = Ingredient(rawText: text, quantity: parsed.quantity, unit: parsed.unit,
-                                            item: rest.isEmpty ? nil : rest)
+                let ingredient = Self.putBackIngredient(text)
                 made[index].ingredients.append((number, ingredient))
                 putBack.insert(ingredient.id)
                 used.insert(number)
@@ -470,14 +501,48 @@ nonisolated struct RecipeStructurer: Sendable {
             made[index].ingredients.sort { $0.line < $1.line }
         }
 
-        // The groups: one with no name after the first joins the one before it.
         var groups: [IngredientGroup] = []
-        for group in made {
-            let ingredients = group.ingredients.map(\.ingredient)
-            if group.name == nil, !groups.isEmpty {
-                groups[groups.count - 1].ingredients.append(contentsOf: ingredients)
-            } else {
-                groups.append(IngredientGroup(name: group.name, ingredients: ingredients))
+        let headings = IngredientHeadings.lines(lines)
+        if let firstHeading = headings.first {
+            // RV-38 (`15` M3-3h): the printed headings make the groups. Every line still unused
+            // after the first heading that starts like an ingredient is put back; then each
+            // ingredient goes under the last heading before it, those before the first in a group
+            // with no name; a heading with nothing under it makes no group. The model's names
+            // aren't used. Heading lines count as used.
+            let headingLines = Set(headings)
+            used.formUnion(headingLines)
+            var all = made.flatMap(\.ingredients)
+            for number in lines.indices.map({ $0 + 1 }) where number > firstHeading && !used.contains(number) {
+                let text = lines[number - 1].trimmingCharacters(in: .whitespacesAndNewlines)
+                guard WrapJoiner.startsIngredient(text) else { continue }
+                let ingredient = Self.putBackIngredient(text)
+                all.append((number, ingredient))
+                putBack.insert(ingredient.id)
+                used.insert(number)
+            }
+            all.sort { $0.line < $1.line }
+            let before = all.filter { $0.line < firstHeading }.map(\.ingredient)
+            if !before.isEmpty {
+                groups.append(IngredientGroup(name: nil, ingredients: before))
+            }
+            for (index, heading) in headings.enumerated() {
+                let next = index + 1 < headings.count ? headings[index + 1] : Int.max
+                let under = all.filter { $0.line > heading && $0.line < next }.map(\.ingredient)
+                guard !under.isEmpty else { continue }
+                var name = lines[heading - 1].trimmingCharacters(in: .whitespacesAndNewlines)
+                name.removeLast()
+                groups.append(IngredientGroup(name: name.trimmingCharacters(in: .whitespaces), ingredients: under))
+            }
+        } else {
+            // No heading: the model's groups; one with no name after the first joins the one
+            // before it.
+            for group in made {
+                let ingredients = group.ingredients.map(\.ingredient)
+                if group.name == nil, !groups.isEmpty {
+                    groups[groups.count - 1].ingredients.append(contentsOf: ingredients)
+                } else {
+                    groups.append(IngredientGroup(name: group.name, ingredients: ingredients))
+                }
             }
         }
 
@@ -489,6 +554,15 @@ nonisolated struct RecipeStructurer: Sendable {
             warnings.append("unused ingredient line \(number)")
         }
         return (groups, warnings)
+    }
+
+    /// A line the model skipped, made as an item is: the line, and the parser's quantity, unit and
+    /// rest as its item (RV-29).
+    private static func putBackIngredient(_ text: String) -> Ingredient {
+        let parsed = IngredientLineParser.parse(text)
+        let rest = parsed.rest.trimmingCharacters(in: .whitespacesAndNewlines)
+        return Ingredient(rawText: text, quantity: parsed.quantity, unit: parsed.unit,
+                          item: rest.isEmpty ? nil : rest)
     }
 
     /// Lines trimmed and joined with one space, except that a line ending with `-` before a line

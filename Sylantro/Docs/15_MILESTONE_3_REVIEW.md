@@ -2,9 +2,9 @@
 
 **A Syzygy Softwerks task document · every saved page read and structured behind her, and a review
 where she checks each recipe against its photo**
-Version 0.62 · 25 November 2026 · **Draft: the task plan (RV-1), flags (RV-10), the test set's four
+Version 0.73 · 25 November 2026 · **Draft: the task plan (RV-1), flags (RV-10), the test set's four
 proposals (RV-18) the spike leftovers (RV-19) the device-only store (RV-2) which device reads (RV-3) how a reading is kept (RV-4) no background work (RV-5) reading M2's recipes (RV-6) and her edits on a page change (RV-7) where review lives (RV-8) the review layout (RV-9) tap-to-highlight (RV-11) what she edits (RV-12) Looks Good (RV-13) and where the screens are drawn (RV-21) are ruled; the rest of RV-2 to RV-22 is open.
-**M3-1 complete** (123 tests; run 7 scored). **M3-2 complete** (142 tests). **M3-2a complete** (149 tests); **M3-3 complete** (163 tests); **M3-4 complete** (172 tests); **M3-3a complete** (181 tests); **M3-3b complete** (184 tests); **M3-3c complete** (187 tests); **M3-3d complete** (191 tests); **M3-5s complete** (197 tests); run 8 scored (`10` §7), the model's title list kept (RV-35); RV-36 ruled (own copy); **M3-3e written** (two fixes found on device, + 2 tests); **M3-5 written** (214 tests), waiting on `13`'s SC-22 and S-74 to S-77; Pops's device checks to run.** The questions in §3 are
+**M3-1 complete** (123 tests; run 7 scored). **M3-2 complete** (142 tests). **M3-2a complete** (149 tests); **M3-3 complete** (163 tests); **M3-4 complete** (172 tests); **M3-3a complete** (181 tests); **M3-3b complete** (184 tests); **M3-3c complete** (187 tests); **M3-3d complete** (191 tests); **M3-5s complete** (197 tests); run 8 scored (`10` §7), the model's title list kept (RV-35); RV-36 ruled (own copy); **M3-3e complete** (199 tests); **M3-3f complete** (202 tests); **M3-3g complete** (209 tests); **M3-3h complete** (206 tests); **M3-3i complete** (209 tests); the kolaches device check after M3-3e to M3-3i passed on iPhone (iPad open); run 9 scored (same as run 8); RV-39 ruled: steps, then titles, then units; **M3-3j written** (steps in the page's own words, 216 tests); **M3-5 written, on hold** until single-recipe reading works better (Pops, 25 Nov 2026), waiting on `13`'s SC-22 and S-74 to S-77; RV-37 ruled (M3-5a, marking a missed line, after M3-5); Pops's device checks to run.** The questions in §3 are
 Claude's proposals for Pops. No task is written in full until the questions it depends on are
 ruled (§1's Gates column).
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`, `00B_SYLANTRO_GUARDRAILS.md`,
@@ -83,9 +83,15 @@ One task at a time, in order. Each is checked before the next is written, as M2 
 | M3-3c ✓ | **Read Again in ⋯, and a zoom limit** (RV-33) | M3-3b; `13` v0.39 S-73 |
 | M3-3d ✓ | **Every line placed on the page:** yield, times, notes, nutrition, equipment, source lines and group names zoom when tapped (RV-34) | M3-3c |
 | M3-4 ✓ | **A recipe's pages:** reorder and remove (MT-29, MT-31, RV-15), and reading again after a page is added, moved or removed (RV-7) | M3-3; RV-7, RV-15 |
-| M3-3e | **Two fixes found reading the kolaches again:** ingredient lines before a group's first one put back (RV-29), and the iPhone strip moving to a tapped line's page (RV-11) | M3-3d |
+| M3-3e ✓ | **Two fixes found reading the kolaches again:** ingredient lines before a group's first one put back (RV-29), and the iPhone strip moving to a tapped line's page (RV-11) | M3-3d |
+| M3-3f ✓ | **Read Again always asks, and a reading progress bar** (`13` SC-23) | M3-3e; SC-23 |
+| M3-3g ✓ | **Page photos that go blank:** one shared loader at display size, a photo on the device always shown, a failing decode logged and retried smaller | M3-3f |
+| M3-3h ✓ | **Ingredient groups from the printed headings** (RV-38): headings ending `:` group the ingredients under them, skipped lines put back | M3-3g; RV-38 |
+| M3-3i ✓ | **The progress bar on a recipe read again** (SC-23, M3-3f note b), moved out of M3-5 | M3-3f |
+| M3-3j | **Steps in the page's own words** (RV-39): the steps part returns line numbers; skipped lines put back; `promptVersion` 4; spike run 10 | M3-3i; RV-39 |
 | M3-5s ✓ | **Finding each recipe's title on a page (spike):** big-type lines and a model call, side by side in run 8 (RV-35) | M3-3d; RV-35 |
-| M3-5 | **Several recipes on a page** (SLT-047; written, 214 tests): she picks which to save; each is structured on its own and shares the photo (RV-14); a page that isn't a recipe is flagged (RV-32) | M3-3; RV-14, RV-32; a spike check on the test set's four-recipe page (`10` H-38) |
+| M3-5 | **Several recipes on a page** (SLT-047; written, 222 tests): she picks which to save; each is structured on its own and shares the photo (RV-14); a page that isn't a recipe is flagged (RV-32) | M3-3; RV-14, RV-32; a spike check on the test set's four-recipe page (`10` H-38) |
+| M3-5a | **Marking a missed line** (`16` FI-11): in Edit, tap a line on the page and mark what it is; a corrections file in TestFlight builds (RV-37) | M3-5; RV-37; `13` with its screen and words |
 | M3-6 | **Handwriting she can't read and search:** the unreadable piece of the photo shown in place (TS-15, if accepted), and search by title and ingredient (RV-16) | M3-3; RV-16, RV-18 |
 | M3-7 | **Pops's device check:** twenty pages scanned without waiting on his iPhone 18 Pro, read behind him, reviewed, a page reordered and one removed, a several-recipe page split, synced to iPad and Mac; one recipe scanned on a device without Apple Intelligence, if he has one | M3-6 |
 
@@ -1486,8 +1492,7 @@ Edit no document except §2 of this one.
 
 ### Task M3-3e · Sylantro · Two fixes found reading the kolaches again
 
-**Status: ready, not started; runs before or after M3-5** (they touch different parts; the test
-total is the total before plus 2). Nothing new to rule: both fixes make M3-3a's RV-29 and RV-11
+**Status: complete, 25 Nov 2026 (199 tests; §2).** Notes a to e accepted. Nothing new to rule: both fixes make M3-3a's RV-29 and RV-11
 work as ruled.
 
 **Inputs:** `00`, `00A`, `00B`, this document (RV-11, RV-29, Tasks M3-3, M3-3a, M3-3c), and these
@@ -1556,6 +1561,419 @@ Change the prompts or `promptVersion`, `SylantroSchemaV1` or any synced model, `
 `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`, `Info.plist`, the entitlements, build settings
 or SyLib. No string she reads. No page content in the repo (SLT-092). No network. Edit no document
 except §2 of this one.
+
+---
+
+### Task M3-3f · Sylantro · Read Again always asks, and a reading progress bar
+
+**Status: complete, 25 Nov 2026 (202 tests; §2).** Notes a and c to g accepted; (b), no bar on a recipe read again, is fixed in M3-5 Part 4 item 7. SC-23 ruled; S-78 proposed (the agent uses it as written
+and notes it).
+
+**Inputs:** `00`, `00A`, `00B`, `13` v0.41 (§2's row table, §4.2, §4.4, §6, SC-23), this
+document (RV-33, Tasks M3-2, M3-3c), and these files: `Views/Recipe/RecipeView.swift`
+(`readAgainFromMenu`, `readAgainOrAsk`, the "Reading…" line), `Views/Library/RecipeRow.swift`,
+`Views/Library/LibraryView.swift`, `Extraction/ExtractionQueue.swift` (`runJob`,
+`currentRecipeID`), `Extraction/RecipeStructurer.swift` (`structure`, `call`).
+
+*Why:* Pops, 25 Nov 2026: "the re-read menu item should confirm before starting, also, can we have
+a progress bar on the reading?" The model reports nothing within a call, so the bar moves by the
+steps the queue knows: each page read, then each part structured.
+
+#### Part 1 · `ReadingProgress` (Domain, `Domain/Extraction/ReadingProgress.swift`, Foundation only)
+
+1. A value type: `init(pagesToRead: Int)`; `static let parts = ["header", "ingredients", "steps"]`;
+   `mutating func pageRead()`; `mutating func partDone(_ part: String)` (a part not in `parts`,
+   such as `lineLabels` or a fallback, changes nothing; a part counts once).
+2. `fraction: Double`: (pages read + parts done) ÷ (`pagesToRead` + 3), from 0 to 1. Pages
+   already read (Read Again keeps readings, RV-4) aren't counted in `pagesToRead`.
+
+#### Part 2 · The queue and the structurer
+
+1. `RecipeStructurer.structure(_:pageIDs:onPartDone:)` gains an optional
+   `onPartDone: (@Sendable (String) -> Void)? = nil`, called with the part's name after each part's
+   call returns (whatever it gave). Every existing caller is unchanged. The prompts,
+   `instructions`, the `@Guide`s and `promptVersion` are unchanged.
+2. `ExtractionQueue` gains an observable `progress: Double?`: set to 0 when a job starts for
+   `currentRecipeID` (with `pagesToRead` = its pages with no reading), moved on each page read and
+   each part done, and nil when the job ends however it ends. A job that waits (photo not here,
+   refused) sets it nil too.
+
+#### Part 3 · The bar (`RecipeView`, `RecipeRow`, every device)
+
+1. Under "Reading…" (S-45) on the recipe screen: a `ProgressView(value:)` in the palette's accent,
+   the line's width, while `currentRecipeID` is this recipe and `progress` isn't nil.
+2. In the library, the row being read: the same bar, thin (the default linear style), under its
+   "Reading…" line. `LibraryView` passes the queue's `progress` to that row only.
+3. The bar animates between steps (`.animation(.easeInOut, value:)`). No new words; VoiceOver
+   reads the bar's value as the system does.
+
+#### Part 4 · Read Again always asks (`RecipeView`, SC-23)
+
+1. ⋯ › Read Again always shows a plain alert first. Not edited: title S-57 "Read the Pages
+   Again?", message **S-78**, buttons S-59 Read Again and **Cancel** (`.cancel`). Edited: as M3-3c
+   (S-57, S-73, Read Again and Keep My Edits). Read Again calls `readAgain`; the other does
+   nothing. A failure shows S-14 with OK, as now.
+2. M3-4's question after a page change (S-57, S-58) is unchanged.
+
+#### Part 5 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `ReadingProgressTests` (new) | pages then parts | 2 pages to read: 0, then 0.2 after one page, 0.4 after both, 1.0 after header, ingredients and steps |
+| | other parts don't count | `lineLabels` and `ingredients fallback` leave it unchanged; a part done twice counts once |
+| | nothing to read | 0 pages to read: three parts take it from 0 to 1, in thirds |
+
+**The suite total:** the total before plus these 3.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with the total before plus 3, said, with the
+   destination string and the run's own total.
+3. `ReadingProgress.swift` imports only Foundation; `git diff` of `RecipeStructurer.swift` adds
+   only the `onPartDone` parameter and its calls (no prompt, `instructions`, `@Guide` or
+   `promptVersion` change); `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty;
+   `CaptureRecorder` and `RecipeEditor` are unchanged.
+4. A scan of every string literal in the changed views finds only `13` §6's words (S-78 new), SF
+   Symbol names and log text.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's check on device (iPhone 18 Pro)
+
+1. ⋯ › Read Again on a recipe not edited: "Read the Pages Again?" with "This replaces the current
+   reading of this recipe.", Read Again and Cancel. Cancel does nothing.
+2. Read Again: under "Reading…" a bar fills in steps and ends full; back in the library, the row
+   in New Scans shows a thin bar while it reads.
+3. A new multi-page scan: the bar moves page by page, then by parts.
+
+#### Do not
+
+Change the prompts or `promptVersion`, `SylantroSchemaV1` or any synced model, `CaptureRecorder`,
+`RecipeEditor`, `MirrorWriter`, `Info.plist`, the entitlements, build settings or SyLib. No
+popover, tip bubble or confirmation dialog (SLT-088). No string she reads beyond `13` §6. No
+network. Edit no document except §2 of this one.
+
+---
+
+### Task M3-3g · Sylantro · Page photos that go blank
+
+**Status: complete, 25 Nov 2026 (209 tests; §2), after M3-3h.** Notes a to h accepted. Nothing new to rule: page photos show as `13` §4.4 already
+says.
+
+**Inputs:** `00`, `00A`, `00B`, `05` (photos, HEIC at full size), `14A` (SyLib `ImageCache`'s
+memory-only store), this document (Tasks M3-3e, M3-3f), and these files:
+`Views/Recipe/PagePhotoView.swift` (`loadImage`), `Views/Recipe/RecipeView.swift` (`PageStrip`,
+its `load()`), `Views/Recipe/PagePhotoViewer.swift`, `Capture/PhotoFiles.swift` (`availability`,
+`fullImage`, `thumbnail`), `Domain/Capture/PhotoEncoding.swift`,
+`SylantroTests/Capture/PhotoFilesTests.swift`.
+
+*Why:* on device after M3-3e and M3-3f (Pops, 25 Nov 2026, two screenshots: "sometimes the
+images shows blank, it was showing before, only relaunch seems to fix it"), the strip shows the
+outline over gray, once with the download icon, which `PageStrip` draws whenever it has no image,
+downloaded or not. Two likely causes, both in the code as it is:
+
+1. **Memory.** Every page view (`PageStrip`, the edit sheet's crop, iPad's pages column, View
+   Pages, the viewer) loads the page at full size (`UIImage(contentsOfFile:)` then
+   `preparingForDisplay()`, about 50 MB decoded for a 12-megapixel photo), nothing is shared, and
+   the decode is detached, so it isn't cancelled. Since M3-3e every tap on another page makes a new
+   strip and a new full decode, while earlier ones may still be running. When memory runs short a
+   decode gives nil; `load()` retries every 2 seconds and keeps getting nil, and only a relaunch
+   frees the memory.
+2. **iCloud's "downloaded" state.** `availability` treats a file whose status isn't `.current` as
+   still downloading, so a photo that is on the device but whose status reads `.downloaded` is never
+   loaded. Page photos are never changed once written (`05`), so a local copy is the photo.
+
+#### Part 1 · One loader, at display size, shared (`PhotoFiles`, `PagePhotoView`)
+
+1. `PhotoEncoding.displayLongEdge = 2_560`.
+2. `PhotoFiles.displayImage(of fileName: String, maxPixelSize: Int) -> CGImage?`: as `fullImage`,
+   with `kCGImageSourceThumbnailMaxPixelSize` the smaller of `maxPixelSize` and the photo's long
+   edge (upright, never larger than the file).
+3. `PagePhotoView.loadImage(_:from:maxPixelSize:)`, `maxPixelSize` defaulting to
+   `displayLongEdge`, nil meaning full size: first SyLib `ImageCache.shared.memoryImage(for:)`, keyed
+   by the file's URL with the size added (for example `…/name.heic#2560`); else decodes with
+   `displayImage` (or `fullImage` for nil), stores it with `toDisk: false` (`14A`), and returns it.
+   Memory-only, so the system can drop it under pressure and the next load decodes again.
+4. Every page view uses it: `PageStrip` and the edit sheet's crop, iPad's pages column, View Pages
+   at display size; `PagePhotoViewer` at full size (her pinch goes to 6×).
+
+#### Part 2 · A page photo that is here is shown (`PhotoFiles.availability`)
+
+1. A static rule, `PhotoFiles.isOnDevice(isUbiquitous: Bool?, status:
+   URLUbiquitousItemDownloadingStatus?) -> Bool`: true when not ubiquitous, or when the status is
+   `.current` or `.downloaded`; false for `.notDownloaded` or no status.
+2. `availability` uses it: a file on the device is `.available`; only one not on the device is
+   asked for and reads `.downloading`. A placeholder (`.<name>.icloud`) is unchanged.
+
+#### Part 3 · A load that keeps failing says why (`PageStrip`, `PagePhotoView`, `PagePhotoViewer`)
+
+1. When a load returns nil for a file that `availability` calls `.available`, one log line (file
+   name only, no recipe text) says the decode failed, and the next try asks for half the size
+   (down to `thumbnailLongEdge`), so a page is shown smaller rather than not at all.
+2. While a file reads `.downloading`, retries stay every 2 seconds, as now.
+
+#### Part 4 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `PhotoFilesTests` | display size | a 4000 × 3000 test image written then read with `displayImage(maxPixelSize: 2560)` is 2560 × 1920; with 8000 it is 4000 × 3000 |
+| | on the device | `isOnDevice`: not ubiquitous true; `.current` and `.downloaded` true; `.notDownloaded` and nil false |
+| | full size unchanged | `fullImage` of the same file is 4000 × 3000 |
+
+**The suite total:** the total before plus these 3 (209 after M3-3h's 206).
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with the total before plus 3, said, with the
+   destination string and the run's own total.
+3. No view decodes a page photo except through `PagePhotoView.loadImage` (a search for
+   `contentsOfFile` and `fullImage(` in `Views/` finds only it); `git diff --
+   Sylantro/Store/SylantroSchemaV1.swift` is empty; no change in SyLib.
+4. No string she reads changes; the new log line holds only a file name.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's check on device (iPhone 18 Pro, then iPad)
+
+1. Kolaches in review: tap lines on every page, back and forth, quickly, for a minute. The page
+   always shows; a line zoomed to 2.5× stays readable.
+2. Edit, open a few rows' sheets: each crop shows its page.
+3. iPad: the pages column shows every page; open the viewer and pinch in: sharp at full size.
+4. If a page still goes blank, the console has a "decode failed" line naming its file: send it.
+
+#### Do not
+
+Change the prompts or `promptVersion`, `SylantroSchemaV1` or any synced model, how photos are
+written or their files (`05`), `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`,
+`MirrorWriter`, `Info.plist`, the entitlements, build settings or SyLib. No string she reads. No
+network. Edit no document except §2 of this one.
+
+---
+
+### Task M3-3h · Sylantro · Ingredient groups from the printed headings
+
+**Status: complete, 25 Nov 2026 (206 tests; §2), run before M3-3g.** Notes a to e accepted. RV-38 ruled.
+
+**Inputs:** `00`, `00A`, `00B`, this document (RV-29, RV-38, Tasks M3-3a, M3-3e), and these
+files: `Extraction/RecipeStructurer.swift` (`ingredientGroups(from:lines:)`, its put-back),
+`Domain/Structuring/WrapJoiner.swift` (`startsIngredient`), `Domain/Structuring/PageSplitter.swift`
+(`heading`), `Domain/Recipe/IngredientGroup.swift`,
+`SylantroTests/Extraction/RecipeStructurerTests.swift`.
+
+*Why:* RV-38 (Pops, 25 Nov 2026: "the ingredients are grouped in the Kolache and Filling. we
+should try to detect ingredient groups and store them that way"). Groups are stored already
+(`IngredientGroup.name`, `nameBox`), but they come only from the model's answer. On the kolaches
+the model skipped the whole "Plum/Apricot Filling:" group, heading and lines, and RV-29's put-back
+only looks next to a group the model kept, so the filling never came back.
+
+#### Part 1 · Heading lines (Domain, `Domain/Structuring/IngredientHeadings.swift`, Foundation only)
+
+`IngredientHeadings.lines(_ lines: [String]) -> [Int]`: the numbers (from 1) of the lines in an
+ingredient section that are group headings: trimmed, ending with `:`, 2 to 60 characters before
+the `:`, at least half of them letters, not starting like an ingredient
+(`WrapJoiner.startsIngredient`), and not a section heading (`PageSplitter.heading` is nil).
+
+#### Part 2 · Groups by heading (`RecipeStructurer.ingredientGroups`)
+
+When the section has one or more heading lines, after the model's items are mapped and RV-29's
+put-back has run (as now):
+
+1. **Put back under a heading:** every line still unused that starts like an ingredient and comes
+   after the first heading line is put back as RV-29's are (parsed, `put back: ingredient n`).
+2. **Regroup by line:** every ingredient, with its first line, goes to the last heading line before
+   it. Ingredients before the first heading form a first group with no name. A heading with no
+   ingredient under it makes no group. Each group's name is its heading's text without the `:`;
+   the model's group names aren't used. Groups and ingredients keep line order.
+3. Heading lines count as used, so they raise no `unused ingredient line` warning.
+
+With no heading line, the groups are the model's, as now. The prompts, `instructions`, the
+`@Guide`s and `promptVersion` are unchanged. `SourceLocator` places each group's name as now
+(`nameBox`).
+
+#### Part 3 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `RecipeStructurerTests` | headings regroup | lines "Dough:", "2 cups flour", "1 tsp salt", "Filling:", "1 cup jam", "1 tbsp sugar"; the model gives one unnamed group of the four ingredients: two groups, "Dough" and "Filling", two each, no warnings |
+| | a skipped group comes back | the same lines; the model gives only the dough's two: "Filling" holds "1 cup jam" and "1 tbsp sugar", each with `put back: ingredient n` |
+| | no headings, no change | lines with no heading: the groups are the model's, names and order unchanged |
+| `IngredientHeadingsTests` (new) | what a heading is | "For the sauce:" and "Plum/Apricot Filling:" are; "Ingredients:", "1 cup flour:", "Note" and a 70-character line ending `:` aren't |
+
+**The suite total:** the total before plus these 4 (209 after M3-3g's 205).
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with the total before plus 4, said, with the
+   destination string and the run's own total.
+3. `IngredientHeadings.swift` imports only Foundation; `git diff` of `RecipeStructurer.swift`
+   changes only `ingredientGroups(from:lines:)` and its helpers (no prompt, `instructions`,
+   `@Guide` or `promptVersion` change); `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is
+   empty.
+4. No string she reads changes. No page content in the repo: tests use made-up lines.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's check on device (iPhone 18 Pro)
+
+1. Kolaches: ⋯ › Read Again. Ingredients show "Kolaches" and "Plum/Apricot Filling" as
+   subheadings; the apricots, the sugar and any filling lines on page 2 are under the filling,
+   flagged "Put back from the page. Check it." where the model had skipped them.
+2. Tap "Plum/Apricot Filling": the strip outlines it on the page.
+3. A one-group recipe with no subheadings looks as before.
+
+#### Do not
+
+Change the prompts or `promptVersion`, `SylantroSchemaV1` or any synced model, `CaptureRecorder`,
+`RecipeEditor`, `ExtractionQueue`, `MirrorWriter`, the views, `Info.plist`, the entitlements,
+build settings or SyLib. No string she reads. No page content in the repo (SLT-092). No network.
+Edit no document except §2 of this one.
+
+---
+
+### Task M3-3i · Sylantro · The progress bar on a recipe read again
+
+**Status: complete, 25 Nov 2026 (209 tests; §2).** Notes a to c accepted. SC-23 ruled; `13` v0.42 §4.4 says how it looks.
+Moved out of M3-5 (on hold), where it was Part 4 item 7.
+
+**Inputs:** `00`, `00A`, `00B`, `13` v0.42 (§4.4 "A recipe still being read", SC-23, S-45), this
+document (Task M3-3f and its note b), and these files: `Views/Recipe/RecipeView.swift` (the
+whole-recipe lines under the title, M3-3f's bar), `Extraction/ExtractionQueue.swift`
+(`currentRecipeID`, `progress`, read only).
+
+*Why:* M3-3f's note b: the bar shows only under the "Reading…" line of a recipe not read yet; a
+recipe she reads again from ⋯ is already read, so its review screen has no such line and shows no
+progress. Pops, 25 Nov 2026: "We should have a reading progress bar show in the recipe details too
+since we kick off a re read from its menu."
+
+#### Part 1 · Reading again shows its progress (`RecipeView`, every device)
+
+1. While the queue is reading this recipe (`currentRecipeID` is its ID) and it was read before
+   (it has an `extraction`), a whole-recipe line sits first under the title: S-45 "Reading…" with
+   M3-3f's bar under it (`progress`), styled as the other whole-recipe lines but not tinted. It
+   goes when the job ends, and the fields then show the new reading.
+2. Not in Edit. Read Again is already disabled while the recipe is being read (M3-3c).
+3. Nothing else changes: a recipe not read yet shows M3-3f's line and bar as now.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with the same total as before (no test added),
+   said, with the destination string and the run's own total.
+3. Only `RecipeView.swift` changes; `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty.
+4. A scan of the string literals added finds only S-45 "Reading…" and log text.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's check on device (iPhone 18 Pro, then iPad)
+
+1. Open a read recipe, ⋯ › Read Again › Read Again: "Reading…" and a bar appear under the title
+   and fill in steps; when it ends they go and the recipe shows its new reading.
+2. While it reads, ⋯ › Read Again is greyed.
+
+#### Do not
+
+Change the queue, the structurer, the prompts or `promptVersion`, `SylantroSchemaV1` or any synced
+model, `CaptureRecorder`, `RecipeEditor`, `MirrorWriter`, `Info.plist`, the entitlements, build
+settings or SyLib. No string she reads beyond `13` §6. No popover, tip bubble or confirmation
+dialog (SLT-088). No network. Edit no document except §2 of this one.
+
+---
+
+### Task M3-3j · Sylantro · Steps in the page's own words
+
+**Status: ready, not started; runs after M3-3i.** RV-39 ruled. A prompt change: `promptVersion`
+goes from 3 to 4, and spike run 10 checks it (`10` §7).
+
+**Inputs:** `00`, `00A`, `00B`, `10` §7 (run 9), `11` (the structurer's parts, SLT-146), this
+document (RV-29, RV-38, RV-39, Tasks M3-3e, M3-3h), and these files:
+`Extraction/RecipeStructurer.swift` (the steps part, its fallback, `ingredientGroups(from:lines:)`
+as the model to follow, `assemble`, `makeSteps`), `Extraction/GeneratedParts.swift`
+(`GeneratedStepPart`, `GeneratedStep`, `GeneratedIngredientLines`),
+`Domain/Structuring/IngredientHeadings.swift`, `Domain/Structuring/PageClutter.swift`,
+`Domain/Structuring/ReviewFlag.swift`, `SylantroTests/Extraction/RecipeStructurerTests.swift`,
+`SylantroTests/Domain/ReviewFlagTests.swift`.
+
+*Why:* run 9 (`10` §7): the steps part asks the model to retype each step, and it sometimes
+stitches a step's start to its end and drops the middle (10 steps on 8 pages aren't on the page,
+for example "Add … still crisp, 5-8 minutes."). Step counts also differ from the key on 7 pages.
+Ingredients already come back as line numbers, with the words taken from the page (SLT-146), and
+have lost no words since. RV-39 (Pops, 25 Nov 2026): do the same for steps.
+
+#### Part 1 · The steps as line numbers (`GeneratedParts`, `RecipeStructurer`)
+
+1. `@Generable GeneratedStepLines { steps: [GeneratedStepRange] }`, guide "The method steps in
+   printed order, each as the numbers of its lines."; `GeneratedStepRange { firstLine: Int,
+   lastLine: Int }`, guides "The number of the step's first line." and "The number of its last
+   line, the same as the first if it fits on one line." They replace `GeneratedStepPart` and
+   `GeneratedStep`, which go.
+2. The steps part's prompt: `"The method lines of a recipe, numbered:"` then the section's lines
+   numbered (`numbered`), as the ingredients part is. The same token cap. The steps fallback asks
+   the same over every readable line.
+3. `promptVersion` 3 → 4. The header, ingredients and line-label prompts, `instructions` and their
+   `@Guide`s are unchanged.
+
+#### Part 2 · From line numbers to steps (`RecipeStructurer.steps(from:lines:)`, static, tested)
+
+Over the numbered lines (from 1), in order:
+
+1. **Headings:** lines `IngredientHeadings.lines` finds (a short line ending `:`) are step
+   headings, not steps: each step after one, until the next, has that heading (less the `:`) as its
+   `groupName`.
+2. **The model's ranges:** each in range, `firstLine <= lastLine`, at most 15 lines, its lines not
+   already used and not headings, is a step; others are dropped with `step lines out of range`.
+3. **A printed number starts a step:** a line starting with a step number (digits then `.` or `)`
+   and a space, or digits then a space and a capital) inside a range starts a new step there.
+4. **Lines the model skipped** (not used, not a heading, not clutter): joined to the step before
+   when it starts lowercase or that step doesn't end with `.`, `!` or `?`; otherwise it starts a
+   new step, with `put back: step n`. In the fallback (every readable line), skipped lines are
+   left out, as now.
+5. **The words:** a step's text is its lines joined with a space, except that a line ending with
+   `-` joins the next with no space; a leading step number is removed. Steps are indexed from 0 in
+   line order.
+
+#### Part 3 · The flag (`ReviewFlag`)
+
+`put back: step n` is `putBack` on that step (S-52l "Put back from the page. Check it."), as
+`put back: ingredient n` is on an ingredient.
+
+#### Part 4 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `RecipeStructurerTests` | steps by lines | made-up lines 1 to 5, ranges 1–2 and 3–5: two steps whose texts are the lines joined, every word as printed |
+| | a hyphen at a line's end | "until golden-" then "brown." gives "until golden-brown." |
+| | a skipped line | a skipped line starting lowercase joins the step before; one after a step ending `.` starting with a capital is its own step with `put back: step n` |
+| | a printed number starts a step | a range over "1. Mix the flour." and "2. Add the eggs." gives two steps, "Mix the flour." and "Add the eggs." |
+| | a step heading | "For the filling:" before two steps gives both `groupName` "For the filling" and isn't a step |
+| | bad ranges | a range past the last line and one overlapping an earlier step are dropped, with `step lines out of range` |
+| `ReviewFlagTests` | a step put back | `put back: step 2` is `putBack` on the second step |
+
+**The suite total:** M3-3i's total (209) plus these 7: **216**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with **216** tests (or the total before plus 7,
+   said), with the destination string and the run's own total.
+3. `git diff` of `GeneratedParts.swift` changes only the steps types; of `RecipeStructurer.swift`,
+   only the steps part, its fallback, the new `steps(from:lines:)`, `assemble`/`makeSteps` and
+   `promptVersion` (now 4); the header, ingredients and line-label prompts and `instructions` are
+   unchanged; `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty.
+4. No string she reads changes. No page content in the repo: tests use made-up lines.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's step on device (iPhone 18 Pro)
+
+1. Spike run 10, as before, saved to `sylantro-testpages/results/`. Claude scores it against run 9:
+   steps not on the page (10 in run 9), step positions (64 of 74), step counts against the key, and
+   no change to titles or ingredients.
+2. Kolaches: ⋯ › Read Again. Each step reads as printed, and tapping it outlines its own lines.
+
+#### Do not
+
+Change the header, ingredients or line-label prompts, `instructions`, `SylantroSchemaV1` or any
+synced model, `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`, the views,
+`Info.plist`, the entitlements, build settings or SyLib. No string she reads. No page content in
+the repo (SLT-092). No network. Edit no document except §2 of this one.
 
 ---
 
@@ -1656,11 +2074,11 @@ the tests use made-up lines. No network. Edit no document except §2 of this one
 
 ### Task M3-5 · Sylantro · Several recipes on a page, and a page that isn't a recipe
 
-**Status: ready, not started; runs after M3-5s.** RV-14, RV-32, RV-35 and RV-36 ruled; `13`
-v0.40's SC-22 and S-74 to S-77 proposed, with S-52m and S-73 (the agent uses them as written and
+**Status: written, on hold.** Pops, 25 Nov 2026: "we will not move on to task 5 until we get single recipe reading working better". Its test total is rebased when it is released. RV-14, RV-32, RV-35 and RV-36 ruled; `13`
+v0.41's SC-22 and S-74 to S-77 proposed, with S-52m and S-73 (the agent uses them as written and
 notes it).
 
-**Inputs:** `00`, `00A`, `00B`, `10` §7 (run 8), `13` v0.40 (§4.4 "Several recipes on a page" and
+**Inputs:** `00`, `00A`, `00B`, `10` §7 (run 8), `13` v0.41 (§4.4 "Several recipes on a page" and
 "Not a recipe", §6), this document (RV-14, RV-32, RV-35, RV-36, Tasks M3-3b, M3-3c, M3-5s), and
 these files: `Extraction/ExtractionQueue.swift`, `Extraction/TitleLister.swift`,
 `Extraction/RecipeStructurer.swift` (read only), `Extraction/Spike/SpikeRunner.swift`,
@@ -1786,6 +2204,7 @@ pass `ScriptCheck.isLatin`, in order, numbered from 0, as `SpikeRunner.findTitle
 5. **It's All One Recipe**: `keepAsOneRecipe`, and the sheet closes. **✕** and a swipe down close
    it and change nothing.
 6. S-52m shows as any whole-recipe line. No popover, tip bubble or confirmation dialog (SLT-088).
+7. *(Moved to M3-3i: the progress bar on a recipe read again.)*
 
 #### Part 5 · Tests
 
@@ -1809,19 +2228,19 @@ pass `ScriptCheck.isLatin`, in order, numbered from 0, as `SpikeRunner.findTitle
 | | split keeps this recipe | it takes the first piece, its pages wait, its readings stay |
 | wherever `RecipeEditor` is tested | all one recipe | `keepAsOneRecipe` sets the flag, removes the warning, empties `pageTitles` |
 
-**The suite total:** M3-5s's total (197) plus these 17: **214**.
+**The suite total:** M3-3g's total (205) plus these 17: **222**.
 
 #### Done when
 
 1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
-2. The suite passes on the pinned destination with **214** tests (or the total before plus 17,
+2. The suite passes on the pinned destination with **222** tests (or the total before plus 17,
    said), with the destination string and the run's own total.
 3. `git diff` of `RecipeStructurer.swift` and `GeneratedParts.swift` is empty; `TitleLister`'s
    `@Guide` and the structurer's `promptVersion` are unchanged; `git diff --
    Sylantro/Store/SylantroSchemaV1.swift` is empty; `PageTitle.swift`, `PageTitles.swift`,
    `HeaderArea.swift` and `RecipeCheck.swift` import only Foundation.
 4. A scan of every string literal in the changed views finds only `13` §6's words (S-74 to S-77
-   and S-52m new), SF Symbol names, accessibility labels already named, and log text; no log line
+   and S-52m new, S-45 reused), SF Symbol names, accessibility labels already named, and log text; no log line
    holds a title or any recipe text.
 5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
 
@@ -1855,6 +2274,12 @@ of this one.
 
 | Task | Date | Status | Summary |
 |---|---|---|---|
+| M3-3i | 25 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 209 tests in 28 suites passed after 0.851 seconds."; `** TEST SUCCEEDED **`. **Total before: 209** (after M3-3g and M3-3h); no test added, so 209 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source; the one warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped". ✅ 2 the suite passed with 209 tests, the same as before. ✅ 3 this session changed only `Sylantro/Views/Recipe/RecipeView.swift`: one hunk, `@@ -514,0 +515,15 @@` in `headerSection`. The file's other unstaged hunk (`PageStrip.load`) is M3-3g's, from before this session. `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`: empty. ✅ 4 a Python scan of the string literals on this session's added lines finds only S-45 "Reading…". ✅ 5 git status before and after: the same paths and states (` M` `RecipeView.swift`'s working copy already had M3-3g's change, so it stays `MM`); this row. **What was built:** part 1 `RecipeView.headerSection`: while `extractionQueue?.currentRecipeID` is this recipe's ID, the recipe has an `extraction` and she isn't in Edit, a whole-recipe line sits first under the title. It holds S-45 "Reading…" in secondary, and M3-3f's bar under it (`ProgressView(value: progress)`, the palette's accent, full width, `.animation(.easeInOut, value:)`), not tinted. It goes when the job ends (`currentRecipeID` nil), and the fields then show the new reading from the store. A recipe not read yet keeps M3-3f's line and bar (`unreadContent`), unchanged; Read Again stays disabled while reading (M3-3c). **Files:** `Sylantro/Views/Recipe/RecipeView.swift`; this document (this row only). `ExtractionQueue.swift` read, not changed. No queue, structurer, prompt, `promptVersion`, `SylantroSchemaV1`, synced model, `CaptureRecorder`, `RecipeEditor`, `MirrorWriter`, `Info.plist`, entitlement, build setting or SyLib change; no new words beyond S-45; no popover or confirmation dialog; no network. **Git status before** (branch `milestone-3`, HEAD `d7814a6`): staged M3-3e, M3-3f and Pops's docs; unstaged M3-3g and M3-3h (as at the end of the M3-3g rows below). **After:** the same. **Git:** `git status --short` (×2), `git log --oneline -3`, `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (the three unchanged since this session read them: v0.60, v1.15, v0.19), `git diff -U0 -- Sylantro/Views/Recipe/RecipeView.swift`, `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`. **Notes, for Claude to confirm:** (a) "Styled as the other whole-recipe lines" is taken as their secondary text color and place under the title, without their `exclamationmark.triangle`, which marks a warning, and without a tint, as part 1.1 says. (b) The bar shows only while `progress` isn't nil, so while a refusal waits the line shows "Reading…" alone, as M3-3f's does. (c) It is in the list's header section, above the page-2 warning and the other whole-recipe lines, below the title (and below SC-16's hint when that shows, since the hint sits above the title). **Next:** Pops's check on device (iPhone 18 Pro, then iPad), items 1 and 2. Not run in this session |
+| M3-3g (re-run) | 25 Nov 2026 | **complete, nothing rebuilt** | Asked again against v0.69, expecting 206 + 3 = 209. **M3-3g was already built**, in the session whose row is the next one below (M3-3g, 25 Nov 2026), and its changes are in the tree, unstaged (` M` `PhotoFiles.swift`, `PhotoEncoding.swift`, `PagePhotoView.swift`, `PagePhotoViewer.swift`, `PhotoFilesTests.swift`; `MM` `RecipeView.swift`). So **the total before this run was 209, not 206**, and building it again would only duplicate it. v0.69's only change is Claude's check of M3-3h; M3-3g's text is the same (its status line still reads "ready, not started" until it is checked). Nothing was rebuilt or edited but this row. **Verified instead:** **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 209 tests in 28 suites passed after 0.993 seconds."; `** TEST SUCCEEDED **` (206 + 3, as expected after M3-3h and M3-3g). **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace …`: `** BUILD SUCCEEDED **`, no warnings from source. ✅ 2 209 tests passed. ✅ 3 `grep -rn "contentsOfFile\|fullImage(\|displayImage(" Sylantro/Views/` finds only `PagePhotoView.swift:70` and `:71`, inside `loadImage`. `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`: empty. SyLib's `git status --short`: clean. ✅ 4 no string she reads changes (unchanged since the row below). ✅ 5 git status before and after: the same as at the end of the row below, with this document still `MM` (this row added). **Git:** `git status --short` (×2), `git log --oneline -3`, `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (the three unchanged since this session read them: v0.60, v1.15, v0.19), `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`, `git -C /Users/wayne/GIT/Syzygy/sylib-swift status --short`. **Notes, for Claude to confirm:** (a) The row below holds M3-3g's results and notes a to h; this row only confirms them against the current tree. **Next:** Claude's check of M3-3g against that row, then Pops's check on device, items 1 to 4 |
+| M3-3g | 25 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 209 tests in 28 suites passed after 0.857 seconds."; `** TEST SUCCEEDED **`. **Total before: 206** (`@Test` count at session start, after M3-3h, which ran before this task, note h), so 206 + 3 = 209 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source; the one warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped". ✅ 2 the suite passed with 209 tests (206 + 3) on the pinned destination. ✅ 3 `grep -rn "contentsOfFile\|fullImage(\|displayImage(" Sylantro/Views/` finds only `PagePhotoView.swift:70` and `:71`, inside `PagePhotoView.loadImage`. `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`: empty. `git -C …/sylib-swift status --short`: clean, no change in SyLib. ✅ 4 no string she reads changes. The literals added are the logger's category "Photos", the cache key's `#` and "full", and the log line `decode failed: ‹file name› at ‹size›`, which holds only the file name and a pixel size. ✅ 5 git status before and after below; this row. **What was built:** part 1 `PhotoEncoding.displayLongEdge = 2_560`. `PhotoFiles.displayImage(of:maxPixelSize:)`, as `fullImage` with the long edge the smaller of `maxPixelSize` and the file's; both share one private `decoded(_:maxPixelSize:)`, and `fullImage` is unchanged. `PagePhotoView.loadImage(_:from:maxPixelSize:)`, `maxPixelSize` defaulting to `displayLongEdge`, nil for full size, works like this. It looks first in SyLib's `ImageCache.shared.memoryImage(for:)`, keyed by the file's URL plus `#‹size›` (`#full` for full size). Otherwise it decodes off the main actor with `displayImage` (or `fullImage`) and stores the image with `toDisk: false` (`14A`). Every page view uses it: `PageStrip` (the strip and the edit sheet's crop), the pages column and M2's pages (`PagePhotoView`) at display size, and `PagePhotoViewer` at full size. Part 2 `PhotoFiles.isOnDevice(isUbiquitous:status:)` (not ubiquitous, `.current` or `.downloaded`: true; `.notDownloaded` or no status: false), used by `availability`; the placeholder rule is unchanged. Part 3 `PagePhotoView.loadImageRetrying(_:from:maxPixelSize:)`, used by all three loaders, works like this. It tries every 2 seconds, keeping the size while the file is downloading. When the file is `.available` and the decode gives nil, it logs `decode failed: ‹file name› at ‹size›` and asks for half the size next, down to `thumbnailLongEdge`. Part 4: 3 tests in `PhotoFilesTests`, with made-up 4000 × 3000 images. **Files:** `Sylantro/Domain/Capture/PhotoEncoding.swift`, `Sylantro/Capture/PhotoFiles.swift`, `Sylantro/Views/Recipe/PagePhotoView.swift`, `Sylantro/Views/Recipe/PagePhotoViewer.swift`, `Sylantro/Views/Recipe/RecipeView.swift` (`PageStrip.load` only), `SylantroTests/Capture/PhotoFilesTests.swift`; this document (this row only). Inputs `05` and `14A` relied on as the task states them; not otherwise changed. No prompt, `promptVersion`, `SylantroSchemaV1`, synced model, photo writing or files, `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`, `Info.plist`, entitlement, build setting or SyLib change; no string she reads; no network. **Git status before** (branch `milestone-3`, HEAD `d7814a6`): staged M3-3e and M3-3f and Pops's docs (`M `/`A `/`MM` as at M3-3h's end), with M3-3h unstaged (`MM` `RecipeStructurer.swift`, `RecipeStructurerTests.swift`; `??` `IngredientHeadings.swift`, `IngredientHeadingsTests.swift`). **After:** the same, plus ` M` on `PhotoFiles.swift`, `PhotoEncoding.swift`, `PagePhotoView.swift`, `PagePhotoViewer.swift` and `PhotoFilesTests.swift`, and `RecipeView.swift` now `MM`. **Git:** `git status --short` (×2), `git branch --list`, `git log --oneline -3`, `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (the three unchanged since this session read them: v0.60, v1.15, v0.19), `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`, `git diff -U0 -- Sylantro/Views/ Sylantro/Capture/`, `git -C /Users/wayne/GIT/Syzygy/sylib-swift status --short`. **Notes, for Claude to confirm:** (a) **View Pages is the viewer.** Part 1.4 lists "View Pages at display size" and "`PagePhotoViewer` at full size", but ⋯ › View Pages opens `PagePhotoViewer`. So the viewer, View Pages included, decodes at full size for her pinch to 6×; the strip, the crop and the pages column are at display size. (b) The full-size cache key ends `#full`. (c) A failed decode logs one line per failed try. After a failure at full size the next try is `displayLongEdge`, then halves to the 400 floor, which it keeps. (d) The viewer now retries until it has an image (before, one try). (e) `availability`: a file whose ubiquity can't be read (`isUbiquitous` nil) counts as on the device, as before. An iCloud file with no status now counts as not on the device (before, it read `.available`), so it is asked for. If iCloud refuses the request it still reads `.available`, as before. (f) `preparingForDisplay()` is no longer called: ImageIO's thumbnail is already a decoded bitmap. (g) This document is v0.68, not the v0.66 the request named; M3-3g's text is the same. (h) This task ran after M3-3h, not before it as M3-3h's status line expected; they touch different files, so the totals are simply 206 then 209. **Next:** Pops's check on device (iPhone 18 Pro, then iPad), items 1 to 4. Not run in this session |
+| M3-3h | 25 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 206 tests in 28 suites passed after 0.863 seconds."; `** TEST SUCCEEDED **`. **Total before: 202** (`@Test` count at session start, after M3-3f; M3-3g not built, note a), so 202 + 4 = 206 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source; the one warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped". ✅ 2 the suite passed with 206 tests (202 + 4) on the pinned destination. ✅ 3 `IngredientHeadings.swift:1` is `import Foundation`, its only import. `git diff -U0 -- Sylantro/Extraction/RecipeStructurer.swift` (this session's lines; M3-3e and M3-3f were staged by Pops before it): three hunks, all in `ingredientGroups(from:lines:)`, its doc comment and its grouping at the end, with no line holding `promptVersion`, `instructions`, `PromptIntro`, `@Guide` or `TokenCap`. `git diff HEAD --stat` of `SylantroSchemaV1.swift` and `GeneratedParts.swift`: empty. ✅ 4 no string she reads changes (no view changed in this session: `git diff --stat -- Sylantro/Views/` is empty); the tests use made-up lines only. ✅ 5 git status before and after below; this row. **What was built:** part 1 `Domain/Structuring/IngredientHeadings.swift`: `lines(_:)` gives the numbers (from 1) of the section's lines that are group headings: trimmed, ending with `:`, 2 to 60 characters before it, at least half letters, not `WrapJoiner.startsIngredient`, and `PageSplitter.heading` nil. Part 2 `ingredientGroups`: when the section has a heading line, after the model's items and RV-29's put-backs as before, (1) every line still unused after the first heading that starts like an ingredient is put back (parsed, `put back: ingredient n`); (2) every ingredient goes under the last heading before its first line, those before the first heading in a first group with no name, a heading with nothing under it making no group, each group named by its heading less the `:` (the model's names unused), in line order; (3) heading lines count as used. With no heading line, the model's groups as before. `SourceLocator` still places each name (`nameBox`). Part 3: 4 tests as the table (`RecipeStructurerTests` 3; `IngredientHeadingsTests` 1, new), made-up lines. **Files:** new `Sylantro/Domain/Structuring/IngredientHeadings.swift`, `SylantroTests/Domain/IngredientHeadingsTests.swift`; changed `Sylantro/Extraction/RecipeStructurer.swift`, `SylantroTests/Extraction/RecipeStructurerTests.swift`; this document (this row only). Read and not changed: `WrapJoiner.swift`, `PageSplitter.swift`, `IngredientGroup.swift`. No prompt, `promptVersion`, `SylantroSchemaV1`, synced model, `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`, view, `Info.plist`, entitlement, build setting or SyLib change; no page content; no network. **Git status before** (branch `milestone-3`, HEAD `d7814a6`): staged M3-3e and M3-3f and Pops's docs (`M `/`A ` on `ReadingProgress.swift`, `ExtractionQueue.swift`, `RecipeStructurer.swift`, `LibraryView.swift`, `RecipeRow.swift`, `RecipeView.swift`, `ReadingProgressTests.swift`, `RecipeStructurerTests.swift`, `Docs/16_FEATURE_IDEAS.md`; `MM` on `Docs/12_IMPLEMENTATION_PLAN.md`, `Docs/13_SCREENS.md`, this document, `Docs/README.md`). **After:** the same, with `RecipeStructurer.swift` and `RecipeStructurerTests.swift` now `MM`, and `??` on `IngredientHeadings.swift` and `IngredientHeadingsTests.swift`. **Git:** `git status --short` (×2), `git branch --list`, `git log --oneline -3`, `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (the three unchanged since this session read them: v0.60, v1.15, v0.19), `git diff -U0 -- Sylantro/Extraction/RecipeStructurer.swift`, `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift Sylantro/Extraction/GeneratedParts.swift Sylantro/Views/`, `git diff --stat -- Sylantro/Views/`. **Notes, for Claude to confirm:** (a) **M3-3g hasn't run.** M3-3h says it runs after M3-3g ("209 after M3-3g's 205"), but M3-3g ("Page photos that go blank") is still "ready, not started" and the suite stood at 202. M3-3h touches only the structurer and Domain, not the views M3-3g changes, and its total is "the total before plus 4", so it was done as asked: 202 + 4 = 206. With M3-3g after it, the total will be 209. (b) This document is v0.68, not the v0.67 the request named; 0.68 only adds Task M3-3i, and M3-3h's text is unchanged. (c) A heading's group name is its whole heading less the `:` (up to 60 characters). The model's `maximumGroupNameLength` (40) doesn't apply to it. (d) With headings, the earlier rules still run first (the walk back, the heading before a span, the put-back inside a span) and only decide which lines are used; the groups then come from the headings alone. Two of the model's groups under one heading become one group, and a model group name that isn't a heading line is dropped. (e) Part 2.1's put-back takes every unused ingredient-like line after the first heading, to the section's end, including one after the last group's last item; RV-29's line outside a group stays out only when the section has no heading. The M3-3a test "a line outside a group stays out" has no heading, so it holds. **Next:** Pops's check on device (iPhone 18 Pro), items 1 to 3, after ⋯ › Read Again on the kolaches. Not run in this session |
+| M3-3f | 25 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 202 tests in 27 suites passed after 0.833 seconds."; `** TEST SUCCEEDED **`. **Total before: 199** (`@Test` count at session start, after M3-3e), so 199 + 3 = 202 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source. Two warnings this session caused on the way (a `[weak self]` in the part callback) were fixed by capturing the queue plainly (note f). The one warning left is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped". ✅ 2 the suite passed with 202 tests (199 + 3) on the pinned destination. ✅ 3 `ReadingProgress.swift:1` is `import Foundation`, its only import. `git diff HEAD -U0 -- Sylantro/Extraction/RecipeStructurer.swift`: this session's hunks (lines 92 to 297) add only the `onPartDone` parameter, to the public `structure`, the private `structure(…into:)` and `call`, its six call sites, and its calls in `call`. The hunks from line 364 on are M3-3e's, not yet committed (`ingredientGroups` and `putBackIngredient`). The only changed lines naming `TokenCap` are four call sites gaining `onPartDone:`, their caps unchanged; nothing changes in a prompt, `instructions`, `@Guide` or `promptVersion`. `git diff HEAD --stat` of `SylantroSchemaV1.swift`, `CaptureRecorder.swift`, `RecipeEditor.swift`, `GeneratedParts.swift` and `Sylantro/Mirror/`: empty. ✅ 4 a Python scan of the string literals added to the changed views since `HEAD` (`RecipeView.swift`, `RecipeRow.swift`, `LibraryView.swift`) found S-57 "Read the Pages Again?", S-59 "Read Again", "Cancel" (S-26, S-56), and S-78 "This replaces the current reading of this recipe." (proposed in `13` v0.41, used as written, note a). The rest is M3-3e's log line (log text) and no SF Symbol; nothing else. ✅ 5 git status before and after below; this row. **What was built:** part 1 `Domain/Extraction/ReadingProgress.swift`: `init(pagesToRead:)`, `parts` = header, ingredients, steps, `pageRead()` (never past `pagesToRead`), `partDone(_:)` (other parts change nothing; each counts once), `fraction` = (pages read + parts done) ÷ (pages to read + 3), 0 to 1. Part 2 `RecipeStructurer.structure(_:pageIDs:onPartDone:)`, defaulting to nil, so every existing caller is unchanged. `call` reports the part after its call returns (answer or nil), not on a rate-limit throw. `ExtractionQueue.progress: Double?`, observed, `private(set)`: set to 0 once a job's recipe is found waiting, with `pagesToRead` its pages with no reading; it moves on each page read and each part done (back on the main actor, for the job still running), and goes nil when the job ends however it ends and while a refusal waits. Part 3 under "Reading…" on the recipe screen, a `ProgressView(value:)` in the palette's accent, the line's width; in the library, the row being read gets the same bar (thin, default linear style) under its "Reading…", with `LibraryView` passing the queue's `progress` to that row only (`RecipeRow.progress`, default nil). Both animate with `.animation(.easeInOut, value:)`. No new words. Part 4 ⋯ › Read Again always asks: not edited, a plain alert S-57 with S-78, Read Again and Cancel (`.cancel`); edited, M3-3c's S-57 with S-73, Read Again and Keep My Edits. Read Again calls `readAgain` (S-14 on failure, as before). M3-4's page-change question is unchanged. Part 5: `ReadingProgressTests` (new), 3 tests as the table. **Files:** new `Sylantro/Domain/Extraction/ReadingProgress.swift`, `SylantroTests/Domain/ReadingProgressTests.swift`; changed `Sylantro/Extraction/RecipeStructurer.swift` (`onPartDone`), `Sylantro/Extraction/ExtractionQueue.swift`, `Sylantro/Views/Recipe/RecipeView.swift`, `Sylantro/Views/Library/RecipeRow.swift`, `Sylantro/Views/Library/LibraryView.swift`; this document (this row only). No prompt, `promptVersion`, `SylantroSchemaV1`, synced model, `CaptureRecorder`, `RecipeEditor`, `MirrorWriter`, `Info.plist`, entitlement, build setting or SyLib change; no popover, tip bubble or confirmation dialog; no network. **Git status before** (branch `milestone-3`, HEAD `d7814a6`): ` M` `Docs/12_IMPLEMENTATION_PLAN.md`, `Docs/13_SCREENS.md`, this document, `Docs/16_FEATURE_IDEAS.md`, `Docs/README.md` (Pops's), and M3-3e's `Sylantro/Extraction/RecipeStructurer.swift`, `Sylantro/Views/Recipe/RecipeView.swift`, `SylantroTests/Extraction/RecipeStructurerTests.swift`. During the session Pops staged the docs, M3-3e's files and this session's `ReadingProgress.swift` (this session ran no git write). **After:** `M ` four docs (`12`, `13`, `16`, `README`), `RecipeStructurer.swift`, `RecipeStructurerTests.swift`; `A ` `ReadingProgress.swift`; `MM` `RecipeView.swift` and this document (staged by Pops, then this row); ` M` `ExtractionQueue.swift`, `LibraryView.swift`, `RecipeRow.swift`; `??` `ReadingProgressTests.swift`. **Git:** `git status --short` (×3), `git branch --list`, `git log --oneline -3`, `git log --oneline -1`, `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (the three unchanged since this session read them), `git diff -U0` and `git diff HEAD -U0` of `RecipeStructurer.swift` and `Sylantro/Views/`, `git diff --stat` and `git diff HEAD --stat` of the guarded files, `git diff --cached --quiet`. **Notes, for Claude to confirm:** (a) **S-78 is used as written**, "This replaces the current reading of this recipe.", still *proposed* in `13` v0.41, as the task says. (b) **The recipe screen's bar won't show during a Read Again.** Part 3.1 puts it under "Reading…", but a recipe being read again keeps its `extraction`, so the screen is the review screen, which has no "Reading…" line (that line is only before a recipe is read, `13` §4.4). Pops's check 2 ("Read Again: under 'Reading…' a bar fills") will see no bar there, and nothing was added, since the task didn't say to. The library row does show "Reading…" and the bar, but in Needs Review or the rest, not New Scans (SC-21 puts only recipes not yet read there). A first scan shows both, as check 3 expects. (c) `onPartDone` is also called for a part that failed and wasn't retried, or whose retry failed (it "returns, whatever it gave"); not when a refusal is thrown. (d) `parts` counts only header, ingredients and steps, as written. A recipe whose ingredients or steps come only from a fallback (no section) never reaches 1 before its job ends, when the bar goes. (e) The bar starts once the job's recipe is found waiting, not before that check, so a job removed at once shows none. While a refusal waits 30 s the bar is nil; on the retry it starts again with the pages counted read and the parts from 0. A part reported after its job ended is ignored (checked against `currentRecipeID`). (f) The part callback captures the queue plainly, not weakly: a `[weak self]` drew Swift 6 warnings, and the queue lives as long as the app. (g) "The line's width" is the row's full width (`.frame(maxWidth: .infinity)`). The library's bar takes the list's tint, which is the palette's accent. **Next:** Pops's check on device (iPhone 18 Pro), items 1 to 3, with item 2 as note (b) says. Not run in this session |
+| M3-3e | 25 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 199 tests in 26 suites passed after 0.758 seconds."; `** TEST SUCCEEDED **`. **Total before: 197** (`@Test` count at session start, after M3-5s; M3-5 not built), so 197 + 2 = 199 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source; the one warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped". ✅ 2 the suite passed with 199 tests (197 + 2) on the pinned destination. ✅ 3 `git diff -U0 -- Sylantro/Extraction/RecipeStructurer.swift` (against `d7814a6`): its hunks are `ingredientGroups(from:lines:)`'s doc comment and body, and one new `private static func putBackIngredient(_:)` just after it (note b). No changed line holds `promptVersion`, `instructions`, `PromptIntro`, `@Guide` or `TokenCap`; `GeneratedParts.swift` unchanged. `git diff --stat -- Sylantro/Store/SylantroSchemaV1.swift`: empty; `--cached --quiet`: exit 0. ✅ 4 no string she reads changes: the only literals added to the view are the new log line's (`tap: box on page ‹n›, showing page ‹n› (‹file name›)`, with "none" and "no photo" when missing), page numbers and a file name, no recipe text. ✅ 5 git status before and after below; this row. **What was built:** part 1 `ingredientGroups`: before the naming rule, for each group with a span, a walk back from the line before its first line. Each line that is unused, doesn't end with `:` and `startsIngredient` is put back as RV-29's are (parsed, `put back: ingredient n`), and the span starts at it. The walk stops at a used line, a heading, a line that isn't an ingredient's, or line 1. So the heading before the moved span then names the group. The two put-back sites share `putBackIngredient(_:)`. Part 2 `RecipeView`: `PageStrip` gets `.id(… sourcePageID)` in the strip (`stripPhoto(recipe)?.sourcePageID`) and in the edit sheet's crop (`photo?.sourcePageID`). Each tap in `show` logs one info line: the tapped box's page number (from 1 in `sourcePageIDs`), and the page number and file name of the photo shown for it. `PageStrip.load()` also checks for cancellation after its load (note a). Part 3: 2 tests in `RecipeStructurerTests`, made-up lines. **Files:** `Sylantro/Extraction/RecipeStructurer.swift`, `Sylantro/Views/Recipe/RecipeView.swift`, `SylantroTests/Extraction/RecipeStructurerTests.swift`; this document (this row only). `WrapJoiner.swift` read, not changed. No prompt, `promptVersion`, `SylantroSchemaV1`, synced model, `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`, `Info.plist`, entitlement, build setting or SyLib change; no string she reads; no page content; no network. **Git status before** (branch `milestone-3`, HEAD `0897bd5`): staged M3-3c, M3-3d and M3-5s and Pops's docs (`M `/`A ` on 21 paths; `MM` on `Docs/12_IMPLEMENTATION_PLAN.md`, this document and `Docs/README.md`). During the session Pops committed them as `d7814a6`. **After:** ` M` on the 3 files above and this document. **Git:** `git status --short` (×2), `git branch --list`, `git log --oneline -4`, `git log --oneline -3` and `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (the three unchanged since this session read them: v0.60, v1.15, v0.19), `git show --stat --oneline HEAD`, `git diff -U0 -- Sylantro/Extraction/RecipeStructurer.swift`, `git diff --stat -- Sylantro/Extraction/GeneratedParts.swift Sylantro/Store/SylantroSchemaV1.swift`, `git diff --cached --quiet -- Sylantro/Store/SylantroSchemaV1.swift`, `git diff -U0 -- Sylantro/Views/`. **Notes, for Claude to confirm:** (a) **Why the strip's image didn't change with `.task(id:)` alone.** What Pops saw (the right outline on page 1's photo) means the strip had the step's page's `Photo`, since the outline is drawn only when the box's page is the photo's (`PageStrip.page(in:)`), while its `image` was still page 1's. So the reload didn't load the new file. `load()` takes the file name from `self.photo` and isn't given it, so a restarted task that runs the strip's earlier closure loads the earlier page again, while the outline comes from the current body. Restarting `.task(id:)` doesn't refresh a view's own `@State` and doesn't promise the action from the newest body. A second, smaller cause: `load()` didn't check for cancellation after its `await`, and the decode runs detached, so it isn't cancelled with the task. A load still running when the page changed could finish later and overwrite the new page's image. `.id(sourcePageID)` gives each page a fresh `PageStrip`, new `@State`, new task, new closure, so neither can happen. `load()` now also returns, without setting the image, once its task is cancelled. Neither cause could be watched on a device in this session (no simulator or device sessions, `00A` §3); the tap log is there for Pops's check. (b) The put-back code, used twice now, is a `private static func putBackIngredient(_:)` beside `ingredientGroups`, not inside it. It is the same code moved, so the diff touches only `ingredientGroups` and that helper. (c) "Stop at … line 1": line 1 is checked, and put back if it qualifies; the walk then ends. (d) The walk runs for every group with a span, as written, including one whose span starts at its name line. An unused ingredient-like line between the previous group's last item and this group's name line comes into this group, not the previous one. (e) The log's "showing page" is the page shown for the tap: the strip's on iPhone in review, the viewer's start page when the strip is hidden, the column's page on iPad. Its file name is the photo's, a UUID name. **Next:** Pops's check on device (iPhone 18 Pro): ⋯ › Read Again on the kolaches ("Kolaches" a subheading, the yeast and the warm water first, flagged); tap steps 1 and 2 and watch the strip move to each page, with the log line. Not run in this session |
 | M3-5s | 24 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 197 tests in 26 suites passed after 0.779 seconds."; `** TEST SUCCEEDED **`. Total before: 191 (`@Test` count at session start), so 191 + 6 = 197 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source; the one warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped". ✅ 2 the suite passed with 197 tests on the pinned destination. ✅ 3 `git diff -U0` of `RecipeStructurer.swift` and `GeneratedParts.swift`: one change only, `numbered(_:)` from `private static` to `static` with its comment (note b); no prompt, `instructions`, `@Guide`, `TokenCap` or `promptVersion` line; `GeneratedParts.swift` unchanged. `git diff --stat` of `SylantroSchemaV1.swift`: empty; `--cached --quiet`: exit 0. `PageTitles.swift:1` is `import Foundation`, its only import. `grep -rn "TitleLister\.\|PageTitles.cut" Sylantro/`, less `Extraction/Spike/`: nothing. ✅ 4 no view changed (`git diff --stat -- Sylantro/Views/`, unstaged: empty), so no string she reads changes; the spike's export gains fields only. ✅ 5 git status before and after below; this row. **What was built:** part 1 `Domain/Structuring/PageTitles.swift`: `Found` (page, first line, last line, text); `bigType(_:)` (a line at least 1.4× its page's median height, 3 to 80 characters, at least half letters, not a section word or "for the …"; adjacent big lines on one page joined as one title); `cut(lineCount:titles:)` (with two or more titles, each title's first line to the line before the next, the last to the end; with fewer, none). Part 2 `Extraction/TitleLister.swift`: `@Generable GeneratedPageTitles { titles }` with the guide as written; `TitleLister.titles(numberedLines:)`, one greedy call with the structurer's numbered lines and instructions, capped at `TokenCap.header`, keeping a title only when it is a whole line or two adjacent lines (normalized), and counting the rest. Part 3 `SpikeRunner`: after a capture is structured as now, `findTitles` runs both ways, records the titles (and the model's dropped count), and with two or more cuts the capture and structures each piece on its own with `structurer.structure`. Each piece keeps its own lines, the other lines left out, every page kept so the page IDs line up. It records the piece's title, ingredient count, step count, warnings and time. `SpikeCaptureResult` gains `titlesBigType`, `titlesModel`, `titlesModelDropped`, `piecesBigType` and `piecesModel` (`Piece { title, ingredientCount, stepCount, warnings, millis }`), all optional, so older results decode; the export carries them. A failure in this work goes in `partErrors` and doesn't fail the capture. Part 4: 6 tests as the table (`PageTitlesTests` 5, new; `SpikeRunnerTests` 1), every line made up. **Files:** new `Sylantro/Domain/Structuring/PageTitles.swift`, `Sylantro/Extraction/TitleLister.swift`, `SylantroTests/Domain/PageTitlesTests.swift`; changed `Sylantro/Extraction/RecipeStructurer.swift` (`numbered` only), `Sylantro/Extraction/Spike/SpikeRunner.swift`, `Sylantro/Extraction/Spike/SpikeReport.swift`, `SylantroTests/Extraction/SpikeRunnerTests.swift`; this document (this row only). Read and not changed: `GeneratedParts.swift`, `PageReading.swift`, `HeaderArea.swift`, `TextMatch.swift`. No view, prompt, `promptVersion`, `SylantroSchemaV1`, synced model, `ExtractionQueue`, `CaptureRecorder`, `RecipeEditor`, `MirrorWriter`, `Info.plist`, entitlement, build setting or SyLib change; no page content in the repo; no network. **Git status before** (branch `milestone-3`; M3-3b committed as `0897bd5`): staged (`M ` or `A `), Pops's M3-3c and M3-3d and docs: `Docs/12_IMPLEMENTATION_PLAN.md`, `Docs/13_SCREENS.md`, this document, `Docs/README.md`, `Sylantro/Domain/Recipe/IngredientGroup.swift`, `Recipe.swift`, `Domain/Review/LineZoom.swift`, `Domain/Structuring/SourceLocator.swift`, `Views/Recipe/PagePhotoViewer.swift`, `Views/Recipe/RecipeView.swift`, `SylantroTests/Domain/LineZoomTests.swift`, `RecipeJSONTests.swift`, `SourceLocatorTests.swift`. **After:** those as before (this document now `MM`), plus ` M` on `RecipeStructurer.swift`, `SpikeReport.swift`, `SpikeRunner.swift` and `SpikeRunnerTests.swift`, and `??` on `PageTitles.swift`, `TitleLister.swift` and `PageTitlesTests.swift`. **Git:** `git status --short` (×2), `git branch --list`, `git log --oneline -3`, `git log --oneline -2 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md Docs/10_ACCURACY_TEST_SET.md Docs/11_MILESTONE_1_SPIKE.md`, `git diff -U0 -- Sylantro/Extraction/RecipeStructurer.swift Sylantro/Extraction/GeneratedParts.swift`, `git diff --stat -- Sylantro/Store/SylantroSchemaV1.swift`, `git diff --cached --quiet -- Sylantro/Store/SylantroSchemaV1.swift`, `git diff --stat -- Sylantro/Views/`. **Notes, for Claude to confirm:** (a) Pages and lines in `Found` and `cut` are numbered from 0, as their arrays are; the task didn't say. (b) `TitleLister.titles(numberedLines:)` takes the page's lines and numbers them with the structurer's own `numbered`, made internal, not private. The prompt is those numbered lines alone, with the structurer's instructions and no intro line, since the guide asks the question. It returns `(titles: [String], dropped: Int)`, not `[String]`, so the dropped count reaches the report; the check is `kept(_:lines:)`. (c) The model's "page lines" are the whole capture's readable lines (the structurer's Latin filter, SLT-150), so its "two adjacent lines" check may join the last line of one page and the first of the next. To cut, each kept title is placed on one page (one line, or two adjacent lines there); a title that can't be placed, or a second copy of one already placed, isn't cut, though it stays in `titlesModel`. An empty answer ("none") is dropped and counted. (d) Big type: the median is over all of a page's readable lines, the big ones included. The 3 to 80 characters and the half that are letters are counted on the trimmed text, spaces included. A section word matches only whole, after normalizing, besides the "for the" prefix, so "Ingredients for the cake" isn't caught. (e) Lines before the first title belong to no piece. (f) A piece's title is the title's text (the model's own for `model`), and its `millis` is the piece's parts' times added (the "total time"). A failed piece, a rate-limit refusal included, is left out and recorded in `partErrors["pieces ‹way› ‹n›"]`; a failed model call in `partErrors["titles model"]`. There is no wait or retry for a refusal in this extra work. (g) The extra work runs only after a capture structures successfully, before it is marked done (so it still shows as structuring meanwhile). `structureMillis` doesn't include it. **Next:** Pops's step on device (iPhone 18 Pro): spike run 8 on the test set, results saved to `sylantro-testpages/results/`, scored by Claude for both ways (TP-24's four titles and cut; no second title on the other 21) and for M3-3a's check 5. Not run in this session |
 | M3-3d | 24 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 191 tests in 25 suites passed after 0.669 seconds."; `** TEST SUCCEEDED **`. Total before: 187 (`@Test` count at session start), so 187 + 4 = 191 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source; the one warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped". ✅ 2 the suite passed with 191 tests on the pinned destination. ✅ 3 `git diff --stat` of `SylantroSchemaV1.swift`, `Sylantro/Extraction/` (the structurer, its prompts and `promptVersion`), `CaptureRecorder.swift`, `RecipeEditor.swift` and `Sylantro/Mirror/`: empty; `git diff --cached --quiet`: exit 0. `Recipe.swift:1`, `IngredientGroup.swift:1` and `SourceLocator.swift:1` are each `import Foundation`, the only import. ✅ 4 a Python scan of the string literals this session added to the changed view (`RecipeView.swift`; its diff less M3-3c's, kept from that session): none, so nothing new she reads. ✅ 5 git status before and after below; this row. **What was built:** part 1.1 `Recipe.fieldBoxes: [String: SourceBox]` (`decodeIfPresent`, empty when missing, `schemaVersion` unchanged), its keys in `Recipe.FieldBoxKey` (`yield`, `times`, `notes`, `nutrition`, `equipment(n)` and `source(n)`, from 0); `IngredientGroup.nameBox: SourceBox?` (`decodeIfPresent`, nil when missing). Part 1.2 `SourceLocator.locate`, after the title, places each field with no box yet by one rule (`fieldBox`): the text split at `;` and line breaks, trimmed, empty parts dropped; each part found by `find` (equal, else contains) as a run of up to `maximumFieldPartRun = 4` lines on one page; the union of the parts found on the first found part's page; no box when no part is found. The texts are `yieldLine`, `timesLine`, the notes, the printed nutrition, each equipment item, each of `RecipeRendering.sourceLines`, and each group's name. Part 1.3 `RecipeView`: outside Edit, the yield, times, notes, nutrition, each equipment item, the author and publisher lines, and each group's name are tappable lines (`placedLine`, through M3-3's `tappableLine` and `show`). So a tap uses the strip, the iPad and Mac column, or the viewer when the strip is hidden, with M3-3c's `LineZoom` limit; with no box, the first page whole. In Edit, the Serves and Notes sheets (and their rows' taps) use `fieldBoxes` through `fieldBox`. Part 1.4 `ReviewEdit.applied` is unchanged and keeps both, since it starts from the recipe; older recipes get them on Read Again. Part 2: 4 tests as the table (`SourceLocatorTests` 3, `RecipeJSONTests` 1). **Files:** `Sylantro/Domain/Recipe/Recipe.swift`, `Sylantro/Domain/Recipe/IngredientGroup.swift`, `Sylantro/Domain/Structuring/SourceLocator.swift`, `Sylantro/Views/Recipe/RecipeView.swift`, `SylantroTests/Domain/SourceLocatorTests.swift`, `SylantroTests/Domain/RecipeJSONTests.swift`; this document (this row only). Read and not changed: `RecipeRendering.swift`, `ReviewEdit.swift`. No `SylantroSchemaV1`, synced model, `CaptureRecorder`, `RecipeEditor`, prompt, `ExtractionQueue`, `MirrorWriter`, `Info.plist`, entitlement, build setting or SyLib change; no popover or confirmation dialog; no new words; no network. **Git status before** (branch `milestone-3`; M3-3b committed as `0897bd5`, M3-3c not yet committed): ` M` `Docs/12_IMPLEMENTATION_PLAN.md`, `Docs/13_SCREENS.md`, this document, `Docs/README.md`, `Sylantro/Views/Recipe/PagePhotoViewer.swift`, `Sylantro/Views/Recipe/RecipeView.swift`; `??` `Sylantro/Domain/Review/LineZoom.swift`, `SylantroTests/Domain/LineZoomTests.swift`. **After:** those, plus ` M` on `Recipe.swift`, `IngredientGroup.swift`, `SourceLocator.swift`, `RecipeJSONTests.swift` and `SourceLocatorTests.swift` (`RecipeView.swift` and this document already ` M`). **Git:** `git status --short` (×2), `git branch --list`, `git log --oneline -3`, `git log --oneline -2 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md`, `git diff --stat -- Sylantro/Store/SylantroSchemaV1.swift Sylantro/Extraction/ Sylantro/Capture/CaptureRecorder.swift Sylantro/Store/RecipeEditor.swift Sylantro/Mirror/`, `git diff --cached --quiet`, `git diff -U0 -- Sylantro/Views/`. **Notes, for Claude to confirm:** (a) The keys are in a nested `Recipe.FieldBoxKey`, so `SourceLocator` and `RecipeView` read one set (`00A` §10); the task named the keys, not where they live. (b) `fieldBoxes` is encoded by the synthesized encoder, so a recipe with none writes `"fieldBoxes" : {}` in `recipe.json`; a nil `nameBox` isn't written. Older files decode with it empty and nil. (c) **The source's web address stays a link**: a tap opens it, as before, rather than showing its place. Its box is still saved as `source.‹n›`. The author and publisher lines show their places. (d) In Edit, the other lines (times, equipment, nutrition, source, group names) stay as read and aren't tappable, as M3-3b's Edit had them. Only the Serves and Notes rows and sheets use their boxes, as part 1.3 says. (e) Each part is looked for from the first line, apart from the others (no cursor), on one page (no crossing). With "contains", a short part can match inside an earlier, unrelated line (an equipment item "Pot" inside a step), as `find`'s second pass does for any target. (f) A source line's number is its place among the lines shown: the author 0 when present, then the publisher, then the address, as `sourceLines` numbers them. (g) The working tree held M3-3c's uncommitted work at the start; it was built on as found. **Next:** Pops's check on device (iPhone 18 Pro), items 1 and 2, after ⋯ › Read Again on the kolaches. Not run in this session |
 | M3-3c | 24 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 187 tests in 25 suites passed after 0.848 seconds."; `** TEST SUCCEEDED **`. Total before: 184 (`@Test` count at session start), so 184 + 3 = 187 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source; the one warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped". ✅ 2 the suite passed with 187 tests on the pinned destination. ✅ 3 `Domain/Review/LineZoom.swift:1` is `import Foundation`, its only import. `git diff --stat` of `SylantroSchemaV1.swift`, `CaptureRecorder.swift` and `RecipeEditor.swift`: empty; `git diff --cached --quiet`: exit 0. ✅ 4 a Python scan of every string literal on the lines this session added to the changed views (`RecipeView.swift`; `PagePhotoViewer.swift` added none): S-59 "Read Again" (twice) and "Keep My Edits", S-57 "Read the Pages Again?", S-73 "Reading the pages again replaces your edits to this recipe." (proposed in `13` v0.39; used as written, as the task says), and the SF Symbol `arrow.clockwise`; nothing else. ✅ 5 git status before and after below; this row. **What was built:** part 1 `Domain/Review/LineZoom.swift`: `LineZoom.maximum = 2.5`; `scale(boxWidth:viewWidth:margin:)`, the box filling the view less a margin each side, clamped to 1 to 2.5, and 1 for a box of no width or a view narrower than two margins. Part 2 `PageStrip.pageFrame` uses `LineZoom.scale` in place of `max(1, …)`; its centering on the box, clamped to the page's edges, is unchanged, so with the cap the page shows around the line. The edit sheet's crop is a `PageStrip`, so it follows. `PagePhotoViewer`'s zoom to a box uses `LineZoom.scale` (note a); the pinch range 1 to 6 is unchanged. Part 3 ⋯ gains Read Again (`arrow.clockwise`) after View Pages and before the divider, once read, disabled with no `CaptureRecorder` or while `currentRecipeID` is this recipe. A recipe not `.edited` calls `readAgain` at once. An edited one asks with a plain alert (S-57, S-73; Read Again, Keep My Edits as cancel). Read Again calls `readAgain`; a failure shows S-14 with OK, through M3-4's `readAgainAfterAsking`. M3-4's question after a page change (S-57, S-58) is unchanged. Part 4: `LineZoomTests` (new), 3 tests as the table. **Files:** new `Sylantro/Domain/Review/LineZoom.swift`, `SylantroTests/Domain/LineZoomTests.swift`; changed `Sylantro/Views/Recipe/RecipeView.swift`, `Sylantro/Views/Recipe/PagePhotoViewer.swift`; this document (this row only). `CaptureRecorder.swift` read (`readAgain`), not changed. No `SylantroSchemaV1`, synced model, `CaptureRecorder`, `RecipeEditor`, structurer, prompt, `ExtractionQueue`, `MirrorWriter`, `Info.plist`, entitlement, build setting or SyLib change; no popover, tip bubble or confirmation dialog; no network. **Git status before** (branch `milestone-3`; M3-3b committed as `0897bd5`): ` M` `Docs/12_IMPLEMENTATION_PLAN.md`, `Docs/13_SCREENS.md`, `Docs/15_MILESTONE_3_REVIEW.md`, `Docs/README.md` (Pops's, unstaged). **After:** those four (this document with this row too), ` M` `Sylantro/Views/Recipe/PagePhotoViewer.swift` and `Sylantro/Views/Recipe/RecipeView.swift`, `??` `Sylantro/Domain/Review/LineZoom.swift` and `SylantroTests/Domain/LineZoomTests.swift`. **Git:** `git status --short` (×2), `git branch --list`, `git log --oneline -3`, `git log --oneline -2 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md`, `git diff -- Docs/13_SCREENS.md` (Pops's v0.39 changes: §4.2's Read Again, S-73, the 2.5× note), `git diff --stat -- Sylantro/Store/SylantroSchemaV1.swift Sylantro/Capture/CaptureRecorder.swift Sylantro/Store/RecipeEditor.swift`, `git diff --cached --quiet`, `git diff -U0 -- Sylantro/Views/`. **Notes, for Claude to confirm:** (a) In `PagePhotoViewer` the page is first drawn fitted to the screen, which can be narrower than the view when a page is wide. So the box's width passed to `LineZoom.scale` is taken against the view's width as drawn (`box.width × fitted width ÷ view width`): the line fills the width less the margins, and the cap is 2.5 × the page as first drawn. For a portrait page on a portrait phone, the fitted width is the view's, so it is exactly part 1's rule. (b) Read Again from ⋯ has its own alert, with S-73, beside M3-4's with S-58. Both have the title S-57. Its Keep My Edits does nothing, as part 3.2 says; M3-4's clears its pending re-read, as before. (c) Read Again shares M3-4's `readAgainAfterAsking`, which also clears M3-4's pending re-read flag when it succeeds. That is harmless, since the recipe is being read again either way. (d) The menu item is disabled while the queue reads this recipe, from `currentRecipeID`. Its waiting pages before the job starts don't disable it, and a second tap then only makes the pages wait again. **Next:** Pops's check on device (iPhone 18 Pro), items 1 to 3. Not run in this session |
@@ -1922,6 +2347,9 @@ Grouped by the task that waits on them. Each has a recommendation *(rec.)*; none
 | RV-34 | Every line placed on the page (Pops, after M3-3b on device: "all the lines should zoom, even the ones in the header like yield, and active time") | **Ruled, in M3-3d** (M3-3c had already run). Yield, times, notes, nutrition, each equipment item, each source line and each group name get a place on the page, found at reading by one rule (split at `;` and line breaks, union of the parts on one page), saved inside the recipe (no `SylantroSchemaV1` change); a tap zooms to it like any line. Pops, 24 Nov 2026: "I think all the lines should zoom, even the ones in the header like yield, and active time" |
 | RV-35 | How a multi-recipe page's titles are found (run 7: the header answer's `otherTitles` named none of TP-24's four, so RV-14's list would be empty) | **Ruled: try both in the spike, keep the better.** Big-type lines (printed noticeably larger than the body, not section words) and one extra model call listing the titles, side by side on all 22 pages in run 8 (Task M3-5s); M3-5 is written for whichever finds TP-24's four with no false splits. Pops, 24 Nov 2026 (decision card, "Try both in the spike, keep the better") **Run 8 (`10` §7): the model's list found TP-24's four with one false split (a wrapped title as its two lines), big type one of four with ten false splits. Kept: the model's list, titles on adjacent lines joined into one, a refusal meaning one recipe;** TP-18's title lost to a label line is fixed in M3-5 too. Pops, 25 Nov 2026 (decision card, "Model list, join adjacent lines") |
 | RV-36 | The photos of a recipe she splits off a page (M3-5): a page belongs to a recipe through its photo record, and Delete Recipe removes the recipe's photo files (SLT-157) | **A.** Each new recipe gets its own copy of the page: new page and photo records, the photo file copied, the reading copied; every recipe stands alone and Delete Recipe works as now; a few MB more per recipe. **B.** The new recipes point at the same photo file; Delete Recipe removes a file only when no other recipe uses it, a change to `RecipeEditor`'s delete and the mirror *(rec. A: nothing that exists changes, and deleting one recipe can never take another's photo)* **Ruled: A.** Pops, 25 Nov 2026 (decision card, "Each gets its own copy") |
+| RV-37 | Marking a line the reading missed (`16` FI-11; Pops, 25 Nov 2026: "tap a row in the scan, like a missed ingredient, and mark it what it is") | **Ruled: in M3, after M3-5** (task M3-5a): in Edit, tap a line on the page and mark it Ingredient, Step, Note, Title or not part of the recipe; plus a corrections file in TestFlight builds behind the spike switch, saved outside git; corrections never logged as text; nothing sent from the shipped app. Pops, 25 Nov 2026 (decision card, "In M3, after M3-5"). Its screen and words go into `13` first |
+| RV-38 | Ingredient groups (Pops, 25 Nov 2026: "the ingredients are grouped in the Kolache and Filling. we should try to detect ingredient groups and store them that way"; the model skipped the kolaches' whole filling group) | **Ruled: from the printed headings, by rule, in a task before M3-5** (M3-3h): a short line ending `:` in the ingredient section heads a group; each ingredient goes under the heading above it; skipped ingredient lines after a heading are put back; the model's groups only when there is no heading. Pops, 25 Nov 2026 (decision card, "Yes, a task before M3-5") |
+| RV-39 | What comes next for single-recipe accuracy (run 9, `10` §7: steps lose words, three titles fixable by rule, amounts and units) | **Ruled: all three, steps first.** M3-3j: steps as line numbers with the page's words (a prompt change, spike run 10); then the three title rules (labels-path area SP-21, a label line after the title, a breadcrumb first line); then the amount and unit rules. Pops, 25 Nov 2026 (decision card, "All three, steps first") |
 
 When Pops rules, the rulings are filed in the ledger at this document's close-out, as `14`'s were.
 
@@ -1931,6 +2359,17 @@ When Pops rules, the rulings are filed in the ledger at this document's close-ou
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.73 | RV-39 added and ruled; Task M3-3j written: steps in the page's own words, `promptVersion` 4, spike run 10 (+ 7 tests, 216) | Run 9 (`10` v0.28); Pops, 25 Nov 2026 (decision card, "All three, steps first") |
+| 0.72 | Pops's kolaches check on iPhone after M3-3e to M3-3i: Read Again's question and bar, the ingredient groups and put-back lines, each line's own page, no blank photos: all passed; the iPad item not yet reported | Pops, 25 Nov 2026: "1--passed 2--passed! all the ingredient groups look fantastic 3--passed 4--passed" |
+| 0.71 | M3-3i checked by Claude: complete, 209 tests, every Done-when clause met; notes a to c accepted | M3-3i Results row; Pops, 25 Nov 2026: "Task M3-3i is done." |
+| 0.70 | M3-3g checked by Claude: complete, 209 tests, every Done-when clause met; notes a to h accepted | M3-3g Results row; Pops, 25 Nov 2026: "Task M3-3g done" |
+| 0.69 | M3-3h checked by Claude: complete, 206 tests (run before M3-3g), every Done-when clause met; notes a to e accepted; M3-3g's total now 209 | M3-3h Results row; Pops, 25 Nov 2026: "Task M3-3h done" |
+| 0.68 | Task M3-3i written: the progress bar on a recipe read again, moved out of M3-5 (on hold) | Pops, 25 Nov 2026: "We should have a reading progress bar show in the recipe details too since we kick off a re read from its menu" |
+| 0.67 | RV-38 added and ruled; Task M3-3h written: ingredient groups from the printed headings (+ 4 tests); M3-5 on hold until single-recipe reading works better | Pops, 25 Nov 2026 (decision card, "Yes, a task before M3-5"); "we will not move on to task 5 until we get single recipe reading working better" |
+| 0.66 | Task M3-3g written: page photos that go blank (display-size shared loader, `.downloaded` counts as on the device, a failing decode logged and retried smaller); + 3 tests; M3-5 now after it, 222 | Pops, 25 Nov 2026, two screenshots: "sometimes the images shows blank, it was showing before, only relaunch seems to fix it" |
+| 0.65 | M3-3e and M3-3f checked by Claude: complete (199, 202 tests), every Done-when clause met; M3-3e notes a to e and M3-3f notes a, c to g accepted; M3-3f note b (no bar on a recipe read again) added to M3-5 Part 4 item 7; M3-5's total now 219 | M3-3e and M3-3f Results rows; Pops, 25 Nov 2026: "M3-3e", "M3-3f is done" |
+| 0.64 | Task M3-3f written: Read Again always asks (S-78 proposed), a progress bar by steps on the recipe and its row; + 3 tests | Pops, 25 Nov 2026: "the re-read menu item should confirm before starting, also, can we have a progress bar on the reading?"; `13` v0.41 SC-23 |
+| 0.63 | RV-37 added and ruled: marking a missed line, task M3-5a after M3-5 | Pops, 25 Nov 2026 (decision card, "In M3, after M3-5") |
 | 0.62 | Task M3-3e written: lines before a group's first ingredient put back, the iPhone strip shows the tapped line's page; + 2 tests | Pops, 25 Nov 2026, screen recording after Read Again on the kolaches; iPad check: "ipad seems to scroll the images fine" |
 | 0.61 | Task M3-5 written in full: the model's title list behind her, adjacent titles joined, Choose Recipes (SC-22, S-74 to S-77 proposed), split-off recipes with their own page copies, It's All One Recipe, the not-a-recipe flag (RV-32), label lines out of titles (TP-18); 214 tests | RV-14, RV-32, RV-35, RV-36; `13` v0.40 |
 | 0.60 | RV-36 ruled: A, each split-off recipe gets its own copy of the page | Pops, 25 Nov 2026 (decision card, "Each gets its own copy") |

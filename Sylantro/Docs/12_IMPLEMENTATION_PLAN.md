@@ -116,8 +116,8 @@ row here in the same change (IP-4).
 | 12 | `12_IMPLEMENTATION_PLAN.md` | Plan | — | this document |
 | 13 | `13_SCREENS.md` | Design | M2 (library, camera, recipe, recovery); M3's review screens (v0.22, accepted) | M2's first screen task |
 | 14 | `14_MILESTONE_2_CAPTURE.md` | Tasks | M2 (M2-1 to M2-6) | closed, v1.0 (SLT-160) |
-| 15 | `15_MILESTONE_3_REVIEW.md` | Tasks | M3 (M3-1 to M3-7, plan ruled) | draft, v0.31; M3-1 (123 tests), M3-2 (142), M3-2a (149), M3-3 (163), M3-4 (172), M3-3a (181) and M3-3b (184) and M3-3c (187) and M3-3d (191) and M3-5s (197) complete; run 8 scored (the model's title list kept); M3-3e written (two device fixes); M3-5 written (214 tests), waiting on `13`'s SC-22 and its wording |
-| 16 | `16_FEATURE_IDEAS.md` | Ideas | not placed: cook mode and scaling are in 1.0 (SLT-170, SLT-171), the rest open (FI-1 to FI-10) | when Pops places each feature |
+| 15 | `15_MILESTONE_3_REVIEW.md` | Tasks | M3 (M3-1 to M3-7, plan ruled) | draft, v0.31; M3-1 (123 tests), M3-2 (142), M3-2a (149), M3-3 (163), M3-4 (172), M3-3a (181) and M3-3b (184) and M3-3c (187) and M3-3d (191) and M3-5s (197) complete; run 8 scored (the model's title list kept); M3-3e (199) and M3-3f (202) complete; M3-3h (ingredient groups), M3-3g (blank photos) and M3-3i (progress on a re-read) complete (209); device check passed; run 9 scored; M3-3j written (steps by line numbers, 216); M3-5 written, on hold until single-recipe reading works better, waiting on `13`'s SC-22 and its wording |
+| 16 | `16_FEATURE_IDEAS.md` | Ideas | not placed: cook mode and scaling are in 1.0 (SLT-170, SLT-171); FI-11 (marking a missed line) in M3 as M3-5a; the rest open (FI-1 to FI-10) | when Pops places each feature |
 
 **Ideas, not yet placed** (Pops decides where they go):
 

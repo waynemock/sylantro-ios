@@ -98,7 +98,9 @@ struct LibraryView: View {
         RecipeRow(title: row.title,
                   detail: row.detail,
                   coverFileName: row.coverFileName,
-                  photoFiles: photoFiles)
+                  photoFiles: photoFiles,
+                  // The queue's progress, to the row being read only (SC-23).
+                  progress: row.detail == .reading ? extractionQueue?.progress : nil)
             .tag(row.id)
     }
 

@@ -242,6 +242,87 @@ struct RecipeStructurerTests {
         #expect(!mapped.warnings.contains { $0.hasPrefix("unused") })
     }
 
+    // MARK: Lines before a group's first one (M3-3e, RV-29)
+
+    @Test("lines before the first are put back")
+    func linesBeforeTheFirstArePutBack() throws {
+        let lines = ["Dough:", "1 Tbsp. yeast", "1/2 cup water", "1/4 cup butter", "1 cup milk"]
+        // The model gives only the last two lines, and no name line.
+        let part = GeneratedIngredientLines(groups: [GeneratedLineGroup(nameLine: 0, items: [Self.item(4, 4), Self.item(5, 5)])])
+
+        let mapped = RecipeStructurer.ingredientGroups(from: part, lines: lines)
+
+        let group = try #require(mapped.groups.first)
+        #expect(mapped.groups.count == 1)
+        #expect(group.name == "Dough")
+        #expect(group.ingredients.map(\.rawText) == ["1 Tbsp. yeast", "1/2 cup water", "1/4 cup butter", "1 cup milk"])
+        #expect(mapped.warnings.contains("put back: ingredient 1"))
+        #expect(mapped.warnings.contains("put back: ingredient 2"))
+        #expect(!mapped.warnings.contains { $0.hasPrefix("unused") })
+    }
+
+    @Test("a used line stops the walk")
+    func usedLineStopsTheWalk() {
+        let lines = ["1 cup flour", "2 cups sugar", "1 made-up egg", "1 cup milk"]
+        // The line before the second group's span is the first group's.
+        let part = GeneratedIngredientLines(groups: [
+            GeneratedLineGroup(nameLine: 0, items: [Self.item(1, 1), Self.item(2, 2)]),
+            GeneratedLineGroup(nameLine: 0, items: [Self.item(3, 3), Self.item(4, 4)]),
+        ])
+
+        let mapped = RecipeStructurer.ingredientGroups(from: part, lines: lines)
+
+        #expect(mapped.groups.flatMap(\.ingredients).map(\.rawText) == lines)
+        #expect(!mapped.warnings.contains { $0.hasPrefix("put back") })
+    }
+
+    // MARK: Groups by the printed headings (M3-3h, RV-38)
+
+    static let headedLines = ["Dough:", "2 cups flour", "1 tsp salt", "Filling:", "1 cup jam", "1 tbsp sugar"]
+
+    @Test("headings regroup")
+    func headingsRegroup() {
+        // The model gives one unnamed group of the four ingredients.
+        let part = GeneratedIngredientLines(groups: [
+            GeneratedLineGroup(nameLine: 0, items: [Self.item(2, 2), Self.item(3, 3), Self.item(5, 5), Self.item(6, 6)]),
+        ])
+
+        let mapped = RecipeStructurer.ingredientGroups(from: part, lines: Self.headedLines)
+
+        #expect(mapped.groups.map(\.name) == ["Dough", "Filling"])
+        #expect(mapped.groups.map { $0.ingredients.map(\.rawText) } == [["2 cups flour", "1 tsp salt"], ["1 cup jam", "1 tbsp sugar"]])
+        #expect(mapped.warnings.isEmpty)
+    }
+
+    @Test("a skipped group comes back")
+    func skippedGroupComesBack() throws {
+        // The model gives only the dough's two.
+        let part = GeneratedIngredientLines(groups: [GeneratedLineGroup(nameLine: 0, items: [Self.item(2, 2), Self.item(3, 3)])])
+
+        let mapped = RecipeStructurer.ingredientGroups(from: part, lines: Self.headedLines)
+
+        try #require(mapped.groups.count == 2)
+        #expect(mapped.groups[1].name == "Filling")
+        #expect(mapped.groups[1].ingredients.map(\.rawText) == ["1 cup jam", "1 tbsp sugar"])
+        #expect(mapped.warnings.contains("put back: ingredient 3"))
+        #expect(mapped.warnings.contains("put back: ingredient 4"))
+        #expect(!mapped.warnings.contains { $0.hasPrefix("unused") })
+    }
+
+    @Test("no headings, no change")
+    func noHeadingsNoChange() throws {
+        // `soupLines` prints no heading ending with `:`; the model's two named groups stand.
+        let part = GeneratedIngredientLines(groups: [
+            GeneratedLineGroup(nameLine: 1, items: [Self.item(2, 2), Self.item(3, 3)]),
+            GeneratedLineGroup(nameLine: 4, items: [Self.item(5, 5)]),
+        ])
+
+        let mapped = RecipeStructurer.ingredientGroups(from: part, lines: Self.soupLines)
+
+        #expect(mapped.groups.map(\.name) == ["For the soup", "For the top"])
+        #expect(mapped.groups.map { $0.ingredients.map(\.rawText) } == [["1 cup water", "2 cups stock"], ["1 cup cheese"]])
+    }
+
     // MARK: The spike's leftovers (M3-1)
 
     @Test("the fallback's noise")

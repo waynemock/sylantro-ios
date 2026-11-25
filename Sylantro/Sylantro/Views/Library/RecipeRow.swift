@@ -25,6 +25,8 @@ struct RecipeRow: View {
     /// The cover photo's file: the recipe's first page.
     let coverFileName: String?
     let photoFiles: PhotoFiles?
+    /// While this row's recipe is being read, how far, 0 to 1 (SC-23, `15` M3-3f); nil otherwise.
+    var progress: Double? = nil
 
     @State private var thumbnail: UIImage?
 
@@ -39,6 +41,11 @@ struct RecipeRow: View {
                 detailText
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                // A thin bar under "Reading…" (SC-23), moving step by step.
+                if detail == .reading, let progress {
+                    ProgressView(value: progress)
+                        .animation(.easeInOut, value: progress)
+                }
             }
         }
         // Runs again when `photoFiles` arrives after launch, not only when the cover changes

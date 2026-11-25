@@ -97,7 +97,8 @@ private struct ZoomablePage: View {
             // Runs again when `photoFiles` arrives after launch (`14` M2-4g).
             .task(id: photoFiles?.root.path) {
                 guard let photoFiles, image == nil else { return }
-                image = await PagePhotoView.loadImage(fileName, from: photoFiles)
+                // At full size, for her pinch to 6×; retried smaller if a decode fails (M3-3g).
+                image = await PagePhotoView.loadImageRetrying(fileName, from: photoFiles, maxPixelSize: nil)
                 if let image {
                     zoomToBox(image: image, in: geometry.size)
                 }

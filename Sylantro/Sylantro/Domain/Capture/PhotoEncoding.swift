@@ -6,6 +6,9 @@ nonisolated enum PhotoEncoding {
     static let heicQuality = 0.7
     static let dishLongEdge = 2_048
     static let thumbnailLongEdge = 400
+    /// The longest edge a page photo is decoded to for showing on screen (`15` M3-3g); the viewer
+    /// decodes at full size.
+    static let displayLongEdge = 2_560
     static let fileExtension = "heic"
 
     /// A photo's file name is its id: `<id>.heic`.

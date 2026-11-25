@@ -2,7 +2,7 @@
 
 **Design document · the spike's 25 real binder pages: how they are scored, what makes them hard,
 and the design questions they raise**
-Version 0.27 · 25 November 2026 · **Draft, not accepted; TS-5, TS-10, TS-11 and TS-15 ruled in `15` RV-18 (filed at M3's close);
+Version 0.28 · 25 November 2026 · **Draft, not accepted; TS-5, TS-10, TS-11 and TS-15 ruled in `15` RV-18 (filed at M3's close);
 SP-21 and SP-22 open; the rest are settled (SLT-045 to SLT-048, SLT-062 to SLT-065, SLT-070, SLT-071) and TS-12 is
 done.** Not for the agent until a task names it.
 
@@ -585,6 +585,25 @@ line, the same size, and isn't caught as the author's line because it starts wit
 treats a line starting with a label (Author, By, Prep Time, Cook Time, Total Time, Yield, Serves,
 Servings, Makes) as a side line.
 
+### Run 9 · 25 November 2026 (Milestone 3, after M3-3e to M3-3i)
+
+On the build with M3-3e's and M3-3h's ingredient fixes (lines before a group's first one put back;
+groups from printed headings), found on a page outside the set. Per-page notes outside git
+(`SPIKE_9_SCORING.md`). 22 of 22 captures finished.
+
+**Every capture is the same as run 8:** titles 15 of 22, ingredients 193 (185 with a position),
+steps 74 (64 with a position). The set has one page with ingredient subheadings, already grouped
+right, and none with a line skipped before a group, so the fixes change nothing here and break
+nothing.
+
+**Where single-recipe reading still falls short:**
+
+| Area | What happens | Pages |
+|---|---|---|
+| Steps | The model's step text drops words from the middle (10 steps not on the page); step counts differ from the key on 7 pages | 8 pages |
+| Titles | 3 fixable by rule (labels-path area, SP-21; a label line after the title; a breadcrumb line first); 2 the model's choice; 1 handwriting; 1 several recipes | 7 pages |
+| Quantity and unit | "Zest of 1 …", "Pinch …", "2 bags …", "1(14.5-ounce) can …", OCR misreads of tsp | 2 pages |
+
 ---
 
 
@@ -592,6 +611,7 @@ Servings, Makes) as a side line.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.28 | §7: run 9 scored: the same as run 8 on every capture; where single-recipe reading still falls short | Pops, 25 Nov 2026: "run 9 done" |
 | 0.27 | §7: run 8 scored (M3-5s's build): the model's title list finds the four-recipe page's titles with one false split, big type ten; titles 15 of 22 (one lost to a label line), step positions 64 of 74 | `15` M3-5s, RV-35; Pops, 24 Nov 2026: "ok run 8 done"; 25 Nov 2026 (decision card, "Model list, join adjacent lines") |
 | 0.26 | §7: run 7 scored (M3-1's build): titles 16 of 22, positions for 96% of ingredients and 85% of steps; SP-21 and SP-22 proposed | `15` M3-1; Pops, 24 Nov 2026: "ok run 7 done, check it out" |
 | 0.25 | §7: run 6's results and Milestone 1's verdict; SP-20 carried to Milestone 3 | SLT-156 (Pops, 22 Nov 2026: "close out milestone 1"; "ok we will finish the spike") |

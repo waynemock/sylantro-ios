@@ -2,7 +2,7 @@
 
 **Design ideas · what popular recipe apps offer beyond reading a recipe, and how each would fit
 Sylantro**
-Version 0.1 · 24 November 2026 · **Ideas list; three rulings in (SLT-170 to SLT-172).** Everything
+Version 0.2 · 25 November 2026 · **Ideas list; three rulings in (SLT-170 to SLT-172); FI-11 placed in M3 (`15` RV-37).** Everything
 else is an option for Pops, marked *(rec.)* where Claude recommends one. No task is written from
 this document until Pops rules and places the feature in `12` §2.
 
@@ -162,6 +162,28 @@ the list), Live Activities for timers, and Apple Watch apps for steps and timers
   already offers a PDF to people without Sylantro (SH-3).
 - Printing the original page photo is also a choice, since that is her binder page as it was.
 
+### 2.9 Marking a missed line (FI-11, Pops's idea)
+
+**The idea** (Pops, 25 Nov 2026): "a way to 'train' the algorithm from the outside in… tap a row
+in the scan, like a missed ingredient, and mark it what it is, like ingredient, step, etc. this
+would be a good feature for the shipped app too since our reader will never be perfect."
+
+**In Sylantro.**
+
+- The on-device model isn't trained on the phone. Her marks improve Sylantro the way the spike
+  does: they become examples, and the rules and prompts are fixed against them (as M3-3e's
+  put-back walk was).
+- **For her:** in Edit, tap a line on the page that the reading missed and say what it is
+  (Ingredient, Step, Note, Title, or not part of the recipe). It goes into the recipe at its
+  place, in the page's own words and with its outline, so there is nothing to type. Put-back
+  (RV-29) guesses lines back; this lets her say.
+- **For tuning (TestFlight builds, behind `AppConfig.AccuracySpike.isEnabled`):** a corrections
+  file (each marked line, what the reading made of it, what she said it is) that Pops saves to
+  `sylantro-testpages/results/`, outside git (SLT-092), scored like a spike run; a corrected
+  recipe can also join the test set.
+- **Privacy:** logs never carry recipe text, so corrections aren't logged. In the shipped app
+  marks stay on her device; nothing is sent; an export happens only when she taps Share herself.
+
 ---
 
 ## 3. How it fits the other documents
@@ -190,6 +212,7 @@ the list), Live Activities for timers, and Apple Watch apps for steps and timers
 | FI-7 | Which apps to import from, and when | Paprika and Mela after 1.0, formats checked against real exports first *(rec.)*; others as asked |
 | FI-8 | The pantry | Park it *(rec.)*; after nutrition's food matching |
 | FI-9 | Which Apple extras | App Intents (Siri, Shortcuts, Spotlight) after 1.0 *(rec.)*; widgets; a Watch app (reopens SLT-012) |
+| FI-11 | Marking a missed line (§2.9) | **Ruled: in M3, after M3-5** (`15` RV-37, task M3-5a), with the TestFlight corrections file. Pops, 25 Nov 2026 (decision card, "In M3, after M3-5") |
 | FI-10 | Export and print | A print layout and PDF together, after 1.0 *(rec.)*; with sharing (M6, SH-3) |
 
 When Pops rules, the rulings are filed in the ledger as SLT-173 onward at this document's
@@ -201,4 +224,5 @@ close-out.
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.2 | §2.9 and FI-11: marking a missed line on the page, placed in M3 after M3-5 | Pops, 25 Nov 2026: "I think we need a way to 'train' the algorithm from the outside in…"; decision card, "In M3, after M3-5" |
 | 0.1 | First version: eight feature areas from popular recipe apps, how each fits Sylantro, SLT-170 to SLT-172, open decisions FI-1 to FI-10 | Pops, 24 Nov 2026: "Given all you know about everything, what other features do popular recipe apps have. Keep it public info." → "Note them all somewhere appropriate. Cook mode and scaling seems mvp, import least interesting to me but good to include eventually" |
