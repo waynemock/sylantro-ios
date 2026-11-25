@@ -2,7 +2,7 @@
 
 **Design document · the spike's 25 real binder pages: how they are scored, what makes them hard,
 and the design questions they raise**
-Version 0.26 · 24 November 2026 · **Draft, not accepted; TS-5, TS-10, TS-11 and TS-15 ruled in `15` RV-18 (filed at M3's close);
+Version 0.27 · 25 November 2026 · **Draft, not accepted; TS-5, TS-10, TS-11 and TS-15 ruled in `15` RV-18 (filed at M3's close);
 SP-21 and SP-22 open; the rest are settled (SLT-045 to SLT-048, SLT-062 to SLT-065, SLT-070, SLT-071) and TS-12 is
 done.** Not for the agent until a task names it.
 
@@ -553,6 +553,38 @@ Why:
 | SP-21 | On the labels path, the header area always holds at least the first 5 lines, or up to the first line labelled `step` if that is later, so a title's continuation is offered | TP-15's title is cut to its first word; the labels end the area at line 2 |
 | SP-22 | A step not found within one page is looked for as a run that may cross into the next page; its position is the part on the first page | One step in the set runs onto the next page and gets no position |
 
+### Run 8 · 25 November 2026 (Milestone 3, task M3-5s)
+
+On `15` M3-5s's build (M3-3a to M3-3d's structurer changes, and two ways to find a page's recipe
+titles side by side, RV-35). Per-page notes outside git (`SPIKE_8_SCORING.md`). 22 of 22 captures
+finished.
+
+**Finding titles (RV-35).** The test set has one page with several recipes (TP-24, four) and 21
+with one.
+
+| Way | TP-24's four titles | False splits on the other 21 |
+|---|---|---|
+| The model's list (one extra call) | **4 of 4**, as printed | **1** (a wrapped title given as its two lines); one page refused, so no titles and no split |
+| Big type (1.4× the page's median line) | 1 of 4 | 10 |
+
+The model's list is kept for M3-5, with titles on adjacent lines joined into one (`15` RV-35,
+Pops, 25 Nov 2026). Cut from title to title, TP-24's pieces got 20 of about 31 ingredient lines:
+the page's columns flow across one another, so some lines fall in the wrong piece.
+
+**Against run 7 (M3-3a's check).**
+
+| Measure | Run 7 | Run 8 |
+|---|---|---|
+| Titles right | 16 of 22 | 15 of 22 |
+| Ingredients with a position on the page | 185 of 193 | 185 of 193 |
+| Steps with a position on the page | 63 of 74 | **64 of 74** (the step that runs onto the next page, SP-22) |
+| Titles with a position on the page | (not measured) | 21 of 22 (the 22nd page has no title, as the key expects) |
+
+The title lost (TP-18) took in the author-and-times line after it: that line is the model's next
+line, the same size, and isn't caught as the author's line because it starts with a label. M3-5
+treats a line starting with a label (Author, By, Prep Time, Cook Time, Total Time, Yield, Serves,
+Servings, Makes) as a side line.
+
 ---
 
 
@@ -560,6 +592,7 @@ Why:
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.27 | §7: run 8 scored (M3-5s's build): the model's title list finds the four-recipe page's titles with one false split, big type ten; titles 15 of 22 (one lost to a label line), step positions 64 of 74 | `15` M3-5s, RV-35; Pops, 24 Nov 2026: "ok run 8 done"; 25 Nov 2026 (decision card, "Model list, join adjacent lines") |
 | 0.26 | §7: run 7 scored (M3-1's build): titles 16 of 22, positions for 96% of ingredients and 85% of steps; SP-21 and SP-22 proposed | `15` M3-1; Pops, 24 Nov 2026: "ok run 7 done, check it out" |
 | 0.25 | §7: run 6's results and Milestone 1's verdict; SP-20 carried to Milestone 3 | SLT-156 (Pops, 22 Nov 2026: "close out milestone 1"; "ok we will finish the spike") |
 | 0.24 | §7: SP-19 accepted | Pops, 22 Nov 2026 (decision card, "SP-19, then run 6") |

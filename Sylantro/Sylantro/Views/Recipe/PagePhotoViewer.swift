@@ -117,14 +117,17 @@ private struct ZoomablePage: View {
                       width: drawn.width, height: drawn.height)
     }
 
-    /// The zoom that makes the box fill the width less the margins (within the pinch range), and
-    /// the scroll that centers it.
+    /// The zoom that makes the box fill the width less the margins, at most `LineZoom.maximum`
+    /// times the page as first fitted (RV-33), and the scroll that centers it. Her pinch range is
+    /// unchanged.
     private func zoomToBox(image: UIImage, in size: CGSize) {
         guard let box, box.width > 0, size.width > 0 else { return }
         let fitted = drawnRect(image: image, in: size, scale: 1)
         guard fitted.width > 0 else { return }
-        let zoom = min(max((size.width - 2 * Self.margin) / (box.width * fitted.width), Self.scaleRange.lowerBound),
-                       Self.scaleRange.upperBound)
+        // The box's width against the view's, as fitted, so a page fitted narrower than the view
+        // is zoomed from where it is drawn.
+        let zoom = CGFloat(LineZoom.scale(boxWidth: box.width * fitted.width / size.width,
+                                          viewWidth: size.width, margin: Self.margin))
         let drawn = drawnRect(image: image, in: size, scale: zoom)
         let center = CGPoint(x: drawn.minX + (box.x + box.width / 2) * drawn.width,
                              y: drawn.minY + (box.y + box.height / 2) * drawn.height)

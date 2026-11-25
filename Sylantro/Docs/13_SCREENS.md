@@ -2,9 +2,9 @@
 
 **Design document · the library, the camera, a recipe and its review, and the recovery screen,
 with every word she reads**
-Version 0.38 · 24 November 2026 · **M2's screens and copy accepted (SC-1 to SC-8). M3's review
+Version 0.40 · 25 November 2026 · **M2's screens and copy accepted (SC-1 to SC-8). M3's review
 screens drawn (§2, §3.2, §4.4, §4.5; `15` RV-8 to RV-13, RV-26, RV-28 ruled); SC-9 to SC-12 ruled; S-44 to S-53
-approved.** Accepted for M3-3. M3-4's pages (§4.6, SC-13, S-54 to S-60) accepted; M3-3a's S-52l, S-61 and S-62 approved; SC-18 to SC-21 ruled, S-63 to S-71 approved; S-52m proposed for M3-5. Every
+approved.** Accepted for M3-3. M3-4's pages (§4.6, SC-13, S-54 to S-60) accepted; M3-3a's S-52l, S-61 and S-62 approved; SC-18 to SC-21 ruled, S-63 to S-71 approved; S-52m, SC-22 and S-74 to S-77 proposed for M3-5. Every
 string in §6 is Claude's proposal. The layout
 and the copy are Pops's (`02` §7, `00B` §2). No task is written from an open proposal.
 
@@ -128,6 +128,7 @@ order:
 - **Edit** (S-70), once the recipe is read.
 - **Add Page** (S-22): opens the camera, adds the pages to this recipe (SLT-045).
 - **View Pages** (S-62), when the scan strip isn't shown (SC-14).
+- **Read Again** (S-59, M3-3c), once read: reads the pages again, asking first (S-57, S-73) if she has edited the recipe.
 - **Delete Recipe** (S-23), after a divider, SC-5 (ruled).
 
 ### 4.3 Deleting a recipe (SC-5, ruled; rewritten by SLT-157)
@@ -191,9 +192,25 @@ reviews is still usable.
 gets a small **That's All of It** button (S-53). Tapping it removes the warning for good;
 reading the recipe again doesn't bring it back.
 
-**Several recipes on a page.** When the structurer saw other titles on the page, the line under
-the title reads S-52's "may hold other recipes" with the titles. Choosing which to keep is M3-5
-(RV-14), not drawn here.
+**Several recipes on a page (M3-5, `15` RV-14, RV-35, RV-36; SC-22 proposed).** When the
+model's list finds two or more recipe titles on the recipe's pages, the line under the title reads
+S-52i with the other titles, and gets a small **Choose Recipes** button (S-74), as That's All of It
+sits on S-21. It opens a sheet, as the edit sheet does (half height, can go full; ✕ and ✓ with
+S-69's labels), titled S-75:
+
+- one row per title found, in page order, each with a checkmark, **all checked** at first; a tap
+  checks or unchecks it; ✓ is disabled with none checked;
+- under the list, one line, S-76;
+- at the bottom, a plain **It's All One Recipe** button (S-77).
+
+**✓** keeps the checked ones: this recipe becomes the first, read again from its title to the next
+title; each other checked title becomes its own recipe, with its own copy of the page (RV-36), in
+New Scans until it is read, then Needs Review. The unchecked ones are left out. **It's All One
+Recipe** removes the line for good and keeps the recipe as it is, as That's All of It does.
+**✕** closes the sheet and changes nothing. No alert.
+
+**Not a recipe (M3-5, `15` RV-32).** A reading with no ingredient carrying an amount or unit, or
+with most of its lines not found on the page, gets the whole-recipe line S-52m.
 
 ### 4.5 The recipe in Files (`recipe.md`, M3)
 
@@ -322,6 +339,11 @@ Every string she reads in M2. Pops approves or rewrites each; the agent pastes t
 | S-70 | Recipe ⋯ menu, starts Edit (SC-20) | Edit *(approved)* |
 | S-71 | Library section, scans not read yet (SC-21) | New Scans *(approved)* |
 | S-72 | Edit, the Pages section's heading (§4.6, M3-3b) | Pages *(approved)* |
+| S-74 | Several recipes, the button on S-52i's line (SC-22, M3-5) | Choose Recipes *(proposed)* |
+| S-75 | Several recipes, the sheet's title (SC-22) | Recipes on This Page *(proposed)* |
+| S-76 | Several recipes, the line under the list (SC-22) | Each one you keep becomes its own recipe. *(proposed)* |
+| S-77 | Several recipes, the button at the bottom of the sheet (SC-22) | It's All One Recipe *(proposed)* |
+| S-73 | Read again from ⋯, alert message, when she has edited the recipe (`15` RV-33, M3-3c) | Reading the pages again replaces your edits to this recipe. *(proposed)* |
 | S-41 | Camera permission (`NSCameraUsageDescription`, iOS's own prompt) | Sylantro uses the camera to photograph the pages of your recipes. *(approved: Pops, 23 Nov 2026, decision card "Photograph binder pages")* |
 
 ---
@@ -350,6 +372,7 @@ Every string she reads in M2. Pops approves or rewrites each; the agent pastes t
 | SC-20 | The recipe screen's toolbar | **Ruled: only ⋯.** Edit and Add Page move into ⋯ (with View Pages and Delete Recipe); in Edit the toolbar is Done only. Pops, 24 Nov 2026: "I think the add page toolbar button can be in the menu. Not needed much after initial scan. Same for edit button. Less clutter." |
 | SC-21 | Where scans still being read sit in the library | **Ruled: their own section on top.** Waiting, reading and couldn't-read scans sit under S-71 above Needs Review, newest first; read, they move to Needs Review. Pops, 24 Nov 2026: "Seems like new scans should be in their own section at the top of the list." Then decision card, "Own section on top: New Scans" |
 | SC-15 | When dish photos come (05 P-1), for the hero of SC-14 | **Ruled: after M3, as P-1 says.** Until then a read recipe, once reviewed, starts at its title with no photo at the top; the scans are under ⋯ (View Pages, S-62). Pops, 24 Nov 2026 (decision card, "After M3, as P-1 says") |
+| SC-22 | Where she picks the recipes on a page (`15` RV-14) | **Proposed:** a Choose Recipes button on the "may hold other recipes" line opens a sheet listing every title found, all checked; ✓ keeps the checked ones, each its own recipe; It's All One Recipe clears the line for good (§4.4). *Other:* the list shown in the review screen itself, under the title, with no sheet *(rec. the sheet: it matches the edit sheet, and the review screen stays as it is)* |
 | SC-13 | M3-4's copy | **Ruled: as drafted.** S-54 to S-59 approved. Pops, 24 Nov 2026 (decision card, "As drafted") |
 | SC-12 | M3's copy | **Ruled: as drafted.** S-44 to S-53 approved. Pops, 24 Nov 2026 (decision card, "As drafted") |
 
@@ -361,6 +384,8 @@ When Pops rules, the rulings are filed in the ledger at this document's close-ou
 
 | Version | Decision | Rationale |
 |---|---|---|
+| 0.40 | §4.4: several recipes on a page drawn (SC-22 proposed, S-74 to S-77 proposed) and the not-a-recipe line placed | `15` RV-14, RV-35, RV-36 (Pops, 25 Nov 2026, decision cards "Model list, join adjacent lines", "Each gets its own copy") |
+| 0.39 | §4.2: Read Again in ⋯; S-73 proposed; a line is zoomed at most 2.5× (`15` RV-33, M3-3c) | Pops, 24 Nov 2026, after a screen recording of M3-3b (decision card, "Both, as task M3-3c") |
 | 0.38 | S-72 "Pages" approved: the heading of Edit's Pages section (§4.6), for M3-3b | M3-4 note a; Pops, 24 Nov 2026: "sure add the heading in 3b" |
 | 0.37 | S-52m proposed: the not-a-recipe flag for M3-5 | `15` RV-32 ruled; Pops, 24 Nov 2026 |
 | 0.36 | S-63 to S-69 and S-71 approved as drafted | Pops, 24 Nov 2026: "Yes" |

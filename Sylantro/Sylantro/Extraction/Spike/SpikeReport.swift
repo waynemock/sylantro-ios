@@ -60,4 +60,24 @@ nonisolated struct SpikeCaptureResult: Codable, Sendable {
     var otherTitles: [String]
     /// The lines the header step showed the model, each with its text and size (`15` M3-1).
     var headerArea: [HeaderArea.HeaderLine]
+
+    /// One piece of a capture cut by its titles, structured on its own (`15` M3-5s, RV-35).
+    nonisolated struct Piece: Codable, Sendable, Equatable {
+        var title: String
+        var ingredientCount: Int
+        var stepCount: Int
+        var warnings: [String]
+        /// The piece's structuring time, its parts' times added.
+        var millis: Int
+    }
+
+    /// The titles found by type size (`PageTitles.bigType`), and by the model (`TitleLister`) with
+    /// how many it gave that weren't on the page; nil in a result from before M3-5s or when that way
+    /// didn't run.
+    var titlesBigType: [String]?
+    var titlesModel: [String]?
+    var titlesModelDropped: Int?
+    /// With two or more titles, the capture cut by them and each piece structured on its own.
+    var piecesBigType: [Piece]?
+    var piecesModel: [Piece]?
 }

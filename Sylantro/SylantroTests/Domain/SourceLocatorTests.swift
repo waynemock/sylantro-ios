@@ -138,4 +138,41 @@ struct SourceLocatorTests {
         recipe.title = "Simmer the Test Soup"
         #expect(SourceLocator.locate(recipe, lines: lines).titleBox == nil)
     }
+
+    // MARK: Every line placed (`15` M3-3d, RV-34)
+
+    @Test("the times are placed")
+    func timesArePlaced() {
+        let lines = Self.lines(["Test Soup", "Active Time: 1 hr", "Total Time: 3 hrs 25 mins", "1 cup water"])
+        var recipe = Self.recipe(ingredients: ["1 cup water"])
+        recipe.times = Times(rawText: "Active Time: 1 hr; Total Time: 3 hrs 25 mins")
+
+        let located = SourceLocator.locate(recipe, lines: lines)
+
+        // One box, the union of the two times lines.
+        #expect(located.fieldBoxes[Recipe.FieldBoxKey.times]
+            == SourceBox(pageID: Self.page1, x: 0.125, y: 0.1875, width: 0.5, height: 0.125))
+    }
+
+    @Test("the yield is placed")
+    func yieldIsPlaced() {
+        let lines = Self.lines(["Test Soup", "Yield: 3 dozen", "1 cup water"])
+        var recipe = Self.recipe(ingredients: ["1 cup water"])
+        recipe.yield = Yield(rawText: "Yield: 3 dozen")
+
+        let located = SourceLocator.locate(recipe, lines: lines)
+
+        #expect(located.fieldBoxes[Recipe.FieldBoxKey.yield] == lines[1].box)
+    }
+
+    @Test("a group's name is placed")
+    func groupNameIsPlaced() {
+        let lines = Self.lines(["Test Soup", "Kolaches:", "1 Tbsp. made-up yeast"])
+        var recipe = Self.recipe(ingredients: ["1 Tbsp. made-up yeast"])
+        recipe.ingredientGroups[0].name = "Kolaches"
+
+        let located = SourceLocator.locate(recipe, lines: lines)
+
+        #expect(located.ingredientGroups[0].nameBox == lines[1].box)
+    }
 }

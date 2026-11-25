@@ -264,6 +264,11 @@ import UIKit
                 result.unreadableLines = result.readings.reduce(0) { count, reading in
                     count + reading.lines.filter { !ScriptCheck.isLatin($0.text) }.count
                 }
+                // RV-35: each way of finding the page's titles, and the pieces they cut it into.
+                await findTitles(&result, pageIDs: pageIDs)
+                guard isCapture(captureID, at: index) else {
+                    return
+                }
                 captures[index].status = .done
                 log.info(self, "capture \(index): done, \(result.recipes.count) recipe(s)")
             } catch where RecipeStructurer.isRateLimit(error) {
@@ -298,6 +303,94 @@ import UIKit
             break
         }
         captures[index].result = result
+    }
+
+    // MARK: Titles on a page (`15` M3-5s, RV-35)
+
+    /// Both ways of finding a capture's recipe titles, side by side: by type size
+    /// (`PageTitles.bigType`) and by the model (`TitleLister`). With two or more titles, the capture
+    /// is cut by them (`PageTitles.cut`) and each piece structured on its own. A failure here is
+    /// recorded in `partErrors` and doesn't fail the capture.
+    private func findTitles(_ result: inout SpikeCaptureResult, pageIDs: [UUID]) async {
+        // The structurer's readable lines, page by page (SLT-150).
+        let pages = result.readings.map { $0.lines.filter { ScriptCheck.isLatin($0.text) } }
+
+        let bigType = PageTitles.bigType(pages.map { $0.map { (text: $0.text, height: $0.box.height) } })
+        result.titlesBigType = bigType.map(\.text)
+        result.piecesBigType = await pieces(bigType, pages: pages, pageIDs: pageIDs, way: "bigType",
+                                            errors: &result.partErrors)
+
+        do {
+            let answer = try await TitleLister.titles(numberedLines: pages.flatMap { $0.map(\.text) })
+            result.titlesModel = answer.titles
+            result.titlesModelDropped = answer.dropped
+            result.piecesModel = await pieces(Self.positions(of: answer.titles, in: pages), pages: pages,
+                                              pageIDs: pageIDs, way: "model", errors: &result.partErrors)
+        } catch {
+            result.partErrors["titles model"] = String(describing: error)
+        }
+        log.info(self, "titles: \(result.titlesBigType?.count ?? 0) by type size, \(result.titlesModel?.count ?? 0) by the model")
+    }
+
+    /// The capture cut by `titles` and each piece structured on its own, from its own lines only
+    /// (the other lines left out, each page kept so the page IDs line up); nil with fewer than two
+    /// titles. A piece that fails is left out and recorded in `errors`.
+    private func pieces(_ titles: [PageTitles.Found], pages: [[PageReading.ReadLine]], pageIDs: [UUID],
+                        way: String, errors: inout [String: String]) async -> [SpikeCaptureResult.Piece]? {
+        let cuts = PageTitles.cut(lineCount: pages.map(\.count), titles: titles)
+        guard !cuts.isEmpty else { return nil }
+        var pieces: [SpikeCaptureResult.Piece] = []
+        for (offset, cut) in cuts.enumerated() {
+            let readings = pages.enumerated().map { pageIndex, lines in
+                PageReading(lines: lines.enumerated().filter { lineIndex, _ in
+                    Self.isInside((pageIndex, lineIndex), from: cut.from, to: cut.to)
+                }.map(\.element))
+            }
+            do {
+                let outcome = try await structurer.structure(readings, pageIDs: pageIDs)
+                let recipe = outcome.recipes.first
+                pieces.append(SpikeCaptureResult.Piece(
+                    title: titles[offset].text,
+                    ingredientCount: recipe?.ingredientGroups.flatMap(\.ingredients).count ?? 0,
+                    stepCount: recipe?.steps.count ?? 0,
+                    warnings: recipe?.extraction?.warnings ?? [],
+                    millis: outcome.partMillis.values.reduce(0, +)
+                ))
+            } catch {
+                errors["pieces \(way) \(offset + 1)"] = String(describing: error)
+            }
+        }
+        return pieces
+    }
+
+    /// Where the model's titles are: the first line, or two adjacent lines on one page, that each
+    /// equals (normalized), in reading order; a title already placed, or not found, is left out.
+    private static func positions(of titles: [String], in pages: [[PageReading.ReadLine]]) -> [PageTitles.Found] {
+        var found: [PageTitles.Found] = []
+        for title in titles {
+            let target = TextMatch.normalize(title)
+            search: for (pageIndex, lines) in pages.enumerated() {
+                for lineIndex in lines.indices {
+                    let one = TextMatch.normalize(lines[lineIndex].text)
+                    let two = lineIndex + 1 < lines.count
+                        ? TextMatch.normalize(lines[lineIndex].text + " " + lines[lineIndex + 1].text) : nil
+                    let lastLine: Int? = one == target ? lineIndex : (two == target ? lineIndex + 1 : nil)
+                    if let lastLine {
+                        if !found.contains(where: { $0.page == pageIndex && $0.firstLine == lineIndex }) {
+                            found.append((pageIndex, lineIndex, lastLine, title))
+                        }
+                        break search
+                    }
+                }
+            }
+        }
+        return found.sorted { ($0.page, $0.firstLine) < ($1.page, $1.firstLine) }
+    }
+
+    /// Whether `position` is from `from` to `to`, both included, in page then line order.
+    private static func isInside(_ position: (page: Int, line: Int), from: (page: Int, line: Int),
+                                 to: (page: Int, line: Int)) -> Bool {
+        !(position < from) && !(to < position)
     }
 
     /// The outcome's part times, part errors, retries, fallbacks, line-label use, header title,

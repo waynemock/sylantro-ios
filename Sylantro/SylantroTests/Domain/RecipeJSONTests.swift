@@ -159,6 +159,23 @@ struct RecipeJSONTests {
         #expect(decoded == Self.full)
     }
 
+    @Test("older recipes read")
+    func olderRecipesReadWithoutFieldBoxes() throws {
+        // A recipe from before M3-3d (RV-34): no `fieldBoxes`, and groups with no `nameBox`.
+        var object = try #require(try JSONSerialization.jsonObject(with: RecipeJSON.encode(Self.full)) as? [String: Any])
+        object.removeValue(forKey: "fieldBoxes")
+        let groups = try #require(object["ingredientGroups"] as? [[String: Any]])
+        object["ingredientGroups"] = groups.map { group in group.filter { $0.key != "nameBox" } }
+        let data = try JSONSerialization.data(withJSONObject: object)
+        #expect(!(String(data: data, encoding: .utf8) ?? "").contains("fieldBoxes"))
+
+        let decoded = try RecipeJSON.decode(data)
+
+        #expect(decoded.fieldBoxes.isEmpty)
+        #expect(decoded.ingredientGroups.allSatisfy { $0.nameBox == nil })
+        #expect(decoded == Self.full)
+    }
+
     @Test("a file with only an id reads with every default")
     func onlyAnIDReadsWithDefaults() throws {
         let json = #"{"id":"8D5E1B3C-2F4A-4B6E-9C1D-7A8B9C0D1E2F"}"#

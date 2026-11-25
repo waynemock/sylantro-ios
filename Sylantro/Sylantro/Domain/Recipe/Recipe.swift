@@ -11,6 +11,10 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
     /// Where the title is on the page (`15` RV-31, M3-3a), as ingredients and steps carry theirs;
     /// nil when not placed, as in every recipe read before M3-3a.
     var titleBox: SourceBox?
+    /// Where the other lines are on the page (`15` RV-34, M3-3d), by `FieldBoxKey`: the yield,
+    /// times, notes, nutrition, each equipment item and each source line. Empty for a recipe read
+    /// before M3-3d.
+    var fieldBoxes: [String: SourceBox]
     var yield: Yield?
     var times: Times?
     var ingredientGroups: [IngredientGroup]
@@ -41,6 +45,7 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
         schemaVersion: Int = Recipe.currentSchemaVersion,
         title: String = "",
         titleBox: SourceBox? = nil,
+        fieldBoxes: [String: SourceBox] = [:],
         yield: Yield? = nil,
         times: Times? = nil,
         ingredientGroups: [IngredientGroup] = [],
@@ -63,6 +68,7 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
         self.schemaVersion = schemaVersion
         self.title = title
         self.titleBox = titleBox
+        self.fieldBoxes = fieldBoxes
         self.yield = yield
         self.times = times
         self.ingredientGroups = ingredientGroups
@@ -89,6 +95,7 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
         schemaVersion = try container.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? Recipe.currentSchemaVersion
         title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
         titleBox = try container.decodeIfPresent(SourceBox.self, forKey: .titleBox)
+        fieldBoxes = try container.decodeIfPresent([String: SourceBox].self, forKey: .fieldBoxes) ?? [:]
         yield = try container.decodeIfPresent(Yield.self, forKey: .yield)
         times = try container.decodeIfPresent(Times.self, forKey: .times)
         ingredientGroups = try container.decodeIfPresent([IngredientGroup].self, forKey: .ingredientGroups) ?? []
@@ -106,5 +113,24 @@ nonisolated struct Recipe: Codable, Sendable, Equatable {
         createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
         updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? Date()
         parentRecipeID = try container.decodeIfPresent(UUID.self, forKey: .parentRecipeID)
+    }
+}
+
+extension Recipe {
+    /// `fieldBoxes`' keys (`15` M3-3d): equipment items and source lines are numbered from 0, in
+    /// the order the screen shows them (`equipment`, and `RecipeRendering.sourceLines`).
+    nonisolated enum FieldBoxKey {
+        static let yield = "yield"
+        static let times = "times"
+        static let notes = "notes"
+        static let nutrition = "nutrition"
+
+        static func equipment(_ index: Int) -> String {
+            "equipment.\(index)"
+        }
+
+        static func source(_ index: Int) -> String {
+            "source.\(index)"
+        }
     }
 }

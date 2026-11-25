@@ -3,7 +3,8 @@ import Foundation
 /// Where the title and each ingredient and step are on the page (`15` M3-1, M3-3a): its text
 /// matched to a run of the capture's readable lines, so review can show it on the photo (RV-11,
 /// RV-31). A step that runs onto the next page is placed by its part on the first (RV-30); a title
-/// or an ingredient stays within one page.
+/// or an ingredient stays within one page. Every other line she sees (the yield, times, notes,
+/// nutrition, equipment, source lines and group names) is placed by its parts (RV-34, M3-3d).
 nonisolated enum SourceLocator {
     /// One readable line of a capture, in reading order, its box already on its page.
     nonisolated struct Line: Sendable, Equatable {
@@ -14,6 +15,8 @@ nonisolated enum SourceLocator {
     static let maximumIngredientRun = 4
     static let maximumStepRun = 15
     static let maximumTitleRun = 3
+    /// The most lines one part of a field (RV-34) runs over.
+    static let maximumFieldPartRun = 4
 
     /// `recipe` with a `sourceBox` on every ingredient and step that has none and is found in
     /// `lines`, and its `titleBox` when it has none and its title isn't empty. Nothing else
@@ -26,6 +29,31 @@ nonisolated enum SourceLocator {
         if recipe.titleBox == nil, !recipe.title.isEmpty {
             recipe.titleBox = find(recipe.title, in: lines, from: 0, maximum: maximumTitleRun,
                                    equalsOnly: true)?.box
+        }
+
+        // Every other line she sees (RV-34): the yield, times, notes, nutrition, each equipment
+        // item, each source line and each group's name, each by its parts.
+        var fields: [(key: String, text: String?)] = [
+            (Recipe.FieldBoxKey.yield, recipe.yield.flatMap(RecipeRendering.yieldLine)),
+            (Recipe.FieldBoxKey.times, recipe.times.flatMap(RecipeRendering.timesLine)),
+            (Recipe.FieldBoxKey.notes, recipe.notes),
+            (Recipe.FieldBoxKey.nutrition, recipe.printedNutrition),
+        ]
+        for (index, item) in recipe.equipment.enumerated() {
+            fields.append((Recipe.FieldBoxKey.equipment(index), item))
+        }
+        for (index, line) in RecipeRendering.sourceLines(recipe.attribution).enumerated() {
+            fields.append((Recipe.FieldBoxKey.source(index), line))
+        }
+        for field in fields where recipe.fieldBoxes[field.key] == nil {
+            if let text = field.text, let box = fieldBox(text, in: lines) {
+                recipe.fieldBoxes[field.key] = box
+            }
+        }
+        for groupIndex in recipe.ingredientGroups.indices where recipe.ingredientGroups[groupIndex].nameBox == nil {
+            if let name = recipe.ingredientGroups[groupIndex].name, let box = fieldBox(name, in: lines) {
+                recipe.ingredientGroups[groupIndex].nameBox = box
+            }
         }
 
         // Ingredients: every group's, in recipe order, with one cursor.
@@ -95,6 +123,21 @@ nonisolated enum SourceLocator {
             }
         }
         return nil
+    }
+
+    /// A field's place (RV-34): its text split into parts at `;` and line breaks, trimmed, empty
+    /// ones dropped; each part found as a run of up to `maximumFieldPartRun` lines (equal, else
+    /// contains, as `find`); the union of the parts found on the first found part's page. Nil
+    /// when no part is found.
+    private static func fieldBox(_ text: String, in lines: [Line]) -> SourceBox? {
+        let parts = text.split(whereSeparator: { $0 == ";" || $0.isNewline })
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        let found = parts.compactMap { find($0, in: lines, from: 0, maximum: maximumFieldPartRun)?.box }
+        guard let first = found.first else { return nil }
+        let samePage = found.filter { $0.pageID == first.pageID }
+        let lineBoxes = samePage.map { Line(text: "", box: $0) }
+        return union(lineBoxes[...])
     }
 
     /// The smallest box holding every line's box, on the run's page.

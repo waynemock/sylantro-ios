@@ -298,8 +298,9 @@ nonisolated struct RecipeStructurer: Sendable {
 
     // MARK: Prompts
 
-    /// Each line as `<n>: <text>`, numbered from 1.
-    private static func numbered(_ lines: [String]) -> String {
+    /// Each line as `<n>: <text>`, numbered from 1. Not private: the spike's `TitleLister` numbers
+    /// lines the same way (`15` M3-5s).
+    static func numbered(_ lines: [String]) -> String {
         lines.enumerated().map { "\($0.offset + 1): \($0.element)" }.joined(separator: "\n")
     }
 

@@ -67,6 +67,8 @@ struct RecipeView: View {
     /// Its pages changed and it isn't read again yet (RV-7).
     @State private var needsReadAgain = false
     @State private var isAskingReadAgain = false
+    /// Read Again from ⋯ on a recipe she edited (RV-33, S-73).
+    @State private var isAskingReadAgainFromMenu = false
     /// Add Page saved pages: RV-7 runs once the camera has closed.
     @State private var pagesWereAdded = false
     /// She has tapped a line, so S-61's hint no longer shows on this device (SC-16): device-only,
@@ -151,6 +153,13 @@ struct RecipeView: View {
                                 viewedPage = ViewedPage(startPageID: recipe.sourcePageIDs.first, box: nil)
                             }
                         }
+                        // Read Again (S-59, RV-33), once read; not while the queue is reading it.
+                        if recipe.extraction != nil {
+                            Button { readAgainFromMenu(recipe) } label: {
+                                Label("Read Again", systemImage: "arrow.clockwise")
+                            }
+                            .disabled(captureRecorder == nil || extractionQueue?.currentRecipeID == recipe.id)
+                        }
                         Divider()
                         Button("Delete Recipe", role: .destructive) { isConfirmingDelete = true }
                             .disabled(recipeEditor == nil)
@@ -198,6 +207,13 @@ struct RecipeView: View {
             Button("Keep My Edits", role: .cancel) { needsReadAgain = false }
         } message: {
             Text("The pages changed. Reading them again replaces your edits to this recipe.")
+        }
+        // RV-33: Read Again from ⋯ on a recipe she edited (S-57, S-73, S-59).
+        .alert("Read the Pages Again?", isPresented: $isAskingReadAgainFromMenu) {
+            Button("Read Again") { readAgainAfterAsking() }
+            Button("Keep My Edits", role: .cancel) {}
+        } message: {
+            Text("Reading the pages again replaces your edits to this recipe.")
         }
         .fullScreenCover(isPresented: $isAddingPages, onDismiss: pagesAddedCameraClosed) {
             if let captureRecorder {
@@ -500,10 +516,10 @@ struct RecipeView: View {
             if isEditing {
                 editRow(.yield, recipe, emptyWord: "Serves") { Text(verbatim: $0) }
             } else if let yield = recipe.yield.flatMap(RecipeRendering.yieldLine) {
-                Text(verbatim: yield)
+                placedLine(recipe.fieldBoxes[Recipe.FieldBoxKey.yield], recipe) { Text(verbatim: yield) }
             }
             if let times = recipe.times.flatMap(RecipeRendering.timesLine) {
-                Text(verbatim: times)
+                placedLine(recipe.fieldBoxes[Recipe.FieldBoxKey.times], recipe) { Text(verbatim: times) }
                     .dimmed(isEditing)
             }
         }
@@ -549,9 +565,11 @@ struct RecipeView: View {
                 listFlagLines(listFlags)
                 ForEach(recipe.ingredientGroups, id: \.id) { group in
                     if let name = group.name, !name.isEmpty {
-                        Text(verbatim: name)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
+                        placedLine(group.nameBox, recipe) {
+                            Text(verbatim: name)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
                     }
                     ForEach(group.ingredients, id: \.id) { ingredient in
                         let ingredientFlags = flags(all, on: .ingredient(ingredient.id))
@@ -620,7 +638,7 @@ struct RecipeView: View {
         } else if recipe.notes?.isEmpty == false || !notesFlags.isEmpty {
             Section {
                 if let notes = recipe.notes, !notes.isEmpty {
-                    Text(verbatim: notes)
+                    placedLine(recipe.fieldBoxes[Recipe.FieldBoxKey.notes], recipe) { Text(verbatim: notes) }
                         .flaggedRow(notesFlags)
                 }
                 listFlagLines(notesFlags)
@@ -635,8 +653,8 @@ struct RecipeView: View {
         let equipmentFlags = flags(all, on: .equipment)
         if !recipe.equipment.isEmpty || !equipmentFlags.isEmpty {
             Section {
-                ForEach(Array(recipe.equipment.enumerated()), id: \.offset) { _, item in
-                    Text(verbatim: item)
+                ForEach(Array(recipe.equipment.enumerated()), id: \.offset) { index, item in
+                    placedLine(recipe.fieldBoxes[Recipe.FieldBoxKey.equipment(index)], recipe) { Text(verbatim: item) }
                         .dimmed(isEditing)
                         .flaggedRow(equipmentFlags)
                 }
@@ -653,7 +671,7 @@ struct RecipeView: View {
         if recipe.printedNutrition?.isEmpty == false || !nutritionFlags.isEmpty {
             Section {
                 if let nutrition = recipe.printedNutrition, !nutrition.isEmpty {
-                    Text(verbatim: nutrition)
+                    placedLine(recipe.fieldBoxes[Recipe.FieldBoxKey.nutrition], recipe) { Text(verbatim: nutrition) }
                         .dimmed(isEditing)
                         .flaggedRow(nutritionFlags)
                 }
@@ -670,15 +688,18 @@ struct RecipeView: View {
         let author = recipe.attribution?.author.flatMap(Self.nonEmpty)
         let publisher = recipe.attribution?.publisher.flatMap(Self.nonEmpty)
         let address = recipe.attribution?.sourceURL.flatMap(Self.nonEmpty)
+        // Each line's place is `source.‹n›`, n its place among the lines shown (RV-34).
+        let authorIndex = 0
+        let publisherIndex = author == nil ? 0 : 1
         if author != nil || publisher != nil || address != nil || !sourceFlags.isEmpty {
             Section {
                 if let author {
-                    Text(verbatim: author)
+                    placedLine(recipe.fieldBoxes[Recipe.FieldBoxKey.source(authorIndex)], recipe) { Text(verbatim: author) }
                         .dimmed(isEditing)
                         .flaggedRow(sourceFlags)
                 }
                 if let publisher {
-                    Text(verbatim: publisher)
+                    placedLine(recipe.fieldBoxes[Recipe.FieldBoxKey.source(publisherIndex)], recipe) { Text(verbatim: publisher) }
                         .dimmed(isEditing)
                         .flaggedRow(sourceFlags)
                 }
@@ -764,12 +785,13 @@ struct RecipeView: View {
         draft = draft.removing(closed.field)
     }
 
-    /// The field's place on the page: the title's, an ingredient's or a step's; none for Serves,
-    /// Notes or a new row.
+    /// The field's place on the page: the title's, Serves' or Notes' (RV-34), an ingredient's or a
+    /// step's; none for a new row.
     private func fieldBox(_ field: ReviewEdit.Field, _ recipe: Recipe) -> SourceBox? {
         switch field {
         case .title: recipe.titleBox
-        case .yield, .notes: nil
+        case .yield: recipe.fieldBoxes[Recipe.FieldBoxKey.yield]
+        case .notes: recipe.fieldBoxes[Recipe.FieldBoxKey.notes]
         case .ingredient(let id): recipe.ingredientGroups.lazy.flatMap(\.ingredients).first { $0.id == id }?.sourceBox
         case .step(let id): recipe.steps.first { $0.id == id }?.sourceBox
         }
@@ -788,6 +810,18 @@ struct RecipeView: View {
         case .notes: "Notes"
         case .ingredient: "Ingredient"
         case .step(let id): "Step \(stepNumber(id))"
+        }
+    }
+
+    /// One of the other lines (RV-34): outside Edit, tapped to see its place on the page as any
+    /// line is; in Edit, as read.
+    @ViewBuilder
+    private func placedLine<Content: View>(_ box: SourceBox?, _ recipe: Recipe,
+                                           @ViewBuilder label: () -> Content) -> some View {
+        if isEditing {
+            label()
+        } else {
+            tappableLine(box, recipe, label: label)
         }
     }
 
@@ -889,7 +923,17 @@ struct RecipeView: View {
         needsReadAgain = false
     }
 
-    /// Read Again at RV-7's question.
+    /// Read Again in ⋯ (RV-33): at once, or after asking (S-73) when she has edited the recipe. A
+    /// failed read again shows S-14.
+    private func readAgainFromMenu(_ recipe: Recipe) {
+        if recipe.reviewState == .edited {
+            isAskingReadAgainFromMenu = true
+            return
+        }
+        readAgainAfterAsking()
+    }
+
+    /// Read Again at RV-7's or RV-33's question.
     private func readAgainAfterAsking() {
         do {
             try readAgain()
@@ -1287,8 +1331,8 @@ private struct PageStrip: View {
     }
 
     /// Where the page is drawn in the strip. Open, or a page shown whole: fitted and centered. A
-    /// selected line: zoomed so it fills the width less the margins (never smaller than the width),
-    /// centered on the line within the page's edges. Otherwise: the page's width, from its top.
+    /// selected line: zoomed so it fills the width less the margins, never smaller than the width
+    /// nor past `LineZoom.maximum` (RV-33), centered on the line within the page's edges. Otherwise: the page's width, from its top.
     private func pageFrame(in size: CGSize) -> CGRect {
         guard size.width > 0, size.height > 0 else { return .zero }
         let ratio = aspectRatio
@@ -1300,7 +1344,8 @@ private struct PageStrip: View {
         guard let box = selectedBox, box.pageID == photo?.sourcePageID, box.width > 0 else {
             return CGRect(x: 0, y: 0, width: size.width, height: size.width / ratio)
         }
-        let zoom = max(1, (size.width - 2 * Self.margin) / (box.width * size.width))
+        // At most `LineZoom.maximum`, the line centered with the page around it (RV-33).
+        let zoom = CGFloat(LineZoom.scale(boxWidth: box.width, viewWidth: size.width, margin: Self.margin))
         let width = size.width * zoom
         let height = width / ratio
         let midX = (box.x + box.width / 2) * width

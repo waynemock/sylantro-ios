@@ -39,4 +39,26 @@ struct SpikeRunnerTests {
         #expect(area[0]["text"] as? String == "Test Soup")
         #expect(area[0]["size"] as? Double == 2.0)
     }
+
+    @Test("older results read")
+    func olderResultsRead() throws {
+        // A result from before M3-5s: none of the title fields.
+        let result = SpikeCaptureResult(
+            fileNames: ["TP-01.jpeg"], readings: [], readMillis: [], bottomReadMillis: nil, bottomText: nil,
+            structureMillis: nil, recipes: [], error: nil, path: nil, partMillis: [:], usedLineLabels: false,
+            partErrors: [:], waits: 0, warnings: [], retried: [], fallbacks: [], unreadableLines: 0,
+            rateLimitRetries: 0, headerTitle: nil, modelTitle: nil, otherTitles: [], headerArea: []
+        )
+        let data = try JSONEncoder().encode(result)
+        let json = try #require(String(data: data, encoding: .utf8))
+        #expect(!json.contains("titlesBigType") && !json.contains("piecesModel"))
+
+        let decoded = try JSONDecoder().decode(SpikeCaptureResult.self, from: data)
+
+        #expect(decoded.titlesBigType == nil)
+        #expect(decoded.titlesModel == nil)
+        #expect(decoded.titlesModelDropped == nil)
+        #expect(decoded.piecesBigType == nil)
+        #expect(decoded.piecesModel == nil)
+    }
 }
