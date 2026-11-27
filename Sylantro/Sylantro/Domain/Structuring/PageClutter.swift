@@ -3,6 +3,7 @@ import Foundation
 /// Lines that belong to no section of a recipe (SLT-149): a web address line, "Page n of m", or a
 /// printed date, as a browser prints them at a page's top and foot.
 nonisolated enum PageClutter {
+    /// Also a line with a web address anywhere in it, as a misread footer gives it (`15` M3-3m).
     static func isClutter(_ line: String) -> Bool {
         let text = line.trimmingCharacters(in: .whitespacesAndNewlines)
         if let firstToken = text.split(whereSeparator: \.isWhitespace).first {
@@ -14,7 +15,21 @@ nonisolated enum PageClutter {
         if PageRules.pageOf(text) != nil {
             return true
         }
+        if text.split(separator: " ").contains(where: { isWebAddressWord(String($0)) }) {
+            return true
+        }
         return startsWithDate(text)
+    }
+
+    /// A word, its trailing punctuation ignored, that is `www`, starts with `www.`, contains
+    /// `.com/`, or ends with `.com`, `.org` or `.net` (M3-3m).
+    private static func isWebAddressWord(_ word: String) -> Bool {
+        var word = word.lowercased()
+        while let last = word.unicodeScalars.last, CharacterSet.punctuationCharacters.contains(last) {
+            word.removeLast()
+        }
+        return word == "www" || word.hasPrefix("www.") || word.contains(".com/")
+            || word.hasSuffix(".com") || word.hasSuffix(".org") || word.hasSuffix(".net")
     }
 
     /// 1 or 2 digits, `/`, 1 or 2 digits, `/`, 2 or 4 digits.

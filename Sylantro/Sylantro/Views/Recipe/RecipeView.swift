@@ -141,8 +141,8 @@ struct RecipeView: View {
                     // In Edit, only iOS's Done (S-50, SC-20), which ends Edit and saves.
                     EditButton()
                 } else {
-                    // Only ⋯ (SC-20), the symbol alone: iOS gives it its own label (MT-11).
-                    Menu {
+                    // Only ⋯ (SC-20): SyLib's `MoreMenu`, as the library's (SLT-161).
+                    MoreMenu(look: .toolbar, accessibilityLabel: "More") {
                         // Edit (S-70), once read; `beginEditing` runs from `onChange`.
                         if recipe.extraction != nil {
                             Button { editMode = .active } label: { Label("Edit", systemImage: "pencil") }
@@ -165,8 +165,6 @@ struct RecipeView: View {
                         Divider()
                         Button("Delete Recipe", role: .destructive) { isConfirmingDelete = true }
                             .disabled(recipeEditor == nil)
-                    } label: {
-                        IconButton("ellipsis.circle", context: .toolbar)
                     }
                     .appTextSizeCap()
                 }
@@ -533,9 +531,7 @@ struct RecipeView: View {
                     Label("Continues on a page not scanned", systemImage: "exclamationmark.triangle")
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Button("That's All of It") { dismissPageTwoWarning() }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
+                    CapsuleButton("That's All of It", size: .small) { dismissPageTwoWarning() }
                         .disabled(recipeEditor == nil)
                 }
             }

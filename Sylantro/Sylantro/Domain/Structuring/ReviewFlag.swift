@@ -59,6 +59,7 @@ nonisolated struct ReviewFlag: Sendable, Equatable {
     private static let notOnPageIngredient = "not on page: ingredient "
     private static let putBackIngredient = "put back: ingredient "
     private static let notOnPageStep = "not on page: step "
+    private static let putBackStep = "put back: step "
     private static let unusedIngredientLine = "unused ingredient line "
     private static let otherRecipes = "may hold other recipes: "
     private static let unreadableLine = "unreadable line on page "
@@ -114,6 +115,10 @@ nonisolated struct ReviewFlag: Sendable, Equatable {
         }
         if let n = number(after: notOnPageIngredient, in: warning) {
             return ReviewFlag(kind: .notOnPage, field: ingredientIDs[n].map(Field.ingredient) ?? .ingredients)
+        }
+        if let n = number(after: putBackStep, in: warning) {
+            let field: Field = recipe.steps.indices.contains(n - 1) ? .step(recipe.steps[n - 1].id) : .steps
+            return ReviewFlag(kind: .putBack, field: field)
         }
         if let n = number(after: notOnPageStep, in: warning) {
             let field: Field = recipe.steps.indices.contains(n - 1) ? .step(recipe.steps[n - 1].id) : .steps

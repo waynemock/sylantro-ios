@@ -2,9 +2,9 @@
 
 **A Syzygy Softwerks task document · every saved page read and structured behind her, and a review
 where she checks each recipe against its photo**
-Version 0.73 · 25 November 2026 · **Draft: the task plan (RV-1), flags (RV-10), the test set's four
+Version 0.98 · 27 November 2026 · **Draft: the task plan (RV-1), flags (RV-10), the test set's four
 proposals (RV-18) the spike leftovers (RV-19) the device-only store (RV-2) which device reads (RV-3) how a reading is kept (RV-4) no background work (RV-5) reading M2's recipes (RV-6) and her edits on a page change (RV-7) where review lives (RV-8) the review layout (RV-9) tap-to-highlight (RV-11) what she edits (RV-12) Looks Good (RV-13) and where the screens are drawn (RV-21) are ruled; the rest of RV-2 to RV-22 is open.
-**M3-1 complete** (123 tests; run 7 scored). **M3-2 complete** (142 tests). **M3-2a complete** (149 tests); **M3-3 complete** (163 tests); **M3-4 complete** (172 tests); **M3-3a complete** (181 tests); **M3-3b complete** (184 tests); **M3-3c complete** (187 tests); **M3-3d complete** (191 tests); **M3-5s complete** (197 tests); run 8 scored (`10` §7), the model's title list kept (RV-35); RV-36 ruled (own copy); **M3-3e complete** (199 tests); **M3-3f complete** (202 tests); **M3-3g complete** (209 tests); **M3-3h complete** (206 tests); **M3-3i complete** (209 tests); the kolaches device check after M3-3e to M3-3i passed on iPhone (iPad open); run 9 scored (same as run 8); RV-39 ruled: steps, then titles, then units; **M3-3j written** (steps in the page's own words, 216 tests); **M3-5 written, on hold** until single-recipe reading works better (Pops, 25 Nov 2026), waiting on `13`'s SC-22 and S-74 to S-77; RV-37 ruled (M3-5a, marking a missed line, after M3-5); Pops's device checks to run.** The questions in §3 are
+**M3-1 complete** (123 tests; run 7 scored). **M3-2 complete** (142 tests). **M3-2a complete** (149 tests); **M3-3 complete** (163 tests); **M3-4 complete** (172 tests); **M3-3a complete** (181 tests); **M3-3b complete** (184 tests); **M3-3c complete** (187 tests); **M3-3d complete** (191 tests); **M3-5s complete** (197 tests); run 8 scored (`10` §7), the model's title list kept (RV-35); RV-36 ruled (own copy); **M3-3e complete** (199 tests); **M3-3f complete** (202 tests); **M3-3g complete** (209 tests); **M3-3h complete** (206 tests); **M3-3i complete** (209 tests); the kolaches device check after M3-3e to M3-3i passed on iPhone (iPad open); run 9 scored (same as run 8); RV-39 ruled: steps, then titles, then units; **M3-3j complete** (216 tests); run 10 scored (steps keep the page's words; splitting faults left, `10` §7); **M3-3k complete** (223 tests; spike run 11 next); **M3-3l complete** (spike test: does the model answer in the background under a task she starts; 224 tests; RV-5 and SLT-144 unchanged until Pops's run reports); run 11 scored (`10` §7: step counts match the key on 13 pages); **M3-3m complete** (232 tests; spike run 12 next); the background test crashed on device → **M3-3n complete** (232 tests: the handler is registered under the concrete identifier, the wildcard stays in `Info.plist`; no submit without a handler); the background run reached the model once, then hit the rate limit → **M3-3o complete** (waits out the limit in the background, BG Run All on the screen; 234 tests); its background run structured 2 captures in the background, then iOS expired the task as stalled → **M3-3p complete** (progress at each step, no title comparison in the background, an expiry ends the task but not the run; 236 tests); run 12 scored, run in the background (all 23 captures structured with the app in the background, `10` §7) → **M3-3q complete** (each ingredient's name from its own line, no flag on lines put back under a printed heading; 239 tests; run 13 scored: every name from its own line, the five-page recipe with no warning); SLT-161 → **M3-3r complete** (SyLib's components where Sylantro rolled its own, `CapsuleButton` gains `.small`; 239 tests); **M3-3s complete** (the title rules: SP-21's area, label, navigation and breadcrumb lines out of titles, a title line labelled a step; 243 tests); run 14 scored (three titles fixed, four cards' titles take in ingredient lines) → **M3-3t complete** (titles stop at the ingredients; 246 tests; spike run 15 next); RV-40 ruled (her reading in the background, after the title rules); **M3-5 written, on hold** until single-recipe reading works better (Pops, 25 Nov 2026), waiting on `13`'s SC-22 and S-74 to S-77; RV-37 ruled (M3-5a, marking a missed line, after M3-5); Pops's device checks to run.** The questions in §3 are
 Claude's proposals for Pops. No task is written in full until the questions it depends on are
 ruled (§1's Gates column).
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md`, `00B_SYLANTRO_GUARDRAILS.md`,
@@ -88,7 +88,11 @@ One task at a time, in order. Each is checked before the next is written, as M2 
 | M3-3g ✓ | **Page photos that go blank:** one shared loader at display size, a photo on the device always shown, a failing decode logged and retried smaller | M3-3f |
 | M3-3h ✓ | **Ingredient groups from the printed headings** (RV-38): headings ending `:` group the ingredients under them, skipped lines put back | M3-3g; RV-38 |
 | M3-3i ✓ | **The progress bar on a recipe read again** (SC-23, M3-3f note b), moved out of M3-5 | M3-3f |
-| M3-3j | **Steps in the page's own words** (RV-39): the steps part returns line numbers; skipped lines put back; `promptVersion` 4; spike run 10 | M3-3i; RV-39 |
+| M3-3j ✓ | **Steps in the page's own words** (RV-39): the steps part returns line numbers; skipped lines put back; `promptVersion` 4; spike run 10 | M3-3i; RV-39 |
+| M3-3k ✓ | **Steps split where the page splits them** (run 10): mid-step lines the labels gave elsewhere, joins across a sentence, step markers, put back only between steps, headings with no colon, fragments; rules only; spike run 11 | M3-3j; run 10 |
+| M3-3l ✓ | **Does reading go on in the background?** (spike test, Pops 25 Nov 2026): Run All in Background (Test) under a `BGContinuedProcessingTask`; each structuring attempt recorded with the scene's state; the queue unchanged | M3-3k's run 11 |
+| M3-3m ✓ | **Steps under printed labels and headings** (run 11): label and heading lines taken out of a range, a step after one put back, colonless headings on numbered pages, where the method ends, runs of mislabelled step lines, misread web addresses as clutter; the model's raw answers in the spike report; the five-page recipe loads as one capture; spike run 12 | M3-3l; run 11 |
+| M3-3n ✓ | **The background test crashed on device**: no submit without a registered handler; the installed app's `Info.plist` checked and fixed | M3-3m |
 | M3-5s ✓ | **Finding each recipe's title on a page (spike):** big-type lines and a model call, side by side in run 8 (RV-35) | M3-3d; RV-35 |
 | M3-5 | **Several recipes on a page** (SLT-047; written, 222 tests): she picks which to save; each is structured on its own and shares the photo (RV-14); a page that isn't a recipe is flagged (RV-32) | M3-3; RV-14, RV-32; a spike check on the test set's four-recipe page (`10` H-38) |
 | M3-5a | **Marking a missed line** (`16` FI-11): in Edit, tap a line on the page and mark what it is; a corrections file in TestFlight builds (RV-37) | M3-5; RV-37; `13` with its screen and words |
@@ -1880,7 +1884,7 @@ dialog (SLT-088). No network. Edit no document except §2 of this one.
 
 ### Task M3-3j · Sylantro · Steps in the page's own words
 
-**Status: ready, not started; runs after M3-3i.** RV-39 ruled. A prompt change: `promptVersion`
+**Status: complete (216 tests); run 10 scored (`10` §7).** RV-39 ruled. A prompt change: `promptVersion`
 goes from 3 to 4, and spike run 10 checks it (`10` §7).
 
 **Inputs:** `00`, `00A`, `00B`, `10` §7 (run 9), `11` (the structurer's parts, SLT-146), this
@@ -1976,6 +1980,1055 @@ synced model, `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWrite
 the repo (SLT-092). No network. Edit no document except §2 of this one.
 
 ---
+
+### Task M3-3k · Sylantro · Steps split where the page splits them
+
+**Status: complete (223 tests); spike run 11 to score.** RV-39 ruled; run 10 (`10` §7) chose this
+before the title rules (Pops, 25 Nov 2026, "Step clean-up rules, then run 11"). Rules only: no
+prompt, `instructions`, `@Guide` or `promptVersion` change (it stays 4). Spike run 11 checks it.
+
+**Inputs:** `00`, `00A`, `00B`, `10` §7 (run 10), this document (RV-29, RV-39, Task M3-3j and
+its row in §2), and these files: `Extraction/RecipeStructurer.swift` (`steps(from:lines:putsBackSkipped:)`
+and its helpers, `labelled(_:labels:keeping:)`), `Domain/Structuring/IngredientHeadings.swift`,
+`Domain/Structuring/PageClutter.swift`, `SylantroTests/Extraction/RecipeStructurerTests.swift`.
+
+*Why:* run 10: since M3-3j the model no longer drops words from a step, but the steps are split
+worse (the step count matches the key on 8 pages, against about 11 in run 9). What is left is
+mechanical:
+
+1. On line-labelled pages, a line in the middle of a step labelled an ingredient or a note leaves
+   a gap in the step (3 pages).
+2. The model's ranges break a sentence, and only skipped lines are joined back (5 pages).
+3. "Step 1" labels, a lone "4.", a footer, a copyright line and a time label become steps, and a
+   skipped line before the first step or after the last is put back as one (6 pages).
+4. A short heading with no colon, like a section name, becomes a step (1 page).
+
+#### Part 1 · A step line the labels gave elsewhere (`RecipeStructurer.labelled`)
+
+A line labelled `ingredient` or `note` whose nearest labelled lines before and after it (skipping
+clutter, headings and lines with no label) are both labelled `step` is a step line: it goes into
+`steps`, in its place, and not into `ingredients` or `notes`. Only `labelled` changes, so pages
+with printed sections are as before.
+
+#### Part 2 · The steps' rules (`RecipeStructurer.steps(from:lines:putsBackSkipped:)`)
+
+The rules M3-3j built stay, with these changes and additions, in this order:
+
+1. **A step marker line:** a line that is only a step number (`4.`, `4)`), or `Step` and a
+   number, with or without a `:` after it, adds no text. The next line starts a new step,
+   inside a range or as a skipped line. A line starting with `Step` and a number and then text
+   (for example "Step 4 Bake …") starts a step, as a printed number does, and the `Step n` is
+   removed from its text.
+2. **A numbered page:** when two or more of `lines` start with a step number or are step markers,
+   a step starts only at a step number or a marker, and at the first step after a heading. A range
+   or a skipped line that starts anywhere else joins the step before.
+3. **A range that continues a sentence:** on any page, a range that doesn't start at a step number
+   or a marker joins the step before, in the same group, when its first line starts lowercase or
+   the step before doesn't end with `.`, `!` or `?`. This is the rule skipped lines already follow.
+4. **Put back only between steps:** a skipped line that would start a step of its own is put back
+   (`put back: step n`) only when it comes after the first kept step and before the last one's
+   last line, or when it starts with a step number or follows a marker. Any other skipped line is
+   left out. A skipped line that joins the step before is joined, as now.
+5. **A heading with no colon:** a one-line step of at most 4 words, with every word starting with
+   a capital letter, no digit, and no `.` or `?` at its end, followed by another step in its group,
+   is not a step. It names the steps after it as a heading does (`groupName`), until the next
+   heading.
+6. **A fragment:** a step whose text has fewer than 2 words with a letter, and doesn't end with `.`,
+   `!` or `?`, is left out. For example ": 10 min" is left out, and "Enjoy!" stays.
+
+Steps are indexed from 0 after these rules, and `put back: step n` counts the steps kept. The
+fallback (`putsBackSkipped: false`) follows rules 1, 2, 3, 5 and 6; it puts back nothing, as now.
+
+#### Part 3 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `RecipeStructurerTests` | a range that continues a sentence | lines "Simmer the made-up sauce for 10", "minutes. Serve it hot."; ranges 1–1 and 2–2: one step, the two lines joined |
+| | a numbered page | lines "1. Mix the made-up flour.", "Add the eggs.", "2. Bake it."; ranges 1–1, 2–2, 3–3: two steps, "Mix the made-up flour. Add the eggs." and "Bake it." |
+| | step markers | lines "Step 1", "Heat the made-up oven.", "Step 2", "Mix the dough.", "4.", "Bake it well."; one range 1–6: three steps, "Heat the made-up oven.", "Mix the dough." and "Bake it well." |
+| | a heading with no colon | lines "Campfire Method", "Warm the made-up tortilla.", "Add the sauce."; ranges 1–1, 2–2, 3–3: two steps, both with `groupName` "Campfire Method" |
+| | a fragment | lines ": 10 min", "Stir the made-up soup."; ranges 1–1 and 2–2: one step, "Stir the made-up soup." |
+| | put back only between steps | lines "Made-up Notes Here.", "Mix the batter.", "Rest the batter.", "Bake the batter.", "Related Recipes Below."; ranges 2–2 and 4–4: three steps, "Rest the batter." put back (`put back: step 2`); lines 1 and 5 are left out |
+| | a step line labelled an ingredient | `labelled` over "Mix the made-up oats and", "2 cups of the nuts until", "coated. Bake it."; labels step, ingredient, step: all three in `steps`, `ingredients` empty; the same with `note` for the middle line: `notes` empty |
+
+"A skipped step line" (M3-3j) changes: its skipped line "Serve it warm." was the last line, which
+rule 4 now leaves out, so a fourth line "Cool it a little." is added with a range 4–4. It then
+expects three steps, the second put back (`put back: step 2`). No other existing test changes.
+
+**The suite total:** M3-3j's total (216) plus these 7: **223**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with **223** tests (or the total before plus 7,
+   said), with the destination string and the run's own total.
+3. `git diff` of `RecipeStructurer.swift` changes only `steps(from:lines:putsBackSkipped:)`, its
+   private helpers and `labelled(_:labels:keeping:)`. `promptVersion` stays 4. No prompt,
+   `instructions` or `@Guide` change. `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is
+   empty.
+4. No string she reads changes. No page content in the repo: the tests use made-up lines.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's step on device (iPhone 18 Pro)
+
+1. Spike run 11, as before, saved to `sylantro-testpages/results/`. Claude scores it against run
+   10. The checks: step counts against the key (8 pages in run 10), steps with no position (10 in
+   run 10), every step still in the page's words, and no change to titles or ingredients.
+2. Kolaches: ⋯ › Read Again. The steps read as printed, one per printed step.
+
+#### Do not
+
+Change any prompt, `instructions`, a `@Guide` or `promptVersion`. Don't change `SylantroSchemaV1`
+or any synced model, `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`,
+`SourceLocator`, `PageClutter`, `PageSplitter`, the views, `Info.plist`, the entitlements, build
+settings or SyLib. No string she reads. No page content in the repo (SLT-092). No network. Edit
+no document except §2 of this one.
+
+---
+
+
+### Task M3-3l · Sylantro · Does reading go on in the background? (spike test)
+
+**Status: ready, not started; runs after M3-3k and its run 11, before the title rules.** Pops,
+25 Nov 2026: "what would it take to get the reading and spike analysis to run in the bg?", "so,
+keeps running when the app is in the bg", then the decision card, "Test it in the spike first".
+**Spike only.** RV-5 and SLT-144 stay as ruled for her reading: `ExtractionQueue` doesn't change.
+This task only finds out whether the on-device model answers while Sylantro is in the background
+under a task she starts. The answer decides whether a second task moves the queue onto it.
+
+**Inputs:** `00`, `00A`, `00B`, `00` SLT-144 and SLT-153, this document (RV-5), `10` §6, and
+these files: `Extraction/Spike/SpikeRunner.swift` (`runAll`, `read`, `structure`,
+`sceneBecameActive`, `sceneLeftActive`, `wait`), `Extraction/Spike/SpikeReport.swift`,
+`Views/Spike/SpikeView.swift` (the ⋯ menu, `scenePhase`), `Sylantro/Info.plist`,
+`SylantroTests/Extraction/SpikeRunnerTests.swift`. Apple's BackgroundTasks documentation for
+`BGContinuedProcessingTask` and `BGContinuedProcessingTaskRequest` (iOS 26). Read it from the SDK's
+headers or Xcode's documentation; no network.
+
+*Why:* the spike can't structure while Sylantro is in the background. In run 1 the model refused
+requests then (SLT-144), so the spike waits for the app (`waitingForApp`). iOS 26's
+`BGContinuedProcessingTask` lets work that a person starts with a tap keep running after they leave
+the app, with a system progress indicator they can see and cancel. Nobody knows yet whether the
+on-device model answers inside one.
+
+#### Part 1 · The background run (`SpikeRunner`, `SpikeView`, `Info.plist`)
+
+1. **`Info.plist`:** add `BGTaskSchedulerPermittedIdentifiers` holding one identifier,
+   `com.syzygysoftwerksllc.Sylantro.spike.run`. Pops allows this one key for this task. Add a
+   `UIBackgroundModes` value only if the SDK's documentation says a continued processing task needs
+   one; then say which and why in the notes. Change no other key.
+2. **A ⋯ menu item on the spike screen, "Run All in Background (Test)":** enabled when "Run All"
+   is. A spike-only label, in English like the screen's others; she never sees it. It:
+   - registers a launch handler for the identifier, if it isn't registered yet;
+   - submits a `BGContinuedProcessingTaskRequest` (title "Spike run", subtitle "Starting", the
+     strategy that fails rather than queues when it can't start now);
+   - runs `runAll` in background-test mode inside the handler.
+   If the submit throws, the run goes ahead as "Run All" does, and the report says why.
+3. **Inside the task:**
+   - Set the task's `progress` (total = captures; completed + 1 as each capture ends, however it
+     ends).
+   - Update the subtitle to "Capture n of m".
+   - On expiry, cancel the run as Close does, and record the capture it stopped at.
+   - At the end, call `setTaskCompleted(success:)` (true when the run wasn't cancelled or expired).
+   - Don't ask for GPU or other extra resources.
+4. **Background-test mode in `structure`:** structuring is tried whether or not the scene is
+   active. A refusal while the scene is active is retried as now (SLT-153). A refusal while it isn't
+   active is recorded, and the capture waits for the app as now (`waitingForApp`, SLT-144). Reading
+   pages (`read`) is unchanged. "Run All" without the test mode is unchanged.
+
+#### Part 2 · What the run records (`SpikeReport`)
+
+New fields, all decoded with `decodeIfPresent`, so earlier results files still read:
+
+- **Report:**
+  - `backgroundTask: String?`: nil for a plain run; otherwise "completed", "cancelled",
+    "expired at capture n" or "not started: <error>".
+- **Each capture:**
+  - `readWhileInBackground: Bool?`: whether the scene was inactive when its pages were read.
+  - `structureAttempts: [Attempt]?`, one for each structuring attempt, each holding:
+    - `sceneActive: Bool`;
+    - `outcome`: "done", "refused" or "failed: <error's description>";
+    - `millis: Int`;
+    - `at`: the attempt's start, as an ISO 8601 date.
+  - The time the scene left and came back is logged, as now.
+
+No recipe text in any new field or log line.
+
+#### Part 3 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `SpikeRunnerTests` | background fields round trip | a report with `backgroundTask` "expired at capture 3" and a capture with two attempts (one active "refused", one inactive "done") encodes and decodes unchanged; "older results read" still passes with none of the new fields |
+
+**The suite total:** M3-3k's total (223) plus this 1: **224**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with **224** tests (or the total before plus 1,
+   said), with the destination string and the run's own total.
+3. `git diff` touches only `SpikeRunner.swift`, `SpikeReport.swift`, `SpikeView.swift`,
+   `Info.plist` (the one key, and a background mode only if the notes justify it) and
+   `SpikeRunnerTests.swift`. `ExtractionQueue`, `RecipeStructurer` and every prompt are
+   unchanged. `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty.
+4. No string she reads changes. No recipe text in logs or the new fields.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's step on device (iPhone 18 Pro)
+
+1. Load Test Set, then ⋯ › Run All in Background (Test).
+2. After the first two captures finish, swipe up to the Home Screen and open another app. A
+   "Spike run" progress indicator should show. Stay away about 5 minutes, then come back.
+3. Let the run finish, Export Results to `sylantro-testpages/results/`, and tell Claude the file
+   name. Say whether the progress indicator showed.
+4. If there's time, a second run, locking the phone instead of switching apps.
+
+Claude reads each capture's attempts. Did structuring succeed with the scene inactive, how often
+was it refused, and did the task expire? From that comes the proposal: move the reading queue onto
+this kind of task, or leave SLT-144 as it is.
+
+#### Do not
+
+Change `ExtractionQueue`, `RecipeStructurer`, any prompt, `instructions`, a `@Guide` or
+`promptVersion`. Don't change `SylantroSchemaV1` or any synced model, `CaptureRecorder`,
+`RecipeEditor`, `MirrorWriter`, the views other than `SpikeView`, `Info.plist` beyond Part 1,
+the entitlements, build settings or SyLib. Don't use `BGProcessingTask` or `beginBackgroundTask`.
+No string she reads. No page content in the repo (SLT-092). No network. Edit no document except §2
+of this one.
+
+---
+
+
+### Task M3-3m · Sylantro · Steps under printed labels and headings
+
+**Status: complete (232 tests); spike run 12 to score.** RV-39 ruled
+(steps first); run 11 (`10` §7) found what's left. Rules only: no prompt, `instructions`, `@Guide`
+or `promptVersion` change (it stays 4). Spike run 12 checks it.
+
+**Inputs:** `00`, `00A`, `00B`, `10` §7 (runs 10 and 11), this document (Tasks M3-3h, M3-3j,
+M3-3k and their rows in §2), and these files: `Extraction/RecipeStructurer.swift`
+(`steps(from:lines:putsBackSkipped:)` and its helpers, `labelled(_:labels:keeping:)`,
+`ingredientGroups(from:lines:)`), `Domain/Structuring/PageClutter.swift`,
+`Domain/Structuring/IngredientParser.swift` (or wherever a line's unit is found),
+`Extraction/Spike/SpikeRunner.swift`, `Extraction/Spike/SpikeReport.swift`,
+`Extraction/Spike/TestSetGroups.swift`,
+`SylantroTests/Extraction/RecipeStructurerTests.swift`, `SylantroTests/Domain/PageClutterTests.swift`
+(or its tests' file), `SylantroTests/Extraction/SpikeRunnerTests.swift`.
+
+*Why:* run 11: step counts now match the key on 13 of 22 pages, against 7. But the new five-page
+recipe (TP-26 to TP-30) lost 6 of its 10 steps, with 8 `step lines out of range`. Each printed step
+there is a "Step n" line, a heading line ending `:`, then the step's lines. The model's range for a
+step most likely takes in its label and heading, and M3-3j drops any range that touches a heading.
+The skipped lines then come back only between kept steps (M3-3k rule 4), so the first and last
+steps are lost. The same recipe's 31 ingredients all came back flagged "put back", after 4
+`ingredient lines out of range`, and nobody can see why without the model's answer. Smaller faults
+on the 22: a heading with no colon swallowed on a numbered page; two step lines in a row given to
+the ingredients; a "Related Pages" list joined to the last step; an ingredient line moved into a
+step; a footer whose `https` was misread, joined to an ingredient.
+
+#### Part 1 · What the spike records (`SpikeReport`, `SpikeRunner`, spike only)
+
+New fields on each capture, decoded with `decodeIfPresent`:
+
+- `stepRanges: [[Int]]?`: the steps part's answer as the model gave it, `[firstLine, lastLine]`
+  each.
+- `ingredientItems: [[Int]]?`: each item's `[groupIndex, firstLine, lastLine]`, with the group's
+  `nameLine` as `[groupIndex, nameLine, -1]` first.
+- `sectionLineCounts: [String: Int]?`: how many lines the ingredients and steps sections held
+  (`ingredients`, `steps`), after wraps are joined.
+
+They carry no text, only numbers. `RecipeStructurer`'s outcome gains what the spike needs to fill
+them. The app ignores them.
+
+#### Part 2 · The steps' rules (`RecipeStructurer.steps(from:lines:putsBackSkipped:)`)
+
+M3-3k's rules stay, with these changes:
+
+1. **A range over a label or a heading:** step marker lines and heading lines inside a range are
+   taken out of it, not counted toward its 15 lines, and the rest of the range is checked as
+   before. Only a range with nothing left, or one that touches a line already used, is dropped
+   (`step lines out of range`). The heading still names the steps after it, and the marker still
+   starts the next step.
+2. **A step after a label or a heading is put back anywhere:** a skipped line that is the first
+   line (not empty, not clutter) after a marker, or after a heading, starts a step and is put back
+   (`put back: step n`) even before the first kept step or after the last. This extends M3-3k
+   rule 4.
+3. **A heading with no colon on a numbered page:** M3-3k rule 2's join doesn't join a one-line
+   piece that has rule 5's heading shape, and doesn't join anything onto one. Rule 5 then makes it
+   a heading.
+4. **Where the method ends:** a line that reads "Related Pages", "Related Recipes", "More Recipes",
+   "You May Also Like" or "Frequently Asked Questions" (trimmed, any case, with or without a `:`)
+   ends the steps. That line and every line after it in `lines` are no step's, and a range over it
+   is cut short before it.
+
+#### Part 3 · A run of step lines the labels gave elsewhere (`RecipeStructurer.labelled`)
+
+M3-3k Part 1 moves one line. It now moves a run of 1 to 3 lines labelled `ingredient` or `note`
+whose nearest labelled lines before and after the run are both `step`. If any line in the run starts
+with a quantity followed by a unit (as the ingredient parser reads it: "½ cup …" yes, "25 minutes."
+no), the whole run stays where the labels put it.
+
+#### Part 4 · A misread web address is page clutter (`PageClutter.isClutter`)
+
+As well as today's rules, a line is clutter when any of its words is `www`, starts with `www.`,
+contains `.com/`, or ends with `.com`, `.org` or `.net`. Words are separated by spaces, and a word's
+trailing punctuation is ignored.
+
+#### Part 5 · The five-page recipe loads as one (`TestSetGroups`, spike only)
+
+`TestSetGroups.captures(fileNames:)` joins runs of pages, not only pairs: 5–6, 7–8, 16–17 as now,
+and 26 to 30 (`10` §1). A run is one capture, in page order, when every page in it is present.
+Otherwise each of its pages is its own capture, as a pair is today. HEIC is already read
+(`extensions`); nothing else about loading changes. With this, Load Test Set gives 23 captures.
+
+#### Part 6 · The background test's identifier (`Info.plist`, `SpikeRunner`, M3-3l note b)
+
+Apple's documentation for `BGContinuedProcessingTaskRequest` asks for a wildcard identifier. So
+`BGTaskSchedulerPermittedIdentifiers` holds `com.syzygysoftwerksllc.Sylantro.spike.*` instead of
+`…spike.run`, the launch handler is registered for that wildcard, and the request keeps
+`com.syzygysoftwerksllc.Sylantro.spike.run`. Nothing else about M3-3l changes. This is Part 1's
+one `Info.plist` key from M3-3l, which Pops allowed; no other key changes.
+
+#### Part 7 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `RecipeStructurerTests` | a range over a label and a heading | lines "Step 1", "Mix it:", "Stir the made-up flour.", "Add the water.", "Step 2", "Bake it:", "Bake the made-up bread."; ranges 1–4 and 5–7: two steps, "Stir the made-up flour. Add the water." (`groupName` "Mix it") and "Bake the made-up bread." ("Bake it"); no warnings |
+| | a first step after a label is put back | the same lines; range 5–7 only: two steps, the first put back (`put back: step 1`) |
+| | a heading on a numbered page | lines "1. Mix the made-up dough.", "2. Bake it.", "Campfire Method", "1.", "Warm the made-up tortilla."; ranges 1–1, 2–2, 3–3, 5–5: three steps, the last with `groupName` "Campfire Method" |
+| | where the method ends | lines "Simmer the made-up cider for 10", "minutes. Serve it hot.", "Related Pages", "Made-up Cider Recipe"; range 1–4: one step, "Simmer the made-up cider for 10 minutes. Serve it hot." |
+| | a run of step lines labelled ingredients | `labelled` over "Whisk the made-up", "butter, sugar, honey,", "spice and salt in a", "medium bowl."; labels step, ingredient, ingredient, step: all four in `steps`. The same with the second line "1/2 cup made-up sugar,": it and the third line stay in `ingredients` |
+| `PageClutterTests` | a misread web address | "naps www madeupsite.com recipes made-up-page" and "madeupsite.com/recipes/made-up" are clutter; "1 cup made-up sugar" and "Stir the made-up sauce." aren't |
+| `SpikeRunnerTests` | a run of five pages is one capture | `captures(fileNames:)` over TP-25.jpeg and TP-26.heic to TP-30.heic gives two captures: TP-25 alone, then TP-26 to TP-30 in order; without TP-28, TP-26, TP-27, TP-29 and TP-30 are four captures of one page each; "the test set groups by page ID" still passes |
+| | step and ingredient answers recorded | a capture with `stepRanges`, `ingredientItems` and `sectionLineCounts` encodes and decodes unchanged; "older results read" still passes |
+
+No existing test should change. If one does, say which and why.
+
+**The suite total:** M3-3l's total (224) plus these 8: **232**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with **232** tests (or the total before plus 8,
+   said), with the destination string and the run's own total.
+3. `git diff` of `Info.plist` is Part 6's one value. `git diff` of `RecipeStructurer.swift` changes only `steps(from:lines:putsBackSkipped:)`, its
+   helpers, `labelled(_:labels:keeping:)`, and what its outcome passes to the spike. No prompt,
+   `instructions`, `@Guide` or `promptVersion` change. `PageClutter.swift` changes only
+   `isClutter` and its helpers. `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty.
+4. No string she reads changes. No page content in the repo: the tests use made-up lines. The new
+   spike fields hold numbers only.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's step on device (iPhone 18 Pro)
+
+1. Before the run, move `TP-26.heic` to `TP-30.heic` from `New/` into `Pages/`. Spike run 12:
+   Load Test Set (23 captures, the five-page recipe as one), then Run All. Export to `sylantro-testpages/results/`. Claude scores it against run 11, the
+   five-page recipe's 10 steps first, and uses the new fields to find why its ingredients came back
+   flagged.
+2. Kolaches: ⋯ › Read Again. The steps read as printed, one per "Step n".
+
+#### Do not
+
+Change any prompt, `instructions`, a `@Guide` or `promptVersion`. Don't change
+`ingredientGroups(from:lines:)`'s rules (this task only records its answer), `SylantroSchemaV1` or
+any synced model, `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`,
+`SourceLocator`, `PageSplitter`, the views, `Info.plist` beyond Part 6, the entitlements, build settings or SyLib.
+No string she reads. No page content in the repo (SLT-092). No network. Edit no document except
+§2 of this one.
+
+---
+
+
+### Task M3-3n · Sylantro · The background test crashed on device
+
+**Status: ready, not started; runs after M3-3m.** A fix to M3-3l and M3-3m Part 6. Spike only.
+
+**Inputs:** `00`, `00A`, `00B`, this document (Tasks M3-3l and M3-3m, their rows in §2), and these
+files: `Extraction/Spike/SpikeRunner.swift` (`runAllInBackground`,
+`registerLaunchHandlerIfNeeded`), `Sylantro/Info.plist`, the target's build settings
+(`INFOPLIST_FILE`, `GENERATE_INFOPLIST_FILE`), and Apple's BackgroundTasks documentation for
+`BGContinuedProcessingTaskRequest` and `BGTaskScheduler.register(forTaskWithIdentifier:using:launchHandler:)`,
+from the SDK or Xcode's documentation; no network.
+
+*Why:* Pops, 25 Nov 2026, on the iPhone 18 Pro after M3-3m, ⋯ › Run All in Background (Test)
+ended the app:
+
+```
+Registration rejected; com.syzygysoftwerksllc.Sylantro.spike.* is not advertised in the application's Info.plist
+*** Assertion failure in -[BGTaskScheduler _handleSubmissionWithoutRegistrationForTaskRequest:error:], BGTaskScheduler.m:350
+*** Terminating app due to uncaught exception 'NSInternalInconsistencyException', reason: 'No launch handler registered for task with identifier com.syzygysoftwerksllc.Sylantro.spike.run'
+```
+
+There are two faults. First, `register` returned false, and the run submitted anyway; a submit with
+no handler isn't thrown as an error, it ends the app. Second, the system didn't find
+`…spike.*` in the installed app's `Info.plist`, though the source file holds it. Either the
+installed app's plist differs from the source, or the system wants the wildcard written another
+way.
+
+#### Part 1 · Never submit without a handler (`SpikeRunner`)
+
+When `registerLaunchHandlerIfNeeded` hasn't registered a handler, `runAllInBackground` doesn't
+submit. The run goes ahead as Run All, with `backgroundTask` "not started: registration rejected".
+It logs one line naming the identifier it tried.
+
+#### Part 2 · What the installed app holds (`SpikeRunner`, the build)
+
+1. When the spike screen opens, it logs one line with `Bundle.main`'s
+   `BGTaskSchedulerPermittedIdentifiers`, or says it has none.
+2. Build for a generic iOS device (`-destination 'generic/platform=iOS'`) and read the built app's
+   `Info.plist` (`plutil -p`). Say in the notes whether it holds
+   `BGTaskSchedulerPermittedIdentifiers` with `com.syzygysoftwerksllc.Sylantro.spike.*`.
+   - If it doesn't, find out why from the target's settings and fix it so it does. Say what was
+     wrong.
+   - If it does, read Apple's documentation again for how the permitted identifier, the
+     registration and the request's identifier must be written for a continued processing task.
+     Change only what the documentation shows is wrong. Quote the lines that decide it in the
+     notes.
+
+#### Part 3 · Tests
+
+None can run the scheduler. The suite total stays **232**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings, for the
+   pinned simulator and for a generic iOS device.
+2. The suite passes on the pinned destination with **232** tests, with the destination string and
+   the run's own total.
+3. `git diff` touches only `SpikeRunner.swift` and, if Part 2 needs it, `Info.plist`'s
+   `BGTaskSchedulerPermittedIdentifiers` value or the target's Info.plist settings, each change
+   explained. `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty.
+4. No string she reads changes. The new log lines hold identifiers only.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's step on device (iPhone 18 Pro)
+
+1. In Xcode, Product › Clean Build Folder, then run on the iPhone, so the installed app has the
+   new `Info.plist`.
+2. Open the spike. In Xcode's console, check the line listing the permitted identifiers.
+3. ⋯ › Run All in Background (Test), as before. Whatever happens, the app shouldn't crash. Export
+   and send the file name, whether the progress indicator showed, and any console lines starting
+   with "background task".
+
+#### Do not
+
+Change `RecipeStructurer`, `ExtractionQueue`, any prompt or `promptVersion`, `SylantroSchemaV1` or
+any synced model, the views, other `Info.plist` keys, the entitlements, other build settings or
+SyLib. No string she reads. No network. Edit no document except §2 of this one.
+
+---
+
+
+### Task M3-3o · Sylantro · Background reading waits out the rate limit (spike test)
+
+**Status: complete (234 tests); Pops's device run next.** Was: runs after M3-3n. Pops, 25 Nov 2026, decision card, "Write M3-3o
+now"; then "move bg run out of menu, called BG Run All". A follow-up to M3-3l and M3-3n. **Spike only.** RV-5 and SLT-144 stay as ruled for her
+reading: `ExtractionQueue` doesn't change.
+
+**Inputs:** `00`, `00A`, `00B`, `00` SLT-144 and SLT-153, this document (RV-5, Tasks M3-3l and
+M3-3n and their rows in §2), and these files: `Extraction/Spike/SpikeRunner.swift` (`runAll`,
+`runAllInBackground`, `structure`, `retryDelay(afterRefusal:)`, `structureWaiting`, `wait`),
+`Extraction/Spike/SpikeReport.swift` (`SpikeCaptureResult.Attempt`),
+`Views/Spike/SpikeView.swift` (the button row, the ⋯ menu), `Extraction/RecipeStructurer.swift` (read only: `structure(_:pageIDs:onPartDone:)`, `call`,
+`respond`, `isRateLimit`), `SylantroTests/Extraction/SpikeRunnerTests.swift`. Apple's
+BackgroundTasks documentation for `BGContinuedProcessingTask` (its `progress` and expiry) and the
+FoundationModels documentation for `LanguageModelSession.GenerationError.rateLimited`, from the
+SDK's headers or Xcode's documentation; no network.
+
+*Why:* Pops's background run after M3-3n, on the iPhone 18 Pro. The task started and showed
+"Spike run". Capture 0 was structured with the scene inactive ("capture 0: done, 1 recipe"), so
+**the on-device model does answer in the background.** Captures 1 to 22 were then "refused, scene
+active false" one after another. The console's error under each was "Client rate limit exceeded",
+with the system's hint: "If you are using streaming responses in a background request, consider
+using non-streaming requests in background activities to reduce the likelihood of rate limiting."
+Because `structure` sends a refusal with the scene inactive straight to `waitingForApp`, and
+`runAll` counts every capture "however it ends", the indicator jumped from 1/23 to 23/23 and the
+task ended with nothing done.
+
+The hint doesn't apply: `RecipeStructurer.respond` already calls `session.respond(to:generating:options:)`,
+which doesn't stream. So the limit is a budget on how many requests a background app may make, and
+each capture makes several (line labels or header, ingredients, steps, and the spike's title
+lister). This task finds out whether waiting it out works.
+
+#### Part 1 · Wait out a refusal in the background (`SpikeRunner.structure`)
+
+1. **Background test only:** a rate-limit refusal while the scene is inactive is retried after a
+   wait, as a refusal in front already is (SLT-153), instead of going straight to `waitingForApp`.
+   The waits come from a new `nonisolated static func backgroundRetryDelay(afterRefusal count: Int) -> Duration?`:
+   30, 60, 120, 240, 300 and 300 seconds for refusals 1 to 6, then nil. After the sixth, or if the
+   wait is cancelled, the capture waits for the app as now (SLT-144).
+2. A refusal while the scene is active keeps `retryDelay(afterRefusal:)` (30 seconds, three times).
+   When the scene changes during a capture's refusals, the next wait follows the scene at that
+   moment, and the count of refusals carries on.
+3. During a wait the task's subtitle is "Capture n of m, waiting" (a spike-only label, English like
+   the others; she never sees it). It goes back to "Capture n of m" when structuring starts again.
+4. "Run All" without the test mode is unchanged.
+5. Don't fake progress to keep the task alive. If the documentation says the system expires a
+   continued-processing task whose progress doesn't advance, quote that line in the notes. An
+   expiry during a wait is a finding, recorded as M3-3l records it ("expired at capture n").
+
+#### Part 2 · Progress that tells the truth (`SpikeRunner.runAll`, `runAllInBackground`)
+
+1. The task's `completedUnitCount` is the runner's `processedCount` (done or failed, never waiting
+   for the app, `11` M1-13), the same count the screen's own bar shows. It is set after each
+   capture and after each capture `structureWaiting` structures while the task runs.
+2. The report's `backgroundTask` is "completed" when no capture is left waiting, and
+   "completed, n waiting for the app" when some are. "cancelled", "expired at capture n" and
+   "not started: …" are unchanged.
+
+#### Part 3 · The button (`SpikeView`)
+
+"Run All in Background (Test)" leaves the ⋯ menu. Instead, a `CapsuleButton("BG Run All")`
+goes in the button row right after "Run All", in the default style (Run All keeps the accent). It
+starts `runner.runAllInBackground()` as the menu item did, is disabled when Run All is, and Close
+cancels it as before. A spike-only label, in English like the screen's others; she never sees it.
+The ⋯ menu keeps Add Capture and Clear. Change nothing else in the view; update the comment that
+names the old item.
+
+#### Part 4 · What each attempt records (`SpikeReport`)
+
+`SpikeCaptureResult.Attempt` gains two fields, decoded with `decodeIfPresent`, so earlier results
+files still read:
+
+- `partsDone: [String]?`: the names `onPartDone` gave during this attempt, in order, before it
+  ended. It shows how many requests got through before the limit.
+- `retryAfterSeconds: Int?`: the wait before the next attempt, when there is one; nil otherwise.
+
+Part names only: no recipe text in any new field or log line. Each wait is logged as one line:
+"capture n: refused, scene active <Bool>, retrying in <s> s".
+
+#### Part 5 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `SpikeRunnerTests` | background retries are timed and limited | `backgroundRetryDelay(afterRefusal:)` is 30, 60, 120, 240, 300, 300 seconds for 1 to 6, nil for 0 and 7 |
+| | attempt parts and waits round trip | an attempt with `partsDone` ["line labels", "ingredients"] and `retryAfterSeconds` 60 encodes and decodes unchanged; "older results read" and "background fields round trip" still pass |
+
+No existing test should change. If one does, say which and why.
+
+**The suite total:** M3-3n's total (232) plus these 2: **234**. The button and the progress
+count need the device; they are checked there.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings, for the
+   pinned simulator and for a generic iOS device.
+2. The suite passes on the pinned destination with **234** tests (or the total before plus 2,
+   said), with the destination string and the run's own total.
+3. `git diff` touches only `SpikeRunner.swift`, `SpikeReport.swift`, `SpikeView.swift` (Part 3 only) and
+   `SpikeRunnerTests.swift`.
+   `RecipeStructurer.swift`, `ExtractionQueue`, every prompt and `Info.plist` are unchanged.
+   `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty.
+4. No string she reads changes. No recipe text in logs or the new fields.
+5. The notes say what the documentation says about `progress` and expiry, quoted, and whether
+   `rateLimited` carries a suggested wait (if it does, say so and don't use it yet).
+6. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's step on device (iPhone 18 Pro)
+
+1. Run from Xcode onto the iPhone. Open the spike: "BG Run All" sits after "Run All", and the ⋯
+   menu no longer has the background item. Load Test Set, then BG Run All.
+2. The "Spike run" indicator and the screen's bar should show the same count. After the first
+   capture finishes, swipe up to the Home Screen and open another app. Stay away
+   about 15 minutes. Glance at the "Spike run" indicator now and then, and note what it showed.
+3. Come back, let the run finish, Export Results to `sylantro-testpages/results/`, and send the
+   file name and any console lines with "refused" or "background task".
+
+Claude reads each capture's attempts: how many requests got through between refusals, whether the
+waits let structuring go on in the background, and whether the task expired. From that comes the
+proposal: move the reading queue onto this kind of task with these waits, or leave SLT-144 as it is.
+
+#### Do not
+
+Change `RecipeStructurer`, `ExtractionQueue`, any prompt, `instructions`, a `@Guide` or
+`promptVersion`. Don't change `SylantroSchemaV1` or any synced model, `CaptureRecorder`,
+`RecipeEditor`, `MirrorWriter`, the views other than Part 3's change to `SpikeView`, `Info.plist`, the entitlements, build settings or
+SyLib. Don't ask for GPU or other extra resources, and don't use `BGProcessingTask` or
+`beginBackgroundTask`. No string she reads. No page content in the repo (SLT-092). No network.
+Edit no document except §2 of this one.
+
+---
+
+### Task M3-3p · Sylantro · Background progress at each step (spike test)
+
+**Status: complete (236 tests); Pops's device run next.** Was: runs after M3-3o. Pops, 25 Nov 2026, decision card, "Write M3-3p
+now"; then "it did not finish after the stall...". A follow-up to M3-3o. **Spike only.** RV-5 and SLT-144 stay as ruled for her reading:
+`ExtractionQueue` doesn't change.
+
+**Inputs:** `00`, `00A`, `00B`, this document (Tasks M3-3l, M3-3n and M3-3o and their rows in §2,
+note a of M3-3o's row in particular), and these files: `Extraction/Spike/SpikeRunner.swift`
+(`runAll`, `runAllInBackground`, `read`, `structure`, `findTitles`, `pieces`, `structureWaiting`,
+`expireBackgroundRun`), `Extraction/Spike/SpikeReport.swift`,
+`SylantroTests/Extraction/SpikeRunnerTests.swift`.
+
+*Why:* Pops's BG Run All after M3-3o, on the iPhone 18 Pro. Captures 0 and 1 were structured with
+the scene inactive and nothing was rate-limited, so **the on-device model works in the background
+under this task.** Then iOS expired the task during capture 2 (the report's "expired at capture 3"
+counts from 1) and showed "Task failed". The indicator still read "Capture 1 of 23" with an empty
+ring. M3-3o's note a quotes the SDK: a continued-processing task "_must_ report progress", and
+"Tasks that appear stalled may be forcibly expired by the scheduler". Today progress moves only
+when a whole capture ends. A capture can take a minute or more, and much longer in the spike,
+because `findTitles` structures every piece again (capture 2 had 5 titles by type size, so 5 more
+structurings). Between captures the task looks stalled.
+
+#### Part 1 · Progress at each step (`SpikeRunner`, background test only)
+
+1. The task's `totalUnitCount` is captures × 10.
+2. A step inside a capture adds one unit, up to 9 for that capture. The steps are: each page read;
+   the bottom read; each name `onPartDone` gives (passed from `structure` as M3-3o does); and in
+   `findTitles`, the title lister's answer and each piece structured.
+3. `completedUnitCount` is a new
+   `nonisolated static func completedUnits(processed: Int, stepsInCurrent: Int) -> Int64`:
+   `processed × 10 + min(stepsInCurrent, 9)`, where `processed` is `processedCount` (M3-3o Part 2:
+   done or failed, never waiting for the app). Set it after each step and wherever M3-3o sets it
+   now. A capture's steps start from 0 when it starts and when `structureWaiting` takes it up again.
+4. The subtitle names the last step done: "Capture n of m, <step>", where `<step>` is "read",
+   "line labels", "header", "ingredients", "steps", "titles" or "pieces" (the part's name as
+   `onPartDone` gives it, retries and fallbacks under their part's name). M3-3o's
+   "Capture n of m, waiting" stays for a wait. Spike-only labels, English like the others; she
+   never sees them.
+5. Plain "Run All" is unchanged: no task, no units.
+
+#### Part 2 · No title comparison in the background test (`SpikeRunner.structure`)
+
+In background-test mode `findTitles` is not called, so each capture makes only the structurer's
+calls. Its fields stay nil in that run's report, as in a file from before M3-5s. Plain "Run All"
+still calls it, so run 12 and later scored runs are unchanged. With Part 2, Part 1.2's title and
+piece steps happen only in a plain run, which has no task; they are counted anyway, so the code
+doesn't depend on Part 2.
+
+#### Part 3 · When the task started and ended (`SpikeReport`)
+
+The report gains `backgroundTaskStartedAt: Date?` and `backgroundTaskEndedAt: Date?`, decoded with
+`decodeIfPresent`: the task's launch, and its end however it ended (completed, cancelled or
+expired). Nil for a plain run. With each attempt's `at` and `millis`, they show how long the task
+lived and where it stopped. Log one line at the end: "background task lasted <s> s".
+
+#### Part 4 · An expiry ends the task, not the run (`SpikeRunner`)
+
+Pops: "it did not finish after the stall...". Today an expiry cancels the run as Close does
+(M3-3l), so the captures after it are never read, even once the app is in front again.
+
+1. On expiry, the task is completed at once with `setTaskCompleted(success: false)`, the report
+   records "expired at capture n" as now, and the runner stops touching the task (no more progress
+   or subtitle).
+2. The run is not cancelled. Background-test mode ends there, and the rest of the run goes on as
+   "Run All" does: structuring only while the scene is active, a capture waiting for the app
+   otherwise (SLT-144), then `structureWaiting` when it comes back. A capture cut off by the
+   expiry ends however its call ends (done, refused and waiting, or failed), recorded as an attempt.
+3. Close still cancels the run, with or without a task. After an expiry, the report's
+   `backgroundTask` stays "expired at capture n" whether the run then finishes or is closed.
+4. Log one line: "background task expired at capture n, run goes on in the app".
+
+#### Part 5 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `SpikeRunnerTests` | background progress by steps | `completedUnits(processed:stepsInCurrent:)`: (0, 0) is 0; (0, 3) is 3; (2, 4) is 24; (2, 15) is 29 |
+| | background task times round trip | a report with `backgroundTaskStartedAt` and `backgroundTaskEndedAt` encodes and decodes unchanged; "older results read" and "background fields round trip" still pass |
+
+No existing test should change. If one does, say which and why.
+
+**The suite total:** M3-3o's total (234) plus these 2: **236**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings, for the
+   pinned simulator and for a generic iOS device.
+2. The suite passes on the pinned destination with **236** tests (or the total before plus 2,
+   said), with the destination string and the run's own total.
+3. `git diff` touches only `SpikeRunner.swift`, `SpikeReport.swift` and `SpikeRunnerTests.swift`.
+   `RecipeStructurer.swift`, `TitleLister`, `ExtractionQueue`, every prompt and `Info.plist` are
+   unchanged. `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty.
+4. No string she reads changes. No recipe text in logs, subtitles or the new fields.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's step on device (iPhone 18 Pro)
+
+1. Run from Xcode onto the iPhone. Load Test Set, then BG Run All.
+2. After the first capture finishes, go to the Home Screen and open another app. The "Spike run"
+   ring should move every few seconds, and the subtitle should name the step. Stay away about 15
+   minutes, glancing at it now and then.
+3. Come back. If the task expired, the run should go on in the app and finish. Let it finish, Export Results to `sylantro-testpages/results/`, and send the
+   file name, what the indicator showed, and any console lines with "refused" or "background task".
+
+Claude reads how long the task lived, how many captures were structured in the background, and any
+refusals. From that comes the proposal: move the reading queue onto this kind of task, or leave
+SLT-144 as it is.
+
+#### Do not
+
+Change `RecipeStructurer`, `TitleLister`, `ExtractionQueue`, any prompt, `instructions`, a `@Guide`
+or `promptVersion`. Don't change M3-3o's waits. Don't change `SylantroSchemaV1` or any synced
+model, `CaptureRecorder`, `RecipeEditor`, `MirrorWriter`, the views, `Info.plist`, the
+entitlements, build settings or SyLib. Don't fake progress: a unit is added only when its step is
+done. Don't ask for GPU or other extra resources, and don't use `BGProcessingTask` or
+`beginBackgroundTask`. No string she reads. No page content in the repo (SLT-092). No network.
+Edit no document except §2 of this one.
+
+---
+
+### Task M3-3q · Sylantro · Each ingredient's name from its own line
+
+**Status: complete (239 tests); run 13 scored (`10` §7): 0 names from another line, the five-page recipe's flags gone.** Was: runs after M3-3p. Pops, 25 Nov 2026, decision card after run 12,
+"Fix item names, then title rules". Rules only: no prompt, `instructions`, `@Guide` or
+`promptVersion` change (it stays 4). Spike run 13 checks it. The title rules come after this task.
+
+**Inputs:** `00`, `00A`, `00B`, `10` §7 (run 12), this document (RV-29, RV-38, Tasks M3-3h and
+M3-3m and their rows in §2), and these files: `Extraction/RecipeStructurer.swift`
+(`ingredientGroups(from:lines:)`, `putBackIngredient`, `startsWithQuantityAndUnit`),
+`Domain/Structuring/IngredientLineParser.swift`, `Domain/Structuring/IngredientHeadings.swift`,
+`SylantroTests/Extraction/RecipeStructurerTests.swift`.
+
+*Why:* run 12, read with M3-3m's new spike fields. Two ingredient faults:
+
+1. **A name from the next line.** An ingredient's words (`rawText`), quantity, unit and position
+   come from the line numbers the model gives. Its `item`, `preparation` and `note` are the model's
+   own text. On three pages the model's numbers are one line off from its text, so the item name
+   belongs to the next line: the five-page recipe's first group has 10 such lines (the warm-water
+   line is named "1/4 cup unsalted butter"), the magazine salad 4, the four-recipe page 7. The same
+   since run 9. The model's item text sometimes also carries the quantity ("1/4 cup unsalted butter").
+2. **Flags on lines that are right.** The five-page recipe has printed group headings. The model
+   answered for the first group only, so M3-3h put the other 4 groups' 21 lines back, each flagged
+   `put back: ingredient n`. All 21 are the page's own ingredient lines under their own headings.
+   She would be asked to check 21 lines that are right.
+
+#### Part 1 · The name comes from the line when the model's doesn't match (`ingredientGroups`)
+
+For each ingredient made from the model's item:
+
+1. Compare without case, with runs of whitespace as one space and the ends trimmed.
+2. **`item`:** the model's item text is kept only when it is found in the parser's `rest` for the
+   ingredient's own `rawText` (`IngredientLineParser.parse`, after the bullet is removed, as
+   `putBackIngredient` does). Otherwise `item` is that `rest`, as a put-back line's is, or nil when
+   `rest` is empty.
+3. **`preparation` and `note`:** each is kept only when it is found in the ingredient's `rawText`;
+   otherwise it is nil.
+4. `isOptional`, `rawText`, quantity, unit and the line numbers are unchanged.
+5. No warning: the ingredient's words are right, only the model's own name is replaced.
+
+#### Part 2 · No flag on a line put back under a printed heading (`ingredientGroups`)
+
+When the section prints group headings (`IngredientHeadings`, M3-3h), a line put back anywhere
+after the first heading gets no `put back: ingredient n` warning when the parser finds a quantity
+in it. It is still put back, in its place, under its heading. Any other line put back keeps its
+warning as now: one with no quantity under a heading, any before the first heading, and every one
+on a section with no printed headings (RV-29). "unused ingredient line n" is unchanged.
+
+#### Part 3 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `RecipeStructurerTests` | an item name from the next line | lines "1 cup made-up flour, sifted", "2 tablespoons made-up sugar"; the model gives line 1 with item "made-up sugar" and preparation "melted", line 2 with item "made-up sugar": the first ingredient's item is "made-up flour, sifted" (or the parser's own rest for that line, said) with no preparation, the second's "made-up sugar"; no warnings |
+| | an item name with its quantity | line "1/4 cup made-up butter"; the model's item "1/4 cup made-up butter": item "made-up butter" |
+| | lines put back under headings unflagged | lines "Made-up dough:", "1 cup made-up flour", "Made-up filling:", "2 tablespoons made-up jam", "- made-up sprinkles"; the model gives line 2 only: line 4 is put back under "Made-up filling" with no warning; line 5 (no quantity) is put back with `put back: ingredient 3` |
+
+**One existing test changes:** M3-3h's "a skipped group comes back" expects `put back: ingredient 3`
+and `put back: ingredient 4` for "1 cup jam" and "1 tbsp sugar" under "Filling:". Under Part 2 both
+have quantities, so it now expects no `put back` warning, and the rest of it as before. No other
+existing test should change. If one does, say which and why.
+
+**The suite total:** M3-3p's total (236) plus these 3: **239**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with **239** tests (or the total before plus 3,
+   said), with the destination string and the run's own total.
+3. `git diff` of `RecipeStructurer.swift` changes only `ingredientGroups(from:lines:)` and its
+   private helpers. No prompt, `instructions`, `@Guide` or `promptVersion` change.
+   `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty.
+4. No string she reads changes. No page content in the repo: the tests use made-up lines.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's step on device (iPhone 18 Pro)
+
+1. Spike run 13: Load Test Set, then Run All (in front, so the title comparison runs too). Export
+   to `sylantro-testpages/results/` and send the file name. Claude scores it against run 12: every
+   ingredient's name from its own line, and the five-page recipe's flags.
+2. Kolaches: ⋯ › Read Again. Each ingredient's name matches its line, and the filling and topping
+   lines aren't marked to check.
+
+#### Do not
+
+Change any prompt, `instructions`, a `@Guide` or `promptVersion`. Don't change the steps' rules,
+`labelled`, `IngredientLineParser`, `IngredientHeadings`, `ReviewFlag`, `SylantroSchemaV1` or any
+synced model, `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`, the spike, the
+views, `Info.plist`, the entitlements, build settings or SyLib. No string she reads. No page
+content in the repo (SLT-092). No network. Edit no document except §2 of this one.
+
+---
+
+### Task M3-3r · Sylantro · SyLib's components where Sylantro rolled its own
+
+**Status: complete (Sylantro 239, SyLib 1,765 tests); Pops's device check next.** Was: runs after M3-3q, before the title rules. SLT-161 (Pops, 25 Nov 2026:
+"we should us as much sylib ui components as possible. keep in mind we can make any change to
+sylib we might need"); decision card, "A small task now". One SyLib change, named here (`00B` §2
+allows a SyLib edit only when the task names it). No reading code changes.
+
+**Inputs:** `00`, `00A`, `00B` (§3, SLT-089 and SLT-161), `13` (S-50 and the screens below), and
+these files: `LIB/Sources/SyLibUI/Components/CapsuleButton.swift`, `MoreMenu.swift`,
+`LIB/Docs/UI_COMPONENTS.md` (CapsuleButton, MoreMenu), `LIB/Tests/SyLibTests/SyLibUI/` (the
+CapsuleButton tests), and in Sylantro `Views/Spike/SpikeView.swift`, `Views/Recipe/RecipeView.swift`
+(the toolbar's ⋯ and the "Continues on a page not scanned" row), `Views/Recovery/StoreRecoveryView.swift`,
+`Views/Capture/SavedPauseView.swift`, and `Views/Library/LibraryView.swift` (its `MoreMenu`, as the
+model to follow).
+
+*Why:* the spike's buttons are already SyLib's `CapsuleButton`, but four places still roll their
+own where SyLib has, or can have, a component:
+
+1. The ⋯ menus on the spike screen and the recipe screen are a hand-built `Menu` with an
+   `IconButton` label. The library uses SyLib's `MoreMenu(look: .toolbar)`.
+2. The store recovery screen's Try Again and Start Fresh are system bordered buttons.
+3. The pause after saving pairs `CapsuleButton("Next Recipe")` with a plain "Done" button.
+4. "That's All of It" in a recipe is a small system bordered button. `CapsuleButton` has no small
+   size.
+
+Left as they are, on purpose: list section headers (SyLib's `SectionHeader` is another style),
+toolbar text buttons such as Done (SLT-089), alert buttons (the system's), iOS's `EditButton`, and
+the photo strip's grab handle (no SyLib piece, and too small to add one).
+
+#### Part 1 · SyLib: a small `CapsuleButton` (`CapsuleButton.swift`, `UI_COMPONENTS.md`)
+
+1. `CapsuleButton.Size` gains `.small`, first in the list: label font `.footnote`, regular weight;
+   padding 8 × 4 (horizontal × vertical); stroke width 1. Every other size is unchanged.
+2. `UI_COMPONENTS.md`: the size table gains the `.small` row, and "five sizes" becomes "six
+   sizes". Name no app anywhere in SyLib's code, comments or docs.
+3. A SyLib test: `textStyle(of: .small)` is `.footnote`, and the five other sizes are unchanged.
+
+#### Part 2 · Sylantro: the swaps
+
+1. **The ⋯ menus** (`SpikeView`, `RecipeView`): `MoreMenu(look: .toolbar)` with the same items in
+   the same order, as `LibraryView` does. No badge. The items, their labels, their `disabled` and
+   their conditions are unchanged.
+2. **Store recovery** (`StoreRecoveryView`): Try Again becomes
+   `CapsuleButton("Try Again", style: .primary, size: .large, fillsWidth: true)`, and Start Fresh
+   `CapsuleButton("Start Fresh", style: .destructive, size: .large, fillsWidth: true)`, with the
+   same actions (Start Fresh still asks first with its plain alert). The `.controlSize(.large)` goes.
+3. **The pause after saving** (`SavedPauseView`): Next Recipe becomes `.primary` (the main action),
+   and Done becomes `CapsuleButton("Done", fillsWidth: true)`, below it, with the same action.
+4. **"That's All of It"** (`RecipeView`): `CapsuleButton("That's All of It", size: .small)`, with
+   the same action and `disabled`.
+
+Each title is the string it was, so no string she reads changes.
+
+#### Part 3 · Tests
+
+SyLib: the one test in Part 1.3. Sylantro: none (views only); its suite total stays **239**.
+
+#### Done when
+
+1. SyLib builds and its suite passes (`00B` §5, item 3), with the run's own total and the total
+   before plus 1, said.
+2. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings, and its
+   suite passes on the pinned destination with **239** tests, with the destination string and
+   the run's own total.
+3. `git diff` in Sylantro touches only the four view files named in Part 2. In SyLib it touches
+   only `CapsuleButton.swift`, `UI_COMPONENTS.md` and the one test file. `grep` of SyLib's diff for
+   any app's name finds none. `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty.
+4. No string she reads changes.
+5. `git status` before and after in both repositories (`00A` §9); the summary is a row at the top
+   of §2.
+
+#### Pops's step on device (iPhone 18 Pro)
+
+1. The library's, a recipe's and the spike's ⋯ look the same and open the same items.
+2. A recipe flagged "Continues on a page not scanned": "That's All of It" is a small capsule, and
+   it still clears the line.
+3. After saving a scan: Next Recipe is a filled capsule, and Done a capsule below it.
+4. Store recovery can't be reached on purpose; its buttons are checked in the build only.
+
+#### Do not
+
+Change any reading or structuring code, prompt or `promptVersion`, `SylantroSchemaV1` or any
+synced model, `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`, the spike's
+behavior, any other view, `Info.plist`, the entitlements or build settings. In SyLib, change only
+what Part 1 names: no other size, style or component. No string she reads. No network. Edit no
+document except §2 of this one.
+
+---
+
+### Task M3-3s · Sylantro · Titles the rules can fix
+
+**Status: complete (243 tests); run 14 scored, M3-3t follows.** Was: runs after M3-3r. RV-39 ruled (steps, then the title rules, then
+the unit rules); run 13 (`10` §7). Rules only: no prompt, `instructions`, `@Guide` or
+`promptVersion` change (it stays 4). Spike run 14 checks it. RV-40's task (her reading in the
+background) comes after this one.
+
+**Inputs:** `00`, `00A`, `00B`, `10` §7 (runs 7 to 13) and SP-21, this document (RV-25, RV-35,
+RV-39, Task M3-5 Part 4 item 4, Tasks M3-2a and M3-3k and their rows in §2), and these files:
+`Domain/Structuring/HeaderArea.swift` (`lines(_:stopAt:)`, `snappedTitle`, `isSideLine`),
+`Extraction/RecipeStructurer.swift` (`structure`'s step 2 and 3: `stopAt` and the header;
+`labelled(_:labels:keeping:)`), `Domain/Structuring/PageClutter.swift`,
+`SylantroTests/Domain/StructuringRulesTests.swift` (or wherever `HeaderArea`'s tests are),
+`SylantroTests/Extraction/RecipeStructurerTests.swift`.
+
+*Why:* titles have matched the key on the same pages since run 8. Three are wrong for reasons a
+rule can fix, and on a fourth the title line ends up in a step:
+
+1. **The magazine salad (labels path):** the labels end the header area at its second line, so the
+   title, printed over three lines, is cut to its first word.
+2. **The granola web print:** the line after the title, "Author: … Prep Time: … Cook Time: …", is
+   the same size and the model's next line, so it joins the title.
+3. **The slow-cooker web print:** the page opens with the site's section name, then a navigation
+   line ("… Index | … Recipes | All Recipe Pages"), then the recipe's title. The title becomes the
+   section name and the navigation line.
+4. **The hummus magazine page (labels path):** the recipe's title line, printed below a three-line
+   deck, is labelled a step and starts step 1. (Which line the model picks as the title there is
+   its own choice, and this task doesn't change it.)
+
+#### Part 1 · The header area on the labels path (`HeaderArea.lines`, SP-21)
+
+When `stopAt` is given (labels ran), the area runs to the later of `stopAt` and the page's 5th
+line (index 5), within `maximumLines` as now. Clutter, non-Latin and heading lines are still
+dropped after. Without `stopAt`, nothing changes.
+
+#### Part 2 · Lines that are never part of a title (`HeaderArea`)
+
+1. **A label line** (moved here from M3-5 Part 4 item 4): one whose normalized text starts with
+   `author`, `by `, `prep time`, `cook time`, `total time`, `active time`, `yield`, `serves`,
+   `servings` or `makes`, followed by `:` or a space and more text. `isSideLine` takes it, so a
+   snapped title never takes it in. A title that is itself such a line is unchanged (the start
+   line isn't checked), as `isSideLine` works now.
+2. **A navigation line:** an area line holding ` | ` (space, bar, space) two or more times.
+3. **A breadcrumb line:** the area line directly before a navigation line.
+4. In `snappedTitle`, the model's lines that equal (normalized) a navigation or breadcrumb line of
+   the area are dropped with the side lines in step 2, and the title never takes one in, in step 4.
+   So when the model answers with the section name, the navigation line and the title, the title
+   starts at its own line.
+
+#### Part 3 · A title line labelled a step (`RecipeStructurer.labelled`, `stopAt`)
+
+On the labels path, a line labelled `step` that comes before the first line labelled `ingredient`
+is taken out of the steps (left unlabelled) when at least one line labelled `step` comes after the
+last line labelled `ingredient`. A page whose steps all come before its ingredients is unchanged.
+`stopAt` is found from the labels after this rule, so such a line stays in the header area.
+
+#### Part 4 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `StructuringRulesTests` (`HeaderArea`) | the labels path keeps five lines | 8 made-up lines with `stopAt` 1: the area holds the first 5 (none clutter); with `stopAt` 6: the first 6 |
+| | a label line isn't title | the M3-5 test, moved: a title line followed by "Author: Made-up Cook Prep Time: 5 mins" at the same size, the model's next line, gives the title line only |
+| | a breadcrumb and navigation line aren't title | area "Made-up Recipes", "Main Index \| Made-up Casseroles \| All Pages", "Made-up Bean Dish"; the model's answer is the three lines: the title is "Made-up Bean Dish" |
+| `RecipeStructurerTests` | a title line labelled a step | `labelled` over "Made-up Hummus", "1 can made-up chickpeas", "Puree the made-up chickpeas."; labels step, ingredient, step: "Made-up Hummus" isn't in `steps`. Over "Mix the made-up batter.", "2 cups made-up flour"; labels step, ingredient: the step stays |
+
+No existing test should change. If one does, say which and why.
+
+**The suite total:** M3-3r's total (239) plus these 4: **243**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with **243** tests (or the total before plus 4,
+   said), with the destination string and the run's own total.
+3. `git diff` touches only `HeaderArea.swift`, `RecipeStructurer.swift` (`labelled`, and where
+   `stopAt` is found) and the two test files. No prompt, `instructions`, `@Guide` or
+   `promptVersion` change. `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty.
+4. No string she reads changes. No page content in the repo: the tests use made-up lines.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's step on device (iPhone 18 Pro)
+
+Spike run 14: Load Test Set, then plain Run All. Export to `sylantro-testpages/results/` and send
+the file name. Claude scores it against run 13: the three titles, the hummus page's first step, and
+no other title changed.
+
+#### Do not
+
+Change any prompt, `instructions`, a `@Guide` or `promptVersion`. Don't change the steps' or the
+ingredients' rules beyond Part 3, `PageClutter`, `PageSplitter`, `PageTitles`, `SylantroSchemaV1`
+or any synced model, `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`, the
+spike, the views, `Info.plist`, the entitlements, build settings or SyLib. No string she reads. No
+page content in the repo (SLT-092). No network. Edit no document except §2 of this one.
+
+---
+
+### Task M3-3t · Sylantro · Titles stop at the ingredients
+
+**Status: complete (246 tests); spike run 15 next.** Was: runs after M3-3s. Pops, 25 Nov 2026, decision card after run 14,
+"Fix titles first (M3-3t)". Rules only: no prompt, `instructions`, `@Guide` or `promptVersion`
+change (it stays 4). Spike run 15 checks it. RV-40's task (her reading in the background) comes
+after this one.
+
+**Inputs:** `00`, `00A`, `00B`, `10` §7 (runs 13 and 14) and SP-21, this document (Task M3-3s and
+its row in §2), and these files: `Domain/Structuring/HeaderArea.swift` (`lines(_:stopAt:)`,
+`minimumLabelledLines`, `snappedTitle` step 4), `Domain/Structuring/WrapJoiner.swift`
+(`startsIngredient`, read only), `Domain/Structuring/IngredientLineParser.swift`
+(`unicodeFractions`, read only), `SylantroTests/Domain/StructuringRulesTests.swift`.
+
+*Why:* run 14. M3-3s's three titles are right, but four short cards on the labels path now take in
+their first ingredient lines ("Made-up Casserole 8 large made-up potatoes"). The labels end the
+area at the title, as they should; SP-21's 5-line minimum then brings in the ingredient lines below
+it; the model answers with all of them as its title; and they are the same size, so step 4 of
+`snappedTitle` takes in one or two. Every such line opens with a quantity and a space. The
+magazine salad's and the hummus page's own lines don't ("5-minute …" has a hyphen after the
+number), so neither changes.
+
+#### Part 1 · A quantity line (`HeaderArea`)
+
+A new `nonisolated static func startsWithQuantity(_ text: String) -> Bool`, true when the text,
+trimmed, starts with:
+
+1. a bullet (as `PageSplitter.removingBullet` finds one), or
+2. a quantity followed by a space: one or more digits, a fraction such as `1/2`, a fraction
+   character (`IngredientLineParser.unicodeFractions`), or digits joined to one (`1½`).
+
+So "2 bags made-up berries", "½ c made-up sugar", "1½ c made-up port" and "2 * made-up meat" are
+quantity lines; "5-minute made-up dip", "3-Bean Made-up Chili" and "Made-up Sauce" are not.
+
+#### Part 2 · The labels path's minimum stops at a quantity line (`HeaderArea.lines`)
+
+When `stopAt` is given and is before the 5th line, the lines from `stopAt` up to the 5th are added
+only up to (not including) the first that `startsWithQuantity`. Lines before `stopAt` are taken as
+now, whatever they start with. When `stopAt` is the 5th line or later, or not given, nothing
+changes. Clutter, non-Latin and heading lines are still dropped after.
+
+#### Part 3 · A title never takes in a quantity line (`HeaderArea.snappedTitle`, step 4)
+
+In step 4, a line that `startsWithQuantity` ends the title, as a side line or a barred line does.
+The start line isn't checked, so a title that opens with a number ("5-minute …") is unchanged.
+
+#### Part 4 · Tests
+
+| File | Test | Checks |
+|---|---|---|
+| `StructuringRulesTests` (`HeaderArea`) | quantity lines | `startsWithQuantity` is true for "2 bags made-up berries", "½ c made-up sugar", "1½ c made-up port", "1/2 c made-up oil", "2 * made-up meat", "• made-up salt"; false for "5-minute made-up dip", "3-Bean Made-up Chili", "Made-up Sauce", "" |
+| | the labels path stops at a quantity line | lines "Made-up Sauce", "Made-up Berry Relish", "2 bags made-up berries", "1 c made-up sugar", "Made-up line 5", "Made-up line 6" with `stopAt` 1: the area holds the first 2; with `stopAt` 4: the first 4 (lines before `stopAt` are kept) |
+| | a quantity line isn't title | area "Made-up Casserole", "8 large made-up potatoes", "1 stick made-up butter", all the same size; the model's answer is the three lines: the title is "Made-up Casserole" |
+
+"the labels path keeps five lines" (M3-3s) still passes: its lines start with words. No existing
+test should change. If one does, say which and why.
+
+**The suite total:** M3-3s's total (243) plus these 3: **246**.
+
+#### Done when
+
+1. Sylantro builds through `Sylantro.xcworkspace` with no errors and no new warnings.
+2. The suite passes on the pinned destination with **246** tests (or the total before plus 3,
+   said), with the destination string and the run's own total.
+3. `git diff` touches only `HeaderArea.swift` and `StructuringRulesTests.swift`. No prompt,
+   `instructions`, `@Guide` or `promptVersion` change. `git diff -- Sylantro/Store/SylantroSchemaV1.swift`
+   is empty.
+4. No string she reads changes. No page content in the repo: the tests use made-up lines.
+5. `git status` before and after (`00A` §9); the summary is a row at the top of §2.
+
+#### Pops's step on device (iPhone 18 Pro)
+
+Spike run 15: Load Test Set, then plain Run All. Export to `sylantro-testpages/results/` and send
+the file name. Claude scores it against run 14: the four cards' titles back to their own line, the
+three titles M3-3s fixed still right, and no other title changed.
+
+#### Do not
+
+Change any prompt, `instructions`, a `@Guide` or `promptVersion`. Don't change `RecipeStructurer`,
+`lineKinds`, `labelled`, the steps' or ingredients' rules, `WrapJoiner`, `IngredientLineParser`,
+`PageClutter`, `PageSplitter`, `PageTitles`, `SylantroSchemaV1` or any synced model,
+`CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`, the spike, the views,
+`Info.plist`, the entitlements, build settings or SyLib. No string she reads. No page content in
+the repo (SLT-092). No network. Edit no document except §2 of this one.
+
+---
+
 
 ### Task M3-5s · Sylantro · Finding each recipe's title on a page (spike)
 
@@ -2074,7 +3127,7 @@ the tests use made-up lines. No network. Edit no document except §2 of this one
 
 ### Task M3-5 · Sylantro · Several recipes on a page, and a page that isn't a recipe
 
-**Status: written, on hold.** Pops, 25 Nov 2026: "we will not move on to task 5 until we get single recipe reading working better". Its test total is rebased when it is released. RV-14, RV-32, RV-35 and RV-36 ruled; `13`
+**Status: written, on hold.** Pops, 25 Nov 2026: "we will not move on to task 5 until we get single recipe reading working better". Its test total is rebased when it is released. Part 4 item 4 (a label line is a side line) and its test "a label line isn't title" moved to M3-3s; drop both from M3-5 when it is released. RV-14, RV-32, RV-35 and RV-36 ruled; `13`
 v0.41's SC-22 and S-74 to S-77 proposed, with S-52m and S-73 (the agent uses them as written and
 notes it).
 
@@ -2274,6 +3327,17 @@ of this one.
 
 | Task | Date | Status | Summary |
 |---|---|---|---|
+| M3-3t | 27 Nov 2026 | **complete** | **git status before:** HEAD `83581c0`. Everything from M3-3j to M3-3s and the docs staged (`M `/`A `); nothing unstaged or untracked. **After:** the staged state is unchanged. `MM` `Sylantro/Domain/Structuring/HeaderArea.swift` and `SylantroTests/Domain/StructuringRulesTests.swift` (this task, unstaged), and `MM` `Docs/15_MILESTONE_3_REVIEW.md` for this row. I staged or committed nothing. **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`; `xcodebuild build -workspace Sylantro.xcworkspace` `** BUILD SUCCEEDED **`, no errors, no warnings from source (only the build tool's appintentsmetadataprocessor line). **Suite total:** "✔ Test run with 246 tests in 29 suites passed after 1.001 seconds."; `** TEST SUCCEEDED **`. **Total before: 243** (M3-3s), plus 3 = 246. **Built:** Part 1: `HeaderArea.startsWithQuantity(_:)` (`nonisolated static`). It's true when the trimmed text opens with a bullet (`PageSplitter.removingBullet` changes it), or with digits, digits `/` digits, a fraction character (`IngredientLineParser.unicodeFractions`) or digits joined to one, then a space. Part 2: on the labels path, the end is `max(stopAt, min(5, first quantity line among the first 5, else 5))`. Part 3: `snappedTitle` step 4 stops at a quantity line, beside side and barred lines; the start line isn't checked. **Clauses:** ✅ 1 Build, as above. ✅ 2 246 tests, as above. ✅ 3 `git diff` touches only `HeaderArea.swift` and `StructuringRulesTests.swift`. No prompt, `instructions`, `@Guide` or `promptVersion` change, and `RecipeStructurer`, `lineKinds` and `labelled` are untouched. `git diff HEAD -- Sylantro/Store/SylantroSchemaV1.swift` is empty. ✅ 4 No string she reads changes, and the tests use made-up lines. ✅ 5 git status before and after, as above; this row. **Tests added (3):** "quantity lines" (the six true and four false cases), "the labels path stops at a quantity line" (`stopAt` 1 gives the first 2; `stopAt` 4 the first 4) and "a quantity line isn't title" ("Made-up Casserole"). No existing test changed, and M3-3s's "the labels path keeps five lines" passes. **Notes for Claude:** (a) **Part 2's text and its test disagree; the test was followed.** The text: "the lines from `stopAt` up to the 5th are added only up to the first that `startsWithQuantity`". Read over those lines alone, `stopAt` 4 on the test's lines adds "Made-up line 5" (index 4, not a quantity line) and gives 5 lines, but the test expects the first 4. The rule built cuts the extension at the first quantity line anywhere in the first 5 lines, never below `stopAt`: once a quantity line has been seen (here at index 2, before `stopAt`), nothing more is added. On every case in the task this matches the test (first 2, first 4; M3-3s's first 5 and first 6), and lines before `stopAt` are kept whatever they start with. If the text's reading is meant instead, the second expectation would be the first 5. (b) A fraction needs digits before the `/` (`1/2`, not `/2`), and a quantity must be followed by a space. So "5-minute", "3-Bean" and "2x" aren't quantity lines, and "2 * made-up meat" is (digits then a space). Bullets are `PageSplitter`'s (`•`, `·`, `-`, `*` followed by a space). "- made-up salt" counts; "-5°" doesn't. (c) `startsWithQuantity` is a new function rather than `WrapJoiner.startsIngredient`, which is true for a line that merely starts with a digit ("5-minute …", "3-Bean …"). That would have changed the magazine salad's and the hummus page's titles. |
+| M3-3s | 25 Nov 2026 | **complete** | **git status before:** HEAD `83581c0`; every source file from M3-3j to M3-3r staged (`M `/`A `), nothing unstaged in code; `MM` Docs 00, 00B, 10, 12, 15 and README (Pops's). **After:** the staged state is unchanged. ` M` `Domain/Structuring/HeaderArea.swift` and `SylantroTests/Domain/StructuringRulesTests.swift`; `MM` `Extraction/RecipeStructurer.swift` and `SylantroTests/Extraction/RecipeStructurerTests.swift`; `MM` `Docs/15_MILESTONE_3_REVIEW.md` for this row. Nothing else changed since the start. I staged or committed nothing. **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`; `xcodebuild build -workspace Sylantro.xcworkspace` `** BUILD SUCCEEDED **`, no errors, no warnings from source (only the build tool's appintentsmetadataprocessor line). **Suite total:** "✔ Test run with 243 tests in 29 suites passed after 0.952 seconds."; `** TEST SUCCEEDED **`. **Total before: 239** (M3-3r), plus 4 = 243. **Built:** Part 1: `HeaderArea.lines` with `stopAt` ends at `max(stopAt, 5)`, within `maximumLines`; clutter, non-Latin and heading lines are dropped after, as before. Without `stopAt`, unchanged. Part 2: `isSideLine` takes a label line: normalized, it starts with `author`, `by`, `prep time`, `cook time`, `total time`, `active time`, `yield`, `serves`, `servings` or `makes`, then a space and more text. A printed `:` normalizes to a space, so "followed by `:` or a space" is one check. New `barredLines(in:)` finds the area's navigation lines (` | ` two or more times) and the line just before each (its breadcrumb). In `snappedTitle`, step 2 drops the model's lines equal to one of these as well as side lines, and step 4 stops at one. Part 3: `labelled`'s label logic moves into a new `lineKinds(_:labels:)`: the first label per line, then M3-3k's and M3-3m's run moves, then Part 3 (a `step` line before the first `ingredient` line is left unlabelled when a `step` line comes after the last one). `labelled` reads its sections from it, and `structure`'s step 2 finds `stopAt` from it, so a title line labelled a step stays in the header area. **Clauses:** ✅ 1 Build, as above. ✅ 2 243 tests, as above. ✅ 3 Only `HeaderArea.swift`, `RecipeStructurer.swift` and the two test files changed. `RecipeStructurer.swift`'s hunks are the `stopAt` lines in step 2 and `labelled` with its new `lineKinds`. No prompt, `instructions`, `@Guide` or `promptVersion` line is in the diff. `git diff HEAD -- Sylantro/Store/SylantroSchemaV1.swift` is empty. ✅ 4 No string she reads changes, and the tests use made-up lines. ✅ 5 git status before and after, as above; this row. **Tests added (4):** StructuringRulesTests "the labels path keeps five lines", "a label line isn't title" and "a breadcrumb and navigation line aren't title" (the area with the model's three lines gives "Made-up Bean Dish"); RecipeStructurerTests "a title line labelled a step". **One existing test changed:** M3-3m's "a run of step lines labelled ingredients", its second half. Its lines are labelled step ("Whisk the made-up"), ingredient ("1/2 cup made-up sugar,"), ingredient, step ("medium bowl."). The quantity and unit keep the run as ingredients, so a `step` line comes before the first ingredient and another after the last: Part 3's shape, the same as the hummus test's. "Whisk the made-up" is now left unlabelled, and the test expects `kept.steps == ["medium bowl."]`; the first half (the run moved to the steps) and the ingredient expectation are unchanged. **Notes for Claude:** (a) **Part 3 runs after M3-3k's and M3-3m's moves, on purpose.** Run on the raw labels, it would also take the first line out of M3-3k's "a step line labelled an ingredient" and both halves of M3-3m's test, all labelled step, ingredient(s), step. Run after the moves, a run of ingredient or note lines that becomes step lines leaves no `ingredient` line, so Part 3 doesn't apply. Only a page whose ingredient lines stay ingredients (a quantity and a unit, as "1 can made-up chickpeas": `can` is a unit) is read as "title or deck labelled a step". M3-3m's quantity variant is that shape, hence the one changed test. (b) **The label-line check isn't applied to the model's first line.** `snappedTitle`'s step 2 also passes the model's own lines through `isSideLine`. So a model title that is itself a label line ("By the Sea Chowder", "Makes Ahead …") would be dropped there, against "A title that is itself such a line is unchanged". `isSideLine(_:author:sourceHost:labels:)` takes `labels: false` for the model's first line. Every later model line and every area line the title might take in are checked. (c) The navigation test is ` | ` appearing at least twice (`components(separatedBy: " | ")` gives 3 or more). A breadcrumb is only the area line directly before a navigation line. The model's lines are compared normalized against those area lines, so the answer's section name and navigation line drop out and the title starts at "Made-up Bean Dish". (d) Part 1's "5th line (index 5)" is read as the area's first 5 lines when `stopAt` is smaller, which is what the test checks (stopAt 1 gives 5 lines, 6 gives 6). The clutter and heading drop still applies after, so the area can hold fewer than 5. (e) `stopAt` now also reflects M3-3k's and M3-3m's moves. They only turn ingredient or note lines into step lines, so the set of lines labelled `ingredient` or `step` is the same as before; only Part 3 changes it. |
+| M3-3r | 25 Nov 2026 | **complete** | **git status before:** Sylantro: HEAD `83581c0`. M3-3j to M3-3n staged. M3-3o to M3-3q unstaged over them (`MM` `RecipeStructurer.swift`, `RecipeStructurerTests.swift`, `SpikeRunner.swift`, `SpikeReport.swift`, `SpikeView.swift`, `SpikeRunnerTests.swift`). ` M` Docs 00 (v0.61) and 00B (v0.20); `MM` Docs 10, 12, 15 and README (Pops's). SyLib (`sylib-swift`): clean, HEAD `9d3c9ce`. **After:** Sylantro: the staged state is unchanged. Against the diff saved at the start, only `Views/Capture/SavedPauseView.swift`, `Views/Recipe/RecipeView.swift`, `Views/Recovery/StoreRecoveryView.swift` (now ` M`) and `Views/Spike/SpikeView.swift` (`MM`, over M3-3o's change) changed, plus `MM` `Docs/15_MILESTONE_3_REVIEW.md` for this row. SyLib: ` M` `Docs/UI_COMPONENTS.md`, `Sources/SyLibUI/Components/CapsuleButton.swift`, `Tests/SyLibTests/SyLibUI/CapsuleButtonAccessoryTests.swift`. I staged or committed nothing in either. **SyLib suite** (`xcodebuild test -scheme SyLib-Package -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5'`, from `LIB/`): "✔ Test run with 1765 tests in 229 suites passed after 4.457 seconds."; `** TEST SUCCEEDED **`. **Total before: 1,764**, plus 1 = 1,765. No SyLib total was recorded anywhere, and the diff adds one test and removes none, so 1,764 is this run's total less the one added; the suite wasn't run twice. **Sylantro:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`; `xcodebuild build -workspace Sylantro.xcworkspace` `** BUILD SUCCEEDED **`, no errors, no warnings from source (only the build tool's appintentsmetadataprocessor line). "✔ Test run with 239 tests in 29 suites passed after 0.914 seconds."; `** TEST SUCCEEDED **`; 239, unchanged. **Built:** Part 1 (SyLib): `CapsuleButton.Size.small`, first in the enum, with `.footnote` regular, padding 8 × 4 and stroke 1 in each of the size switches (`textStyle(of:)`, `labelFont`, `horizontalPadding`, `verticalPadding`, `borderLineWidth`); every other case unchanged. `UI_COMPONENTS.md` gets the `.small` row first in the size table, and "Four styles, five sizes" becomes "Four styles, six sizes". The test "the small size takes the footnote style, the other sizes as before" in `CapsuleButtonAccessoryTests.swift`, the file that holds `CapsuleButton`'s tests, checks `textStyle(of:)` for all six sizes. Part 2 (Sylantro): 1. `SpikeView` and `RecipeView`: the ⋯ is `MoreMenu(look: .toolbar, accessibilityLabel: "More") { … }`, with the same items, order, conditions and `disabled`; the hand-built `Menu` with an `IconButton` label is gone. 2. `StoreRecoveryView`: `CapsuleButton("Try Again", style: .primary, size: .large, fillsWidth: true, action: tryAgain)` and `CapsuleButton("Start Fresh", style: .destructive, size: .large, fillsWidth: true)`, which still sets `isConfirmingStartFresh` for its plain alert; `.controlSize(.large)` is gone. 3. `SavedPauseView`: Next Recipe is `.primary`, and Done is `CapsuleButton("Done", fillsWidth: true)` below it, with the same action. 4. `RecipeView`: `CapsuleButton("That's All of It", size: .small)`, with the same action and `disabled`. **Clauses:** ✅ 1 SyLib's suite, as above. ✅ 2 Sylantro's build and suite, as above. ✅ 3 Sylantro's `git diff` touches only the four view files; SyLib's only `CapsuleButton.swift`, `UI_COMPONENTS.md` and the one test file. A case-insensitive grep of SyLib's added lines for Sylantro, SyJong, Syderal, Score It, Game Night and Sesh finds none. `git diff HEAD -- Sylantro/Store/SylantroSchemaV1.swift` is empty. ✅ 4 Every title is the string it was. ✅ 5 git status before and after in both repositories, as above; this row. **Notes for Claude:** (a) **The ⋯'s VoiceOver label.** `MoreMenu`'s default `accessibilityLabel` is "Menu". The old ⋯ was a bare `ellipsis.circle` that iOS labelled itself (MT-11), as "More". To follow `LibraryView`, the task's model, both menus pass `accessibilityLabel: "More"`, the library's own string, so what VoiceOver says is unchanged and the same on all three screens. No badge, so `badgedAccessibilityLabel` isn't passed. (b) SyLib's `CapsuleButton.swift` and the test file already name SyJong in comments from earlier work ("SyJong `20` 20.11L" and others). None of those lines were touched, and none of the added lines names an app. Whether to scrub the existing ones is outside this task, which says to change only what Part 1 names. (c) `.small` isn't added to the test file's `sizes` table, which drives the accessory and old-button tests at every size. Adding it would change those existing tests, and Part 1.3 names one new test only. (d) No other SyLib component, size or style changed, and Sylantro's other views are untouched. |
+| M3-3q | 25 Nov 2026 | **complete** | **git status before:** HEAD `83581c0`. M3-3j to M3-3n staged. M3-3o and M3-3p unstaged over them (`MM` `SpikeRunner.swift`, `SpikeReport.swift`, `SpikeView.swift`, `SpikeRunnerTests.swift`); `MM` Docs 10, 12, 15 and README (Pops's). `RecipeStructurer.swift` and `RecipeStructurerTests.swift` staged, with nothing unstaged. **After:** the staged state is unchanged. Against the diff saved at the start, only `RecipeStructurer.swift` and `RecipeStructurerTests.swift` changed, now `MM`. `MM` `Docs/15_MILESTONE_3_REVIEW.md` for this row. I staged or committed nothing. **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`; `xcodebuild build -workspace Sylantro.xcworkspace` `** BUILD SUCCEEDED **`, no errors, no warnings from source (only the build tool's appintentsmetadataprocessor line). **Suite total:** "✔ Test run with 239 tests in 29 suites passed after 1.019 seconds."; `** TEST SUCCEEDED **`. **Total before: 236** (M3-3p), plus 3 = 239. **Built:** Part 1: `ingredientGroups` makes each answered item's names through a new private `namesFromLine`. `item` is the model's text when the parser's `rest` for the ingredient's own `rawText` (bullet removed) holds it, else that `rest`, or nil when `rest` is empty. `preparation` and `note` are kept only when `rawText` holds them. Comparison goes through a new private `comparable`: lowercased, whitespace runs as one space, trimmed. `isOptional`, `rawText`, quantity, unit and line numbers are unchanged, and no warning is added. Part 2: in the printed-headings branch, after all lines are placed, an ingredient put back on a line after the first heading with a parser quantity is dropped from the `put back` set: still put back, in place under its heading, but unflagged. Lines before the first heading, lines with no quantity, and sections with no printed heading keep their warnings. "unused ingredient line n" is unchanged. **Clauses:** ✅ 1 Build, as above. ✅ 2 239 tests, as above. ✅ 3 `RecipeStructurer.swift`'s hunks are `ingredientGroups(from:lines:)`'s doc comment and body (the `namesFromLine` call, the unflagging loop) and the two new private helpers `namesFromLine` and `comparable`, placed before `putBackIngredient`. No prompt, `instructions`, `@Guide` or `promptVersion` line is in it, and the steps' rules and `labelled` are untouched. `git diff HEAD -- Sylantro/Store/SylantroSchemaV1.swift` is empty. ✅ 4 No string she reads changes, and the tests use made-up lines. ✅ 5 git status before and after, as above; this row. **Tests added (3):** "an item name from the next line" (the first ingredient's item is the parser's rest, "made-up flour, sifted", with no preparation; the second keeps "made-up sugar"; no warnings), "an item name with its quantity" and "lines put back under headings unflagged" (line 4 put back under "Made-up filling" with no warning; line 5, "- made-up sprinkles", with `put back: ingredient 3` and nothing else). **Existing tests changed (2):** (1) M3-3h's "a skipped group comes back", as the task names: it now expects no `put back` warning, the rest as before. (2) **Not named by the task:** M3-3e's "lines before the first are put back". Its lines start with the printed heading "Dough:", and the two lines it puts back by M3-3e's walk-back ("1 Tbsp. yeast", "1/2 cup water") come after that heading with quantities. Part 2 ("a line put back anywhere after the first heading") unflags them, so it now expects no `put back` warning; the grouping and order expectations are unchanged. A test of the walk-back's flags would now need a line before any printed heading, or a section with none. **Notes for Claude:** (a) **A missing model item stays nil.** Part 1 is "for each ingredient made from the model's item". When the model gives no item (nil, or an empty answer such as "none", SLT-152), `item` stays nil as before rather than becoming `rest`. That keeps "'none' fields are nil" unchanged; it failed under the first reading. If the parser's rest should fill an item the model left empty too, that's a one-line change and that test would change. (b) "Found in" is a substring test after the comparison form: the model's item must appear within `rest`, and a preparation or note within the whole `rawText`. So "flour" is kept for "made-up flour, sifted", and "1/4 cup made-up butter" isn't kept for its own line's rest ("made-up butter"). (c) The bullet is removed with `PageSplitter.removingBullet` before parsing for Part 1. The section's lines normally arrive bullet-free (SLT-149), so this rarely matters. `putBackIngredient` itself parses the line as given, and its rule is unchanged. (d) Part 2 applies to every way a line is put back after the first heading: the headings branch's own put-backs, M3-3e's walk-back and the span put-backs (RV-29). That's why test (2) changed. |
+| M3-3p | 25 Nov 2026 | **complete (the device run is Pops's)** | **git status before:** HEAD `83581c0`. M3-3j to M3-3n staged. M3-3o unstaged over them (`MM` `SpikeRunner.swift`, `SpikeReport.swift`, `SpikeView.swift`, `SpikeRunnerTests.swift`); `MM` Docs 12, 15 and README (Pops's). **After:** the staged state is unchanged. Against the diff saved at the start, only `SpikeRunner.swift`, `SpikeReport.swift` and `SpikeRunnerTests.swift` changed. `SpikeView.swift` still has only M3-3o's unstaged change. `MM` `Docs/15_MILESTONE_3_REVIEW.md` for this row. I staged or committed nothing. **Destinations:** builds for `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5` and `generic/platform=iOS`, both `** BUILD SUCCEEDED **`, no errors, no warnings from source (only the build tool's appintentsmetadataprocessor line). **Suite total:** "✔ Test run with 236 tests in 29 suites passed after 0.869 seconds."; `** TEST SUCCEEDED **`. **Total before: 234** (M3-3o), plus 2 = 236. **Built:** Part 1: `totalUnitCount` = captures × 10. `stepDone(_:capture:)` adds one unit for each step: each page read, the bottom read, each `onPartDone` name, and in `findTitles` the title lister's answer and each piece. `completedUnitCount` is the new `completedUnits(processed: processedCount, stepsInCurrent:)` (= processed × 10 + min(steps, 9)), set after each step and where M3-3o set it. Steps start from 0 when a capture starts in `runAll` and when `structureWaiting` takes one up again. The subtitle is "Capture n of m, <step>": "read", "line labels", "header", "ingredients", "steps", "titles" or "pieces", with fallbacks under their part's name via `stepName`. M3-3o's ", waiting" is kept. Plain Run All has no task, so it gets no units or subtitles. Part 2: `structure` calls `findTitles` only when the attempt started outside background-test mode, so in that run's report the title fields stay nil. Part 3: `SpikeReport.backgroundTaskStartedAt` and `backgroundTaskEndedAt` (optional, synthesized `decodeIfPresent`), set at the task's launch and at its end, however it ends, with one log line `background task lasted <s> s`. Both are nil for a plain run. Part 4: `expireBackgroundTask` completes the task at once (`setTaskCompleted(success: false)`), records "expired at capture n" and the end time, ends background-test mode (no more progress or subtitles), and logs `background task expired at capture n, run goes on in the app`. The run isn't cancelled: it goes on as Run All, then `structureWaiting`. Close still cancels it through `runTask`. After an expiry, `runAllInBackground` neither overwrites the outcome nor completes the task again. **Clauses:** ✅ 1 Both builds, as above. A first generic-device build warned that `unitsPerCapture` (main-actor by the target's default isolation) was read from the `nonisolated` `completedUnits`. Making it `private nonisolated static let` fixed that, and both builds are now clean. ✅ 2 236 tests, as above. ✅ 3 Only `SpikeRunner.swift`, `SpikeReport.swift` and `SpikeRunnerTests.swift` changed. `RecipeStructurer.swift`, `TitleLister`, `ExtractionQueue`, every prompt and `Info.plist` are unchanged (their staged copies match the start). `git diff HEAD -- Sylantro/Store/SylantroSchemaV1.swift` is empty. ✅ 4 No string she reads changes. Subtitles and the new log lines hold capture numbers, step names, seconds and identifiers only, and the new fields are dates. ✅ 5 git status before and after, as above; this row. **Tests added (2):** SpikeRunnerTests "background progress by steps" ((0,0) 0, (0,3) 3, (2,4) 24, (2,15) 29) and "background task times round trip". No existing test changed. "Older results read" and "background fields round trip" pass. **Notes for Claude:** (a) **Progress can step back, by design.** When a capture ends waiting for the app, its steps leave the count (it isn't processed), so `completedUnitCount` drops by up to 9. That's the truth Part 1 asks for, and progress isn't faked. In the background test without refusals this doesn't happen; with M3-3o's waits it happens only after the last wait. (b) `onPartDone` is called off the main actor. Each step hops to it with `Task { @MainActor in … }`, carrying the capture's id, so a step that lands after its capture has moved on is dropped rather than counted for the next one. (c) The structurer gives part names `lineLabels`, `header`, `ingredients`, `steps`, `ingredients fallback` and `steps fallback`; a retry reports under its part's own name. So the subtitle maps `lineLabels` to "line labels" and drops " fallback". `partsDone` (M3-3o) keeps the names as given. M3-3o's note c wrote "line labels"; the recorded name is `lineLabels`. (d) Background-test mode is decided per attempt for Part 2. After an expiry, later captures in the same run are structured as Run All, title comparison included, as Part 4.2 says. (e) A capture cut off by the expiry ends however its call ends. A refusal after it, with the scene inactive, gets no wait (the test mode is over) and the capture waits for the app. A capture in one of M3-3o's waits at the expiry goes to wait for the app when the wait ends, unless the scene is active by then. (f) The task's expiry handler reaches the runner through `Task { @MainActor … }`, as in M3-3l. The task is completed there, before anything else runs on the main actor. |
+| M3-3o | 25 Nov 2026 | **complete (the device run is Pops's)** | **git status before:** HEAD `83581c0`. M3-3j to M3-3m and `PageClutterTests.swift` (`A `) staged; my M3-3n change unstaged (`MM` `SpikeRunner.swift`); `MM` Docs 12, 15 and README (Pops's). **After:** Pops staged M3-3n's `SpikeRunner.swift` and the docs during the session. I rebuilt the starting tree from HEAD and the two saved diffs, and every staged source file matches it. My changes are unstaged: `MM` `SpikeRunner.swift`, `SpikeReport.swift`, `SpikeView.swift`, `SpikeRunnerTests.swift`, and `MM` `Docs/15_MILESTONE_3_REVIEW.md` for this row. I staged or committed nothing. **Destinations:** builds for `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5` and `generic/platform=iOS`, both `** BUILD SUCCEEDED **`, no errors, no warnings from source (only the build tool's appintentsmetadataprocessor line). **Suite total:** "✔ Test run with 234 tests in 29 suites passed after 0.909 seconds."; `** TEST SUCCEEDED **`. **Total before: 232** (M3-3n), plus 2 = 234. **Built:** Part 1: `structure` picks each refusal's wait by the scene at that moment. In front it uses `retryDelay` (30 s ×3, SLT-153). Behind, in the background test only, it uses the new `backgroundRetryDelay(afterRefusal:)` (30, 60, 120, 240, 300, 300 s, then nil). Otherwise there's no wait. One `refusals` count carries across scene changes. After the last wait, or a cancelled one, the capture waits for the app (SLT-144). During a wait the subtitle is "Capture n of m, waiting", and it goes back to "Capture n of m" when the retry starts. Each wait logs one line: `capture n: refused, scene active <Bool>, retrying in <s> s`. A refusal with no wait still logs `capture n: refused, scene active <Bool>`. Plain Run All behaves as before: with the scene inactive outside the test there's no wait, and a scene that leaves during an in-front wait still sends the capture to wait for the app. Part 2: `completedUnitCount` = `processedCount`, set after each capture in `runAll` and after each capture `structureWaiting` structures. `backgroundTask` is "completed", or "completed, n waiting for the app"; the other values are unchanged. Part 3: `CapsuleButton("BG Run All")` right after Run All, default style, the same `disabled` and the same `runTask`, so Close cancels it. The ⋯ menu item is removed, the menu keeps Add Capture and Clear, and the `runTask` comment now names BG Run All. Part 4: `Attempt.partsDone` and `Attempt.retryAfterSeconds`, optional (synthesized `decodeIfPresent`). `partsDone` comes from `onPartDone`, which the spike now passes to `structure(_:pageIDs:onPartDone:)`, collected in an `OSAllocatedUnfairLock` since it can be called off the main actor. **Clauses:** ✅ 1 Both builds, as above. ✅ 2 234 tests, as above. ✅ 3 My `git diff` touches only `SpikeRunner.swift`, `SpikeReport.swift`, `SpikeView.swift` (Part 3: the button, the removed menu item, the comment) and `SpikeRunnerTests.swift`. `RecipeStructurer.swift`, `ExtractionQueue`, every prompt and `Info.plist` are unchanged, and the staged copies match the start. `git diff HEAD -- Sylantro/Store/SylantroSchemaV1.swift` is empty. ✅ 4 No string she reads changes. "BG Run All" and the ", waiting" subtitle are spike-only English. `partsDone` holds part names only, and the new log line holds numbers and a Bool. ✅ 5 See notes (a) and (b). ✅ 6 git status before and after, as above; this row. **Tests added (2):** SpikeRunnerTests "background retries are timed and limited" and "attempt parts and waits round trip". No existing test changed. "Older results read" and "background fields round trip" pass, the latter building its `Attempt`s without the new fields. **Notes for Claude:** (a) **`progress` and expiry**, from the SDK's `BackgroundTasks.framework/Headers/BGTask.h` (`BGContinuedProcessingTask`): "``BGContinuedProcessingTask``s _must_ report progress via the ``NSProgressReporting`` protocol conformance during runtime and are subject to expiration based on changing system conditions and user input. Tasks that appear stalled may be forcibly expired by the scheduler to preserve system resources." Xcode's article "Performing long-running tasks on iOS and iPadOS": "Your app regularly reports progress of the task, which enables the system to make informed suggestions through the interface about possibly stuck tasks that a person can cancel."; "It’s important to display accurate progress, as a person can cancel a task through the Live Activity widget if the task appears to be stuck."; "The system also prioritizes the termination of tasks that reflect minimal progress, if resource constraints occur at run time." And `BGTask.expirationHandler`: "The handler may be called before the background process uses the full amount of its allocated time." So yes: a task whose progress doesn't advance may be expired. Progress isn't faked, as Part 1.5 says, so an expiry during a long wait (up to 300 s) is a likely finding and will be recorded as "expired at capture n". (b) **`rateLimited` carries no suggested wait on iOS 26.** `LanguageModelSession.GenerationError.rateLimited(_:)` holds a `Context`, which has only `debugDescription`. Its doc: "This failure can happen if you make too many requests in a short window. You can recover from this error by spacing your requests or reducing system load. The exact solution may be model dependent." In the iOS 27 SDK that case is deprecated ("Use ``LanguageModelError/rateLimited(_:)`` instead"). The replacement's `LanguageModelError.RateLimited` has `resetDate: Date?`, documented as "The date after which retrying is likely to succeed, if known." `RecipeStructurer.isRateLimit` already matches both. So on an iOS 27 device a suggested wait may come as `resetDate`. It isn't used or recorded yet, as the task says: reading it would mean `RecipeStructurer` passing the error through, which this task doesn't allow. (c) An attempt's `partsDone` lists `RecipeStructurer`'s parts only ("line labels", "header", "ingredients", "steps", their retries and fallbacks). The spike's title lister and title pieces don't call `onPartDone`, so a refusal there doesn't throw out of `structure` (it's recorded in `partErrors`, as before). (d) `retryAfterSeconds` is set on the refused attempt that is followed by a wait, and nil on a refusal that sends the capture to wait for the app. (e) A capture that ends waiting for the app is not counted in `completedUnitCount`. If many wait, the indicator stops short of the total, which is the truth Part 2 asks for. |
+| M3-3n | 25 Nov 2026 | **complete (the device check is Pops's)** | **git status before:** HEAD `83581c0`. M3-3j to M3-3l and Doc 10 staged (`M `). M3-3m unstaged over them (` M`/`MM`: `PageClutter.swift`, `TestSetGroups.swift`, `RecipeStructurer.swift`, `SpikeReport.swift`, `SpikeRunner.swift`, `Info.plist`, the two test files). `??` `PageClutterTests.swift`; `MM` Docs 12, 15 and README (Pops's). **After:** Pops staged everything during the session, M3-3m and `PageClutterTests.swift` (`A `) included. I rebuilt the starting tree from HEAD and the two saved diffs, and every staged source file matches it. The one change left unstaged is mine: `MM` `Sylantro/Extraction/Spike/SpikeRunner.swift`, plus `MM` `Docs/15_MILESTONE_3_REVIEW.md` for this row. I staged or committed nothing. **Destinations:** builds for `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5` and `generic/platform=iOS`, both `** BUILD SUCCEEDED **`, no errors, no warnings from source (only the build tool's appintentsmetadataprocessor line). **Suite total:** "✔ Test run with 232 tests in 29 suites passed after 1.193 seconds."; `** TEST SUCCEEDED **`. **232**, as before; no test added. **Built:** Part 1: `registerLaunchHandlerIfNeeded()` returns whether a handler is registered. If not, `runAllInBackground` doesn't submit: it logs `background task registration rejected: com.syzygysoftwerksllc.Sylantro.spike.run` and runs as Run All, with `backgroundTask` "not started: registration rejected". Part 2.1: the first time the spike screen comes to the front (`sceneBecameActive`, which `SpikeView`'s `scenePhase` handler calls with `initial: true`), the runner logs `background task permitted identifiers: <list>`, or `… none`. That's once per runner, so no view changes. Part 2.2: the handler is now registered for `com.syzygysoftwerksllc.Sylantro.spike.run`, the request's own identifier, instead of the wildcard. `backgroundTaskWildcard` is removed. `Info.plist` is unchanged and keeps `…spike.*`. **Clauses:** ✅ 1 Both builds, as above. ✅ 2 232 tests, as above. ✅ 3 My `git diff` is only `SpikeRunner.swift` (33+, 8−). `Info.plist` and the target's settings are unchanged, since Part 2 found nothing wrong there. `git diff HEAD -- Sylantro/Store/SylantroSchemaV1.swift` is empty. ✅ 4 No string she reads changes. The two new log lines hold identifiers only. ✅ 5 git status before and after, as above; this row. **Notes for Claude:** (a) **The installed app's plist was right.** The `generic/platform=iOS` build (derived data in `/tmp`), read with `plutil -p Sylantro.app/Info.plist`, holds `"BGTaskSchedulerPermittedIdentifiers" => [ 0 => "com.syzygysoftwerksllc.Sylantro.spike.*" ]`, before and after this change. The target's `INFOPLIST_FILE` is `Sylantro/Info.plist` with `GENERATE_INFOPLIST_FILE = YES`, and the two merge as expected. So the fault wasn't the build: the system wanted the identifiers written differently. (b) **What Apple's documentation shows** (Xcode's documentation, no network). `BGContinuedProcessingTaskRequest.init(identifier:title:subtitle:)`: "The identifier must leverage a base wildcard notation, where the prefix of the identifier must at least contain the bundle ID of the submitting application, followed by optional semantic context, and finally ending with `.*`. An example: `<MainBundle>.<SemanticContext>.*` transforms to `com.foo.MyApplication.continuedProcessingTask.*`. Thus, a submitted identifier is of the form `com.foo.MyApplication.continuedProcessingTask.HD830D`." The article "Performing long-running tasks on iOS and iPadOS", under Run the continuous background task: "To run the job, register the task request with the shared `BGTaskScheduler` using the unique `taskIdentifier`: `BGTaskScheduler.shared.register(forTaskWithIdentifier: taskIdentifier, using: nil) { task in … }`", and it submits `BGContinuedProcessingTaskRequest(identifier: taskIdentifier, …)`, the same identifier. So only the permitted identifier is a wildcard. The registration and the request both use the concrete identifier under it. M3-3m registered the literal `…spike.*`, which the device rejected ("…spike.* is not advertised"), and the submit of `…spike.run` then found no handler. (c) **What's left for the device.** That `register(forTaskWithIdentifier: "…spike.run")` matches the permitted `…spike.*` is what the documentation describes; only Pops's run confirms it. If it's rejected again, Part 1 means the app doesn't crash: the log says `background task registration rejected: …spike.run`, and the file says `not started: registration rejected`. (d) The permitted-identifiers line is logged at info level through `AppLogger` (category Spike). Like the other new lines, it starts with "background task", as Pops's step 3 looks for. (e) The generic-device build used its own derived data in `/tmp/m33n_dd`, so Xcode's build folder wasn't touched. Pops's Clean Build Folder is still the step before installing. |
+| M3-3m | 25 Nov 2026 | **complete** | **git status before:** HEAD `83581c0`. Everything from M3-3j to M3-3l and Docs 10, 12, 15 and README staged (`M `), nothing unstaged, nothing untracked. **After:** the staged changes are as they were. ` M` `PageClutter.swift`, `TestSetGroups.swift`; `MM` `RecipeStructurer.swift`, `SpikeReport.swift`, `SpikeRunner.swift`, `Info.plist`, `RecipeStructurerTests.swift`, `SpikeRunnerTests.swift` (this task unstaged over the staged changes); `MM` `Docs/15_MILESTONE_3_REVIEW.md` (this row); `??` `SylantroTests/Domain/PageClutterTests.swift` (new). I staged or committed nothing. **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 232 tests in 29 suites passed after 0.857 seconds."; `** TEST SUCCEEDED **`. **Total before: 224** (M3-3l), plus 8 = 232. The new `PageClutterTests` file adds the 29th suite. **Built:** Part 1: `StructuringOutcome` gains `stepRanges`, `ingredientItems` and `sectionLineCounts`, filled after each ingredients and steps answer. The spike copies them into `SpikeCaptureResult` (optional fields, decoded with `decodeIfPresent`, numbers only). Part 2 in `steps(from:lines:putsBackSkipped:)`. Part 3 in `labelled`, with the helper `startsWithQuantityAndUnit` (`IngredientLineParser.parse`: quantity and unit both found). Part 4 in `isClutter`, with the helper `isWebAddressWord`. Part 5: `TestSetGroups.joinedRuns` = 5–6, 7–8, 16–17, 26–30, each joined only when every page is present. Part 6: `Info.plist` holds `com.syzygysoftwerksllc.Sylantro.spike.*`, the handler is registered for `SpikeRunner.backgroundTaskWildcard`, and the request keeps `…spike.run`. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source (only the build tool's appintentsmetadataprocessor line). ✅ 2 232 tests, as above. ✅ 3 Against the staged state, which hasn't changed since the start: `Info.plist`'s diff is the one value (`…spike.run` → `…spike.*`). `RecipeStructurer.swift`'s hunks are the three outcome fields; the four `record` calls in `structure` and the two `record` helpers (what the outcome passes to the spike); `labelled`, its doc comment and its new helper; and the steps block (doc comment, body, `StepPiece.followsLabel`, and the helpers `methodEnds`, `endsMethod`, `isHeadingShapedLine`). No prompt, `instructions`, `@Guide` or `promptVersion` line is in it, and `ingredientGroups(from:lines:)` is untouched. `PageClutter.swift` changes only `isClutter` (a doc line and the new check) and the new helper. `git diff HEAD -- Sylantro/Store/SylantroSchemaV1.swift` is empty. ✅ 4 No string she reads changes. The tests use made-up lines, and the new spike fields hold numbers only. ✅ 5 git status before and after, as above; this row. **Tests added (8):** RecipeStructurerTests "a range over a label and a heading", "a first step after a label is put back", "a heading on a numbered page", "where the method ends", "a run of step lines labelled ingredients"; PageClutterTests "a misread web address" (a new file: none existed); SpikeRunnerTests "a run of five pages is one capture", "step and ingredient answers recorded". **One existing test changed.** M3-3k's "a step line labelled an ingredient" failed under Part 3: its middle line "2 cups of the nuts until" starts with a quantity and a unit, so Part 3 now keeps it in `ingredients`. Its middle line is now "all of the nuts until", so it still checks that one line between step lines moves, as an ingredient and as a note. "The test set groups by page ID" and "older results read" pass unchanged. **Notes for Claude:** (a) Part 2.1. A range's lines are taken out when they are markers, colon headings or at or after the method's end. What's left must number 1 to 15 and touch no line already used, else the range is dropped with `step lines out of range`. A range out of bounds (first below 1, last past `lines`, first after last) is still dropped as before. `keptSpan` (M3-3k rule 4) runs over the kept lines only. (b) Part 2.2. The first line (not empty, not clutter) after a marker or a heading carries `followsLabel`, and a skipped one is put back wherever it is. A marker and then a heading ("Step 1", "Mix it:") both count. The line after them is first in its group, so it starts a step. (c) Part 2.3. A one-line piece with rule 5's shape (its step number removed) doesn't join on a numbered page, and nothing joins onto one; rule 5 then names the steps after it. (d) Part 2.4. The method ends at the first line in `lines` that reads as one of the five phrases (trimmed, any case, less a trailing `:`). On a numbered page, lines from there on aren't counted. A range that starts at or after the end has nothing left, so it is dropped with `step lines out of range`, as rule 1 says. (e) Part 3. A run is the consecutive `ingredient`/`note` lines among the labelled lines (clutter, headings and unlabelled lines skipped, as M3-3k). Ingredient and note lines can mix in one run. A run of 4 or more stays as labelled. The quantity and unit check uses `IngredientLineParser.parse` on the line less its bullet: both `quantity` and `unit` must be found. "25 minutes." has no unit (the parser has no time units). (f) Part 4. Words are split on spaces only, as the task says, lowercased, with trailing Unicode punctuation stripped. So "madeupsite.com." counts, but a word with a leading bracket doesn't lose it. A step line that mentions a web site is now clutter and left out of its step. (g) Part 1. A fallback's answer replaces its part's numbers and line count (`ingredients` counted over the wrap-joined whole page, `steps` over every readable line), so the numbers always match the count beside them. `nameLine` is recorded as the model gave it, 0 for none. (h) Part 6. The wildcard is used for `Info.plist` and the registration, as written. That a concrete `…spike.run` request reaches the wildcard's handler is Apple's documented notation; only the device run confirms it. (i) `PageClutterTests.swift` is new, in `SylantroTests/Domain/`. The project's synchronized folders picked it up (the 29th suite). Inputs read: `10` §7 runs 10 and 11, and the M3-3j, M3-3k and M3-3l rows. |
+| M3-3l | 25 Nov 2026 | **complete (spike build; the device run is Pops's)** | **git status before:** HEAD `83581c0`. `M ` (staged): `ReviewFlag.swift`, `GeneratedParts.swift`, `ReviewFlagTests.swift`. `MM`: `RecipeStructurer.swift`, `RecipeStructurerTests.swift` (M3-3k unstaged over M3-3j), and Docs 10, 12, 15 and README (Pops's). **After:** ` M` `Extraction/Spike/SpikeRunner.swift`, `Info.plist`, `Views/Spike/SpikeView.swift`, `SylantroTests/Extraction/SpikeRunnerTests.swift`; `M ` `Extraction/Spike/SpikeReport.swift`. Pops staged my edit to `SpikeReport.swift` mid-session, so its whole diff is staged and is only this task's fields. Also `M ` `RecipeStructurer.swift`, `RecipeStructurerTests.swift` and Doc 10, which Pops staged during the session with no unstaged change left; `MM` Docs 12, 15 (this row) and README. I staged or committed nothing. **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 224 tests in 28 suites passed after 0.946 seconds."; `** TEST SUCCEEDED **`. **Total before: 223** (M3-3k), plus 1 = 224. **Built:** `Info.plist` gets `BGTaskSchedulerPermittedIdentifiers` = [`com.syzygysoftwerksllc.Sylantro.spike.run`]. The ⋯ menu gets **Run All in Background (Test)**, enabled when Run All is. `SpikeRunner.runAllInBackground()`: 1. registers the launch handler once, on the main queue; 2. submits a `BGContinuedProcessingTaskRequest` (title "Spike run", subtitle "Starting", `strategy = .fail`, default resources, so no GPU); 3. waits for the launch, then runs `runAll(in: task)`. In the run, `progress.totalUnitCount` = captures and `completedUnitCount` += 1 as each capture ends, however it ends. The subtitle is "Capture n of m". On expiry the run is cancelled and the report records "expired at capture n". At the end, `setTaskCompleted(success:)` is called, true unless cancelled or expired. A submit that throws runs Run All plain, with `backgroundTask` = "not started: <error>". In `structure`, test mode skips the scene-active check. A refusal while active is still retried (SLT-153); a refusal while inactive is recorded and the capture waits for the app (SLT-144). `read` is unchanged apart from recording `readWhileInBackground`, and plain Run All is unchanged. The report has `backgroundTask`, and each capture has `readWhileInBackground` and `structureAttempts` (`sceneActive`, `outcome`, `millis`, `at`). **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source (only the build tool's appintentsmetadataprocessor line). ✅ 2 224 tests, as above. ✅ 3 Against a baseline of `git diff` and `git diff --cached` saved at the start, my changes are only in `SpikeRunner.swift`, `SpikeReport.swift`, `SpikeView.swift`, `Info.plist` (the one key; no background mode, see (a)) and `SpikeRunnerTests.swift`. `ExtractionQueue.swift` has no change. `RecipeStructurer.swift` has no unstaged change, and its HEAD diff has no background code. No prompt was touched. `git diff HEAD -- Sylantro/Store/SylantroSchemaV1.swift` is empty. ✅ 4 No string she reads changes. The new label, the task's title and subtitles, and the report values are spike-only English; there's no string catalog. The new fields and log lines carry no recipe text (see (e)). ✅ 5 git status before and after, as above; this row. **Test added (1):** SpikeRunnerTests "background fields round trip". "Older results read" also checks that the two capture fields decode as nil. **Notes for Claude:** (a) **No `UIBackgroundModes` value added.** The SDK headers (`BackgroundTasks.framework` in the iOS 27.2 simulator SDK) and Xcode's documentation name a mode for `BGAppRefreshTask` (`fetch`) and `BGProcessingTask` (`processing`), but none for `BGContinuedProcessingTask`. (b) **The identifier may be refused.** Xcode's documentation for `BGContinuedProcessingTaskRequest.init(identifier:title:subtitle:)` says the identifier "must leverage a base wildcard notation": the bundle ID, then optional context, then `.*` (for example `<bundle>.spike.*`), with a concrete identifier submitted under it. The SDK header says "ought to". The task's exact `com.syzygysoftwerksllc.Sylantro.spike.run` is used as written, in both `Info.plist` and the request. If iOS rejects it on device, the submit throws `notPermitted`, the run goes ahead as Run All, and the report says `not started: …`. If that happens, the fix is `com.syzygysoftwerksllc.Sylantro.spike.*` in `Info.plist` and the registration, with the request's identifier under it. That's for Claude and Pops to rule; I didn't change the key beyond what Part 1 allows. (c) The simulator can't show whether the task runs: the SDK's `unavailable` error lists Simulator among the causes. Only Pops's device run answers it. (d) **APIs.** The sync `submit(_:)` is used. The SDK marks it deprecated from iOS 27.0, but the deployment target is 26.5, so it gives no warning. The async replacement is iOS 27 only. (e) **Wiring.** The handler is registered when first needed: continued-processing registrations are exempt from the before-launch rule, and a second registration of an identifier kills the app, so a static flag guards it. The handler runs on the main queue and resumes a continuation kept before the submit. The run inside the task is its own `Task`, awaited through `withTaskCancellationHandler`, so Close's existing `runTask?.cancel()` reaches it and the expiry handler can cancel it. A launched task nobody waits for is completed at once with `false`. A cancel or expiry that lands mid-structuring may end that capture as a failure, with an attempt of `failed: <cancellation>`. `failed: <error>` uses `String(describing:)`, as the existing `error` field does. (f) **Field choices.** An attempt's `millis` spans the whole attempt, from its start to its outcome, including the spike's title pass on success. `readWhileInBackground` is true if the scene was inactive at the start or after any page's read. Attempts are recorded in plain runs too. `backgroundTask` is omitted from a plain run's file, since nil isn't encoded. The new optionals decode through Swift's synthesized `decodeIfPresent`, as the M3-5s title fields do, and `SpikeReport.decoded(from:)` (ISO 8601 dates) was added for the round trip. (g) After a background run, captures still waiting for the app are structured when Sylantro comes back to the front, as now, with their attempts recorded. The task is already ended by then ("completed"). (h) This document moved from v0.77 to v0.78 (and a v0.79 log row) during the session: run 11 scored and M3-3m written and revised. M3-3l's text is unchanged, so nothing was redone. |
+| M3-3k | 25 Nov 2026 | **complete** | **git status before:** HEAD `83581c0`; M3-3j's five files staged (`M `), with ` M` `Docs/10_ACCURACY_TEST_SET.md`, `Docs/12_IMPLEMENTATION_PLAN.md` and `Docs/README.md`, and `MM` `Docs/15_MILESTONE_3_REVIEW.md` (Pops's). **After:** `M ` `ReviewFlag.swift`, `GeneratedParts.swift`, `ReviewFlagTests.swift`, `Docs/12_IMPLEMENTATION_PLAN.md`; `MM` `RecipeStructurer.swift` and `RecipeStructurerTests.swift` (this task's changes unstaged, over M3-3j's staged ones); `MM` `Docs/10_ACCURACY_TEST_SET.md` and `Docs/README.md`; `MM` `Docs/15_MILESTONE_3_REVIEW.md` (this row unstaged). Pops staged the docs and edited 10 and the README during the session; I edited neither. Nothing staged or committed by me. **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 223 tests in 28 suites passed after 1.102 seconds."; `** TEST SUCCEEDED **`. **Total before: 216** (M3-3j), plus 7 = 223. **Built:** Part 1 in `labelled`; Part 2's six rules in `steps(from:lines:putsBackSkipped:)`, with private helpers `StepPiece`, `endsSentence`, `isFragment`, `isHeadingShaped`, `isStepMarker`, `droppingStepWord` and `isDigit`, and `stepNumberLength` taking `Step n`. `startsWithStepNumber` is gone, since nothing else used it. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source (only the build tool's appintentsmetadataprocessor line). ✅ 2 223 tests, as above. ✅ 3 `git diff` (against M3-3j's staged file) of `RecipeStructurer.swift` touches only `labelled` (lines 341 to 360) and the steps block: `steps(from:)`'s doc comment and body, and its helpers. No prompt, `instructions`, `promptVersion` (still 4) or `@Guide` line is in it, and `GeneratedParts.swift` has no unstaged change. `git diff HEAD -- Sylantro/Store/SylantroSchemaV1.swift` is empty. ✅ 4 No string she reads changes; tests use made-up lines. ✅ 5 git status before and after, as above; this row. **Tests:** the 7 in Part 3's table, under the same names. "A skipped step line" now has a fourth line, "Cool it a little.", with range 4–4, and expects three steps with `put back: step 2`, as Part 3 says. No other existing test changed. **Notes for Claude:** (a) How the rules are ordered. Rules 5 and 6 run after the joins, as written. Rule 3's "step before doesn't end with `.`, `!` or `?`" alone would join "Warm the …" onto "Campfire Method" and "Stir the …" onto ": 10 min", and Part 3's tests expect neither. So a step before that is heading-shaped and one line, or a fragment, doesn't count as left open: only a line starting lowercase joins it. Rule 2's numbered-page join has no such check. (b) Markers. A marker is digits then `.` or `)`, or `Step` (any case) and a number, either with an optional `:`. A `Step n` line with text starts a step when the number is followed by a space (after an optional `:` or `.`), and `Step n` is removed. A lone "4" with no mark isn't a marker, but rule 6 drops it. A marker affects only the next line that isn't empty, clutter or a heading. Markers count wherever they are, in a range or skipped, and in the fallback too. (c) Rule 2 counts every line in `lines`. In the whole-page fallback, an ingredient line such as "2 Eggs" (digits, a space and a capital: M3-3j's number pattern) can count toward a numbered page, as written. Worth watching in run 11. (d) A numbered line or a line after a marker never joins the step before, not even a skipped one. That extends rule 3's "doesn't start at a step number or a marker" to skipped lines, which M3-3j joined on case alone. (e) Rule 4's "after the first kept step and before the last one's last line" is read as strictly between the smallest kept range's first line and the largest one's last line. Kept means the ranges that pass the range checks, before rules 5 and 6. (f) Rule 5. "Every word starting with a capital" is checked on each whitespace-separated word, and "no digit" means no number character. "Followed by another step in its group" means the next built step has the same group before rule 6. The name holds until the group changes or another no-colon heading. A rule-5 heading that was put back gives no `put back` warning. (g) Part 1 skips clutter, `PageSplitter` headings and `IngredientHeadings` lines when finding the nearest labelled lines, so a heading between two step lines doesn't stop the change. Lines labelled `header` or `other` do count as labelled, so they stop it. (h) Run 10 in `10` §7 was read as input. Its fifth fault (a step across two pages has no position) isn't in this task, and I didn't touch it. Run 11 is Pops's; I didn't run it. |
+| M3-3j | 25 Nov 2026 | **complete** | **git status before:** clean, HEAD `83581c0`. **After:** ` M` `Docs/15_MILESTONE_3_REVIEW.md` (this row), `Domain/Structuring/ReviewFlag.swift`, `Extraction/GeneratedParts.swift`, `Extraction/RecipeStructurer.swift`, `SylantroTests/Domain/ReviewFlagTests.swift`, `SylantroTests/Extraction/RecipeStructurerTests.swift`; nothing staged or committed. **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 216 tests in 28 suites passed after 1.046 seconds."; `** TEST SUCCEEDED **`. **Total before: 209**, plus 7 = 216. **Built:** `GeneratedStepLines`/`GeneratedStepRange` replace the steps types; the steps part asks `"The method lines of a recipe, numbered:"` + `numbered(section lines)` (same cap, 2 000), the fallback the same over every readable line; `RecipeStructurer.steps(from:lines:putsBackSkipped:)` maps the ranges; `assemble` takes `[Step]?` and `makeSteps` is gone; `promptVersion` 4. `ReviewFlag` maps `put back: step n` to `putBack` on that step (`.steps` if there is no step n). **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source (only the build tool's existing appintentsmetadataprocessor line). ✅ 2 216 tests, as above. ✅ 3 `GeneratedParts.swift`'s diff is the steps types only (lines 62 to 78). `RecipeStructurer.swift`'s hunks are: `stepsPromptIntro`; step 5 and its fallback; a `stepsPrompt` helper beside `ingredientsPrompt`; `assemble`'s `steps` parameter and `steps ?? []`; `promptVersion: 4`; `makeSteps` replaced by `steps(from:lines:)` and its private helpers. `instructions`, `headerPromptIntro`, `ingredientsPromptIntro` and the line-label prompt don't appear in the diff. `git diff -- Sylantro/Store/SylantroSchemaV1.swift` is empty. ✅ 4 No string she reads changes: `ReviewFlag`'s lines are as before, and `put back: step n` reuses `putBack`'s line. The new tests use made-up lines only. ✅ 5 git status before and after, as above; this row. **Tests added (7):** RecipeStructurerTests "steps by lines", "a hyphen at a line's end", "a skipped step line", "a printed number starts a step", "a step heading" and "bad step ranges"; ReviewFlagTests "a step put back". Existing tests changed: "parts assemble with rule fields" now passes `[Step(index: 0, text: "Boil the water.")]`, and it and "unreadable areas and warnings reach the recipe" pin `promptVersion == 4`. **Notes for Claude:** (a) Range rules the task left open: a range is out of range when its first line is below 1, its last line is past the end, its first line is after its last, it spans more than 15 lines (`maximumStepLines`, as the ingredients' 15), or it touches a line already used or a heading. Each one dropped gives one `step lines out of range`. (b) A printed step number is digits then `.` or `)` and a space, or digits, a space and a capital letter. A line starting with one inside a range starts a new step, and the number is removed from the text. (c) A skipped line is one not used, not a heading, not empty and not `PageClutter.isClutter`. It joins the step before when it starts lowercase or that step doesn't end with `.`, `!` or `?`. Otherwise, or when there's no step yet in its group, it starts a step of its own with `put back: step n` (n counted after empty steps are dropped). (d) In the whole-page fallback (`putsBackSkipped: false`), skipped lines are left out, so the title, ingredients and notes aren't put back as steps. Its range warnings follow `steps from whole page`. (e) Clutter lines inside a range are left out of the step's text. Lines are trimmed and joined with a space; a line ending in `-` joins the next with no space, keeping the `-` (as the test asks: "golden-brown."). (f) Warnings come in this order: out of range in the model's order, then put back in step order. `step lines out of range` has no flag of its own and reads as `other` ("Check this."), as any unknown warning does; the task didn't name one. (g) Run 9 in `10` §7 was read as input. Its scoring (10 steps not on the page; step counts off the key on 7 pages) is for Pops's run 10, which I did not run. |
 | M3-3i | 25 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 209 tests in 28 suites passed after 0.851 seconds."; `** TEST SUCCEEDED **`. **Total before: 209** (after M3-3g and M3-3h); no test added, so 209 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source; the one warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped". ✅ 2 the suite passed with 209 tests, the same as before. ✅ 3 this session changed only `Sylantro/Views/Recipe/RecipeView.swift`: one hunk, `@@ -514,0 +515,15 @@` in `headerSection`. The file's other unstaged hunk (`PageStrip.load`) is M3-3g's, from before this session. `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`: empty. ✅ 4 a Python scan of the string literals on this session's added lines finds only S-45 "Reading…". ✅ 5 git status before and after: the same paths and states (` M` `RecipeView.swift`'s working copy already had M3-3g's change, so it stays `MM`); this row. **What was built:** part 1 `RecipeView.headerSection`: while `extractionQueue?.currentRecipeID` is this recipe's ID, the recipe has an `extraction` and she isn't in Edit, a whole-recipe line sits first under the title. It holds S-45 "Reading…" in secondary, and M3-3f's bar under it (`ProgressView(value: progress)`, the palette's accent, full width, `.animation(.easeInOut, value:)`), not tinted. It goes when the job ends (`currentRecipeID` nil), and the fields then show the new reading from the store. A recipe not read yet keeps M3-3f's line and bar (`unreadContent`), unchanged; Read Again stays disabled while reading (M3-3c). **Files:** `Sylantro/Views/Recipe/RecipeView.swift`; this document (this row only). `ExtractionQueue.swift` read, not changed. No queue, structurer, prompt, `promptVersion`, `SylantroSchemaV1`, synced model, `CaptureRecorder`, `RecipeEditor`, `MirrorWriter`, `Info.plist`, entitlement, build setting or SyLib change; no new words beyond S-45; no popover or confirmation dialog; no network. **Git status before** (branch `milestone-3`, HEAD `d7814a6`): staged M3-3e, M3-3f and Pops's docs; unstaged M3-3g and M3-3h (as at the end of the M3-3g rows below). **After:** the same. **Git:** `git status --short` (×2), `git log --oneline -3`, `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (the three unchanged since this session read them: v0.60, v1.15, v0.19), `git diff -U0 -- Sylantro/Views/Recipe/RecipeView.swift`, `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`. **Notes, for Claude to confirm:** (a) "Styled as the other whole-recipe lines" is taken as their secondary text color and place under the title, without their `exclamationmark.triangle`, which marks a warning, and without a tint, as part 1.1 says. (b) The bar shows only while `progress` isn't nil, so while a refusal waits the line shows "Reading…" alone, as M3-3f's does. (c) It is in the list's header section, above the page-2 warning and the other whole-recipe lines, below the title (and below SC-16's hint when that shows, since the hint sits above the title). **Next:** Pops's check on device (iPhone 18 Pro, then iPad), items 1 and 2. Not run in this session |
 | M3-3g (re-run) | 25 Nov 2026 | **complete, nothing rebuilt** | Asked again against v0.69, expecting 206 + 3 = 209. **M3-3g was already built**, in the session whose row is the next one below (M3-3g, 25 Nov 2026), and its changes are in the tree, unstaged (` M` `PhotoFiles.swift`, `PhotoEncoding.swift`, `PagePhotoView.swift`, `PagePhotoViewer.swift`, `PhotoFilesTests.swift`; `MM` `RecipeView.swift`). So **the total before this run was 209, not 206**, and building it again would only duplicate it. v0.69's only change is Claude's check of M3-3h; M3-3g's text is the same (its status line still reads "ready, not started" until it is checked). Nothing was rebuilt or edited but this row. **Verified instead:** **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 209 tests in 28 suites passed after 0.993 seconds."; `** TEST SUCCEEDED **` (206 + 3, as expected after M3-3h and M3-3g). **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace …`: `** BUILD SUCCEEDED **`, no warnings from source. ✅ 2 209 tests passed. ✅ 3 `grep -rn "contentsOfFile\|fullImage(\|displayImage(" Sylantro/Views/` finds only `PagePhotoView.swift:70` and `:71`, inside `loadImage`. `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`: empty. SyLib's `git status --short`: clean. ✅ 4 no string she reads changes (unchanged since the row below). ✅ 5 git status before and after: the same as at the end of the row below, with this document still `MM` (this row added). **Git:** `git status --short` (×2), `git log --oneline -3`, `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (the three unchanged since this session read them: v0.60, v1.15, v0.19), `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`, `git -C /Users/wayne/GIT/Syzygy/sylib-swift status --short`. **Notes, for Claude to confirm:** (a) The row below holds M3-3g's results and notes a to h; this row only confirms them against the current tree. **Next:** Claude's check of M3-3g against that row, then Pops's check on device, items 1 to 4 |
 | M3-3g | 25 Nov 2026 | **complete** | **Destination:** `platform=iOS Simulator,name=iPhone SE (3rd generation),OS=26.5`. **Suite total:** "✔ Test run with 209 tests in 28 suites passed after 0.857 seconds."; `** TEST SUCCEEDED **`. **Total before: 206** (`@Test` count at session start, after M3-3h, which ran before this task, note h), so 206 + 3 = 209 expected. **Clauses:** ✅ 1 `xcodebuild build -workspace Sylantro.xcworkspace -scheme Sylantro -destination '<that string>'`: `** BUILD SUCCEEDED **`, no errors, no warnings from source; the one warning is the build tool's existing "appintentsmetadataprocessor: Metadata extraction skipped". ✅ 2 the suite passed with 209 tests (206 + 3) on the pinned destination. ✅ 3 `grep -rn "contentsOfFile\|fullImage(\|displayImage(" Sylantro/Views/` finds only `PagePhotoView.swift:70` and `:71`, inside `PagePhotoView.loadImage`. `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`: empty. `git -C …/sylib-swift status --short`: clean, no change in SyLib. ✅ 4 no string she reads changes. The literals added are the logger's category "Photos", the cache key's `#` and "full", and the log line `decode failed: ‹file name› at ‹size›`, which holds only the file name and a pixel size. ✅ 5 git status before and after below; this row. **What was built:** part 1 `PhotoEncoding.displayLongEdge = 2_560`. `PhotoFiles.displayImage(of:maxPixelSize:)`, as `fullImage` with the long edge the smaller of `maxPixelSize` and the file's; both share one private `decoded(_:maxPixelSize:)`, and `fullImage` is unchanged. `PagePhotoView.loadImage(_:from:maxPixelSize:)`, `maxPixelSize` defaulting to `displayLongEdge`, nil for full size, works like this. It looks first in SyLib's `ImageCache.shared.memoryImage(for:)`, keyed by the file's URL plus `#‹size›` (`#full` for full size). Otherwise it decodes off the main actor with `displayImage` (or `fullImage`) and stores the image with `toDisk: false` (`14A`). Every page view uses it: `PageStrip` (the strip and the edit sheet's crop), the pages column and M2's pages (`PagePhotoView`) at display size, and `PagePhotoViewer` at full size. Part 2 `PhotoFiles.isOnDevice(isUbiquitous:status:)` (not ubiquitous, `.current` or `.downloaded`: true; `.notDownloaded` or no status: false), used by `availability`; the placeholder rule is unchanged. Part 3 `PagePhotoView.loadImageRetrying(_:from:maxPixelSize:)`, used by all three loaders, works like this. It tries every 2 seconds, keeping the size while the file is downloading. When the file is `.available` and the decode gives nil, it logs `decode failed: ‹file name› at ‹size›` and asks for half the size next, down to `thumbnailLongEdge`. Part 4: 3 tests in `PhotoFilesTests`, with made-up 4000 × 3000 images. **Files:** `Sylantro/Domain/Capture/PhotoEncoding.swift`, `Sylantro/Capture/PhotoFiles.swift`, `Sylantro/Views/Recipe/PagePhotoView.swift`, `Sylantro/Views/Recipe/PagePhotoViewer.swift`, `Sylantro/Views/Recipe/RecipeView.swift` (`PageStrip.load` only), `SylantroTests/Capture/PhotoFilesTests.swift`; this document (this row only). Inputs `05` and `14A` relied on as the task states them; not otherwise changed. No prompt, `promptVersion`, `SylantroSchemaV1`, synced model, photo writing or files, `CaptureRecorder`, `RecipeEditor`, `ExtractionQueue`, `MirrorWriter`, `Info.plist`, entitlement, build setting or SyLib change; no string she reads; no network. **Git status before** (branch `milestone-3`, HEAD `d7814a6`): staged M3-3e and M3-3f and Pops's docs (`M `/`A `/`MM` as at M3-3h's end), with M3-3h unstaged (`MM` `RecipeStructurer.swift`, `RecipeStructurerTests.swift`; `??` `IngredientHeadings.swift`, `IngredientHeadingsTests.swift`). **After:** the same, plus ` M` on `PhotoFiles.swift`, `PhotoEncoding.swift`, `PagePhotoView.swift`, `PagePhotoViewer.swift` and `PhotoFilesTests.swift`, and `RecipeView.swift` now `MM`. **Git:** `git status --short` (×2), `git branch --list`, `git log --oneline -3`, `git log --oneline -3 -- Docs/00_DECISION_LEDGER.md Docs/00A_STUDIO_CONVENTIONS.md Docs/00B_SYLANTRO_GUARDRAILS.md` (the three unchanged since this session read them: v0.60, v1.15, v0.19), `git diff HEAD --stat -- Sylantro/Store/SylantroSchemaV1.swift`, `git diff -U0 -- Sylantro/Views/ Sylantro/Capture/`, `git -C /Users/wayne/GIT/Syzygy/sylib-swift status --short`. **Notes, for Claude to confirm:** (a) **View Pages is the viewer.** Part 1.4 lists "View Pages at display size" and "`PagePhotoViewer` at full size", but ⋯ › View Pages opens `PagePhotoViewer`. So the viewer, View Pages included, decodes at full size for her pinch to 6×; the strip, the crop and the pages column are at display size. (b) The full-size cache key ends `#full`. (c) A failed decode logs one line per failed try. After a failure at full size the next try is `displayLongEdge`, then halves to the 400 floor, which it keeps. (d) The viewer now retries until it has an image (before, one try). (e) `availability`: a file whose ubiquity can't be read (`isUbiquitous` nil) counts as on the device, as before. An iCloud file with no status now counts as not on the device (before, it read `.available`), so it is asked for. If iCloud refuses the request it still reads `.available`, as before. (f) `preparingForDisplay()` is no longer called: ImageIO's thumbnail is already a decoded bitmap. (g) This document is v0.68, not the v0.66 the request named; M3-3g's text is the same. (h) This task ran after M3-3h, not before it as M3-3h's status line expected; they touch different files, so the totals are simply 206 then 209. **Next:** Pops's check on device (iPhone 18 Pro, then iPad), items 1 to 4. Not run in this session |
@@ -2350,6 +3414,7 @@ Grouped by the task that waits on them. Each has a recommendation *(rec.)*; none
 | RV-37 | Marking a line the reading missed (`16` FI-11; Pops, 25 Nov 2026: "tap a row in the scan, like a missed ingredient, and mark it what it is") | **Ruled: in M3, after M3-5** (task M3-5a): in Edit, tap a line on the page and mark it Ingredient, Step, Note, Title or not part of the recipe; plus a corrections file in TestFlight builds behind the spike switch, saved outside git; corrections never logged as text; nothing sent from the shipped app. Pops, 25 Nov 2026 (decision card, "In M3, after M3-5"). Its screen and words go into `13` first |
 | RV-38 | Ingredient groups (Pops, 25 Nov 2026: "the ingredients are grouped in the Kolache and Filling. we should try to detect ingredient groups and store them that way"; the model skipped the kolaches' whole filling group) | **Ruled: from the printed headings, by rule, in a task before M3-5** (M3-3h): a short line ending `:` in the ingredient section heads a group; each ingredient goes under the heading above it; skipped ingredient lines after a heading are put back; the model's groups only when there is no heading. Pops, 25 Nov 2026 (decision card, "Yes, a task before M3-5") |
 | RV-39 | What comes next for single-recipe accuracy (run 9, `10` §7: steps lose words, three titles fixable by rule, amounts and units) | **Ruled: all three, steps first.** M3-3j: steps as line numbers with the page's words (a prompt change, spike run 10); then the three title rules (labels-path area SP-21, a label line after the title, a breadcrumb first line); then the amount and unit rules. Pops, 25 Nov 2026 (decision card, "All three, steps first") |
+| RV-40 | Reading her recipes in the background (revisits RV-5 and SLT-144). Pops, 25 Nov 2026: "I'm going to want the post scanning reading of an imported recipe be bg too". M3-3l to M3-3p proved it on device: in run 12 all 23 captures were structured with Sylantro in the background under a `BGContinuedProcessingTask`, none refused (`10` §7). What it took: a task started by her tap, progress at each step (a stalled task is ended), and nothing lost when iOS ends it | **A.** When she saves a capture (or taps Read Again), the queue's work runs inside a continued-processing task: the system's progress indicator shows while she is elsewhere, with progress at each step as M3-3p; if iOS ends it, what's left waits until she opens Sylantro, as today. The indicator's words go in `13`. A task after M3-3q and the title rules, before the unit rules. **B.** The same, but after M3 (with M4). **C.** Keep RV-5: reading only while Sylantro is open | **Ruled: A.** Pops, 25 Nov 2026 (decision card, "After the title rules"): a task after M3-3q and the title rules, before the unit rules; the indicator's words proposed in `13` with it. RV-5 and SLT-144 stand until that task |
 
 When Pops rules, the rulings are filed in the ledger at this document's close-out, as `14`'s were.
 
@@ -2360,6 +3425,31 @@ When Pops rules, the rulings are filed in the ledger at this document's close-ou
 | Version | Decision | Rationale |
 |---|---|---|
 | 0.73 | RV-39 added and ruled; Task M3-3j written: steps in the page's own words, `promptVersion` 4, spike run 10 (+ 7 tests, 216) | Run 9 (`10` v0.28); Pops, 25 Nov 2026 (decision card, "All three, steps first") |
+| 0.74 | M3-3j complete (216 tests); spike run 10 next | The agent's row in §2 |
+| 0.75 | Run 10 scored (`10` v0.29); Task M3-3k written: step clean-up rules, no prompt change (+ 7 tests, 223) | Pops, 25 Nov 2026 (decision card, "Step clean-up rules, then run 11") |
+| 0.76 | M3-3k complete (223 tests); spike run 11 next | The agent's row in §2 |
+| 0.77 | Task M3-3l written: a spike-only test of structuring in the background under a `BGContinuedProcessingTask` (+ 1 test, 224); one `Info.plist` key allowed for it | Pops, 25 Nov 2026: "so, keeps running when the app is in the bg"; decision card, "Test it in the spike first" |
+| 0.78 | Run 11 scored (`10` v0.31); Task M3-3m written: steps under printed labels and headings, rules only (+ 7 tests, 231) | RV-39 (steps first); run 11 |
+| 0.79 | M3-3m revised before it ran: Part 5, the test set's five-page recipe loads as one capture (`TestSetGroups`, moved forward from the title-rules task); + 1 test, 232 | Pops, 25 Nov 2026: "how do we get the load test set to just load them properly like the others?" |
+| 0.80 | M3-3l complete (224); M3-3m Part 6: the background test's identifier becomes a wildcard, as Apple's documentation asks (M3-3l note b) | The agent's row in §2 |
+| 0.81 | M3-3m complete (232 tests); spike run 12 and the background test next | The agent's row in §2 |
+| 0.82 | Task M3-3n written: the background test's crash on device (registration rejected, then a submit with no handler) | Pops, 25 Nov 2026 (the crash log) |
+| 0.83 | M3-3n complete (232): the installed `Info.plist` was right; the handler must be registered under the concrete identifier, with only the permitted identifier a wildcard | The agent's row in §2 |
+| 0.84 | Task M3-3o written: in the background test, a rate-limit refusal is waited out (30 s to 300 s, six times), progress counts only finished captures, each attempt records its parts and wait; BG Run All moves out of the ⋯ menu (+ 2 tests, 234) | Pops, 25 Nov 2026: the background run's console (capture 0 done in the background, then "Client rate limit exceeded"); decision card, "Write M3-3o now"; "move bg run out of menu, called BG Run All" |
+| 0.85 | M3-3o checked by Claude: complete, 234 tests, every Done-when clause met; notes a to e accepted. Note a: the SDK says a continued-processing task whose progress stalls may be expired, so an expiry during a long wait is the thing to watch in Pops's run. Note b: iOS 27's `LanguageModelError.RateLimited` has a `resetDate`, not used yet | The agent's row in §2; Pops, 25 Nov 2026: "Task M3-3o done" |
+| 0.86 | Task M3-3p written: in the background test, progress at each step inside a capture, no title comparison, the task's start and end recorded, and an expiry ends the task but not the run (+ 2 tests, 236) | Pops, 25 Nov 2026: the BG Run All log (captures 0 and 1 done in the background, then "expired at capture 3", "Task failed"); decision card, "Write M3-3p now"; "it did not finish after the stall..." |
+| 0.87 | M3-3p checked by Claude: complete, 236 tests, every Done-when clause met; notes a to f accepted (progress can step back when a capture ends waiting for the app; the recorded part name is `lineLabels`) | The agent's row in §2; Pops, 25 Nov 2026: "task M3-3p done" |
+| 0.88 | Run 12 scored (`10` v0.32): the model answers in the background (all 23 captures, none refused); Task M3-3q written: an ingredient's name from its own line when the model's doesn't match, no flag on a line with a quantity put back under a printed heading (+ 3 tests, one existing test changed, 239) | Pops, 25 Nov 2026: "ok, run in bg completed"; decision card, "Fix item names, then title rules" |
+| 0.89 | RV-40 added: reading her recipes in the background, revisiting RV-5 and SLT-144 now that run 12 proved it; proposed A (a task after M3-3q and the title rules). Noted: BG Run All's skipped title comparison (M3-3p Part 2) may be turned back on later, at Pops's word | Pops, 25 Nov 2026: "maybe we can take the bg lid off again at some point. I'm going to want the post scanning reading of an imported recipe be bg too..." |
+| 0.90 | M3-3q checked by Claude: complete, 239 tests, every Done-when clause met; notes a to d accepted. Two existing tests changed: the one the task named, and M3-3e's "lines before the first are put back", whose lines come after a printed heading, so Part 2 rightly unflags them | The agent's row in §2; Pops, 25 Nov 2026: "Task M3-3q done" |
+| 0.91 | RV-40 ruled A: her reading moves to the background in a task after the title rules, before the unit rules | Pops, 25 Nov 2026 (decision card, "After the title rules") |
+| 0.92 | Task M3-3r written: SyLib's `MoreMenu` for the spike's and a recipe's ⋯, `CapsuleButton` on store recovery and the pause after saving, and a new SyLib `CapsuleButton` size `.small` for "That's All of It" (SyLib + 1 test; Sylantro 239) | SLT-161 (Pops, 25 Nov 2026); decision card, "A small task now" |
+| 0.93 | Run 13 scored (`10` v0.33): M3-3q confirmed on device data | Pops, 25 Nov 2026: "spike run done" |
+| 0.94 | M3-3r checked by Claude: complete (Sylantro 239, SyLib 1,765), every Done-when clause met; notes a to d accepted (the ⋯ keeps VoiceOver's "More"; older SyLib code comments name an app, which is allowed: only SyLib's `.md` docs must not) | The agent's row in §2; Pops, 25 Nov 2026: "Task M3-3r done" |
+| 0.95 | Task M3-3s written: the title rules RV-39 named (SP-21's labels-path area; label lines, moved from M3-5; navigation and breadcrumb lines) and a title line labelled a step (+ 4 tests, 243) | RV-39; run 13 |
+| 0.96 | M3-3s checked by Claude: complete, 243 tests, every Done-when clause met; notes a to e accepted. One existing test changed (M3-3m's run test, its quantity half: a step line before a lone ingredient run is now read as a title line); real pages list ingredients before steps, so run 14 watches for a first step lost | The agent's row in §2; Pops, 25 Nov 2026: "Task M3-3s done" |
+| 0.97 | Task M3-3t written: the labels path's 5-line minimum stops at a quantity line, and a title never takes one in (+ 3 tests, 246) | Run 14 (`10` §7); Pops, 25 Nov 2026 (decision card, "Fix titles first (M3-3t)") |
+| 0.98 | M3-3t checked by Claude: complete, 246 tests, every Done-when clause met; no existing test changed; notes a to c accepted. Note a: Part 2 is built as its test reads it (the extension stops once a quantity line is seen anywhere in the first 5 lines, never cutting below `stopAt`), which is the rule intended | The agent's row in §2; Pops, 27 Nov 2026: "Task M3-3t. done" |
 | 0.72 | Pops's kolaches check on iPhone after M3-3e to M3-3i: Read Again's question and bar, the ingredient groups and put-back lines, each line's own page, no blank photos: all passed; the iPad item not yet reported | Pops, 25 Nov 2026: "1--passed 2--passed! all the ingredient groups look fantastic 3--passed 4--passed" |
 | 0.71 | M3-3i checked by Claude: complete, 209 tests, every Done-when clause met; notes a to c accepted | M3-3i Results row; Pops, 25 Nov 2026: "Task M3-3i is done." |
 | 0.70 | M3-3g checked by Claude: complete, 209 tests, every Done-when clause met; notes a to h accepted | M3-3g Results row; Pops, 25 Nov 2026: "Task M3-3g done" |

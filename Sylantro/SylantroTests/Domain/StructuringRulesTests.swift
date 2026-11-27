@@ -169,4 +169,66 @@ struct StructuringRulesTests {
         #expect(snapped.title == "Test Soup")
         #expect(snapped.snapped)
     }
+
+    // MARK: Titles the rules can fix (`15` M3-3s)
+
+    @Test("the labels path keeps five lines")
+    func labelsPathKeepsFiveLines() {
+        let lines: [(text: String, height: Double)] = (1...8).map { ("Made-up line \($0)", 0.01) }
+
+        #expect(HeaderArea.lines(lines, stopAt: 1).map(\.text) == lines.prefix(5).map(\.text))
+        #expect(HeaderArea.lines(lines, stopAt: 6).map(\.text) == lines.prefix(6).map(\.text))
+    }
+
+    @Test("a label line isn't title")
+    func labelLineIsNotTitle() {
+        let area = Self.area([("Made-up Granola", 2.0), ("Author: Made-up Cook Prep Time: 5 mins", 2.0), ("Serves 4", 1.0)])
+
+        let snapped = HeaderArea.snappedTitle("Made-up Granola\nAuthor: Made-up Cook Prep Time: 5 mins", area: area)
+
+        #expect(snapped.title == "Made-up Granola")
+        #expect(snapped.snapped)
+    }
+
+    @Test("a breadcrumb and navigation line aren't title")
+    func breadcrumbAndNavigationAreNotTitle() {
+        let area = Self.area([("Made-up Recipes", 1.0), ("Main Index | Made-up Casseroles | All Pages", 1.0),
+                              ("Made-up Bean Dish", 1.0)])
+
+        let snapped = HeaderArea.snappedTitle("Made-up Recipes\nMain Index | Made-up Casseroles | All Pages\nMade-up Bean Dish",
+                                              area: area)
+
+        #expect(snapped.title == "Made-up Bean Dish")
+    }
+
+    // MARK: Titles stop at the ingredients (`15` M3-3t)
+
+    @Test("quantity lines")
+    func quantityLines() {
+        for line in ["2 bags made-up berries", "½ c made-up sugar", "1½ c made-up port", "1/2 c made-up oil",
+                     "2 * made-up meat", "• made-up salt"] {
+            #expect(HeaderArea.startsWithQuantity(line), "\(line)")
+        }
+        for line in ["5-minute made-up dip", "3-Bean Made-up Chili", "Made-up Sauce", ""] {
+            #expect(!HeaderArea.startsWithQuantity(line), "\(line)")
+        }
+    }
+
+    @Test("the labels path stops at a quantity line")
+    func labelsPathStopsAtQuantityLine() {
+        let lines: [(text: String, height: Double)] = ["Made-up Sauce", "Made-up Berry Relish", "2 bags made-up berries",
+                                                       "1 c made-up sugar", "Made-up line 5", "Made-up line 6"].map { ($0, 0.01) }
+
+        #expect(HeaderArea.lines(lines, stopAt: 1).map(\.text) == lines.prefix(2).map(\.text))
+        #expect(HeaderArea.lines(lines, stopAt: 4).map(\.text) == lines.prefix(4).map(\.text))
+    }
+
+    @Test("a quantity line isn't title")
+    func quantityLineIsNotTitle() {
+        let area = Self.area([("Made-up Casserole", 1.0), ("8 large made-up potatoes", 1.0), ("1 stick made-up butter", 1.0)])
+
+        let snapped = HeaderArea.snappedTitle("Made-up Casserole\n8 large made-up potatoes\n1 stick made-up butter", area: area)
+
+        #expect(snapped.title == "Made-up Casserole")
+    }
 }

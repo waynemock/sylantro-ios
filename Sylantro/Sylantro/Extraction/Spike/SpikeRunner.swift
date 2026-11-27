@@ -1,6 +1,8 @@
+import BackgroundTasks
 import Foundation
 import ImageIO
 import Observation
+import os
 import SyLibCore
 import UIKit
 
@@ -123,6 +125,7 @@ import UIKit
     func sceneBecameActive() {
         isSceneActive = true
         log.info(self, "scene active")
+        logPermittedIdentifiersOnce()
         guard !isRunning, captures.contains(where: { $0.status == .waitingForApp }) else {
             return
         }
@@ -139,22 +142,40 @@ import UIKit
         log.info(self, "scene not active")
     }
 
-    func runAll() async {
+    /// Every capture read, then structured. With `backgroundTask` (Run All in Background (Test),
+    /// `15` M3-3l), structuring is tried with the scene inactive too, and the task's progress and
+    /// subtitle follow the captures. `notStarted` is why the background task didn't start, for
+    /// the report; nil for a plain run.
+    func runAll(in backgroundTask: BGContinuedProcessingTask? = nil, notStarted: String? = nil) async {
         guard !isRunning else {
             return
         }
         isRunning = true
         modelAvailable = RecipeStructurer.isAvailable
-        log.info(self, "run started: \(captures.count) capture(s), model available \(modelAvailable)")
+        backgroundTaskOutcome = notStarted
+        self.backgroundTask = backgroundTask
+        isBackgroundTest = backgroundTask != nil
+        if backgroundTask == nil {
+            backgroundTaskStartedAt = nil
+            backgroundTaskEndedAt = nil
+        }
+        log.info(self, "run started: \(captures.count) capture(s), model available \(modelAvailable), background test \(isBackgroundTest)")
         for index in captures.indices {
             captures[index].status = .waiting
             captures[index].result = nil
         }
-        // A cancelled run (Close, `11` M1-7) stops before the next read or structuring.
+        // Ten units a capture: up to 9 for its steps, the tenth when it is done or failed (M3-3p).
+        backgroundTask?.progress.totalUnitCount = Int64(captures.count * Self.unitsPerCapture)
+        backgroundTask?.progress.completedUnitCount = 0
+        // A cancelled run (Close, `11` M1-7) stops before the next read or structuring. The
+        // task's expiry doesn't cancel it (M3-3p).
         for index in captures.indices {
             guard !Task.isCancelled, captures.indices.contains(index) else {
                 break
             }
+            currentCapture = index
+            startSteps(capture: index)
+            updateSubtitle(capture: index, waiting: false)
             await read(index)
             guard !Task.isCancelled, captures.indices.contains(index) else {
                 break
@@ -164,10 +185,15 @@ import UIKit
             } else if captures[index].status == .reading {
                 captures[index].status = .done
             }
+            // The captures done or failed, as the screen's bar counts them (M3-3o); the next
+            // capture's steps start from 0 (M3-3p).
+            stepsInCurrent = 0
+            updateProgress()
             // The file can be exported at any point, failed captures included (`11` M1-9).
             finishReport()
         }
         if Task.isCancelled {
+            endBackgroundTest()
             finishReport()
             isRunning = false
             log.info(self, "run cancelled")
@@ -175,9 +201,173 @@ import UIKit
         }
         // The scene may have come back while the run was still going.
         await structureWaiting()
+        endBackgroundTest()
         finishReport()
         isRunning = false
         log.info(self, "run finished")
+    }
+
+    // MARK: Background test (`15` M3-3l)
+
+    /// The continued-processing task's identifier, both registered and requested, under the
+    /// wildcard `com.syzygysoftwerksllc.Sylantro.spike.*` that `Info.plist` permits (Apple's
+    /// notation for these tasks, `15` M3-3m and M3-3n: only the permitted identifier is a wildcard).
+    static let backgroundTaskIdentifier = "com.syzygysoftwerksllc.Sylantro.spike.run"
+    private static let backgroundTaskTitle = "Spike run"
+    /// Registered once per launch: a second registration of the identifier ends the app.
+    private static var isLaunchHandlerRegistered = false
+    /// The run waiting for its submitted task to launch.
+    private static var pendingLaunch: CheckedContinuation<BGContinuedProcessingTask?, Never>?
+
+    /// Structuring is tried whether or not the scene is active.
+    private var isBackgroundTest = false
+    private var backgroundTask: BGContinuedProcessingTask?
+    /// The report's `backgroundTask`.
+    private var backgroundTaskOutcome: String?
+    /// The capture being read or structured, for an expiry.
+    private var currentCapture = 0
+    private var didExpire = false
+    /// The task's launch and end, for the report (M3-3p).
+    private var backgroundTaskStartedAt: Date?
+    private var backgroundTaskEndedAt: Date?
+    /// The capture whose steps are counted, and how many are done (M3-3p).
+    private var stepCaptureID: UUID?
+    private var stepsInCurrent = 0
+    /// A capture's units in the task's progress: up to 9 for its steps, 10 when it is processed.
+    private nonisolated static let unitsPerCapture = 10
+    /// The installed app's permitted identifiers are logged once, when the spike screen opens.
+    private var hasLoggedPermittedIdentifiers = false
+
+    /// Run All in Background (Test): submits a continued-processing task that fails rather than
+    /// queues, and runs `runAll` in background-test mode inside it. If the submit throws, the run
+    /// goes ahead as Run All, the report saying why. Close cancels it as it cancels Run All.
+    func runAllInBackground() async {
+        guard !isRunning else {
+            return
+        }
+        // A submit with no handler registered ends the app, so there is no submit without one (M3-3n).
+        guard Self.registerLaunchHandlerIfNeeded() else {
+            log.error(self, "background task registration rejected: \(Self.backgroundTaskIdentifier)")
+            await runAll(notStarted: "not started: registration rejected")
+            return
+        }
+        let request = BGContinuedProcessingTaskRequest(identifier: Self.backgroundTaskIdentifier,
+                                                       title: Self.backgroundTaskTitle, subtitle: "Starting")
+        request.strategy = .fail
+        var submitError: String?
+        // The handler runs on the main queue, so it can't run before the continuation is kept.
+        let task: BGContinuedProcessingTask? = await withCheckedContinuation { continuation in
+            Self.pendingLaunch = continuation
+            do {
+                try BGTaskScheduler.shared.submit(request)
+            } catch {
+                Self.pendingLaunch = nil
+                submitError = String(describing: error)
+                continuation.resume(returning: nil)
+            }
+        }
+        guard let task else {
+            let reason = submitError ?? "no continued-processing task launched"
+            log.error(self, "background task not started: \(reason)")
+            await runAll(notStarted: "not started: \(reason)")
+            return
+        }
+        log.info(self, "background task started")
+        didExpire = false
+        backgroundTaskStartedAt = Date()
+        backgroundTaskEndedAt = nil
+        // Strongly held until the system clears the handler, after it runs or on completion.
+        task.expirationHandler = { @Sendable in
+            Task { @MainActor in self.expireBackgroundTask(task) }
+        }
+        let run = Task { await self.runAll(in: task) }
+        await withTaskCancellationHandler {
+            await run.value
+        } onCancel: {
+            run.cancel()
+        }
+        // An expired task was completed when it expired; its outcome stays (M3-3p).
+        if !didExpire {
+            let succeeded = !run.isCancelled
+            let waiting = captures.filter { $0.status == .waitingForApp }.count
+            backgroundTaskOutcome = !succeeded ? "cancelled"
+                : waiting == 0 ? "completed" : "completed, \(waiting) waiting for the app"
+            task.setTaskCompleted(success: succeeded)
+            endBackgroundTask()
+        }
+        finishReport()
+        log.info(self, "background task ended: \(backgroundTaskOutcome ?? "")")
+    }
+
+    /// Records the task's end and logs how long it lasted (M3-3p).
+    private func endBackgroundTask() {
+        let end = Date()
+        backgroundTaskEndedAt = end
+        if let start = backgroundTaskStartedAt {
+            log.info(self, "background task lasted \(Int(end.timeIntervalSince(start))) s")
+        }
+    }
+
+    /// The launch handler, registered on the main queue the first time it is needed (a
+    /// continued-processing registration may come after launch). False when the system rejects
+    /// the registration (the identifier not permitted by the installed app's `Info.plist`).
+    private static func registerLaunchHandlerIfNeeded() -> Bool {
+        guard !isLaunchHandlerRegistered else {
+            return true
+        }
+        isLaunchHandlerRegistered = BGTaskScheduler.shared.register(forTaskWithIdentifier: backgroundTaskIdentifier,
+                                                                   using: .main) { task in
+            MainActor.assumeIsolated {
+                launched(task as? BGContinuedProcessingTask)
+            }
+        }
+        return isLaunchHandlerRegistered
+    }
+
+    /// Logs the installed app's `BGTaskSchedulerPermittedIdentifiers`, identifiers only, the first
+    /// time the spike screen is in front (M3-3n).
+    private func logPermittedIdentifiersOnce() {
+        guard !hasLoggedPermittedIdentifiers else {
+            return
+        }
+        hasLoggedPermittedIdentifiers = true
+        if let identifiers = Bundle.main.object(forInfoDictionaryKey: "BGTaskSchedulerPermittedIdentifiers") as? [String],
+           !identifiers.isEmpty {
+            log.info(self, "background task permitted identifiers: \(identifiers.joined(separator: ", "))")
+        } else {
+            log.info(self, "background task permitted identifiers: none")
+        }
+    }
+
+    /// Hands the launched task to the run waiting for it; a task nobody waits for ends at once.
+    private static func launched(_ task: BGContinuedProcessingTask?) {
+        guard let continuation = pendingLaunch else {
+            task?.setTaskCompleted(success: false)
+            return
+        }
+        pendingLaunch = nil
+        continuation.resume(returning: task)
+    }
+
+    /// The task expired (M3-3p): it is completed at once, the capture it stopped at recorded, and
+    /// the runner stops touching it. The run isn't cancelled: background-test mode ends, and the
+    /// rest goes on as Run All, structuring only while the scene is active (SLT-144).
+    private func expireBackgroundTask(_ task: BGContinuedProcessingTask) {
+        guard !didExpire, backgroundTask === task else {
+            return
+        }
+        didExpire = true
+        backgroundTaskOutcome = "expired at capture \(currentCapture + 1)"
+        task.setTaskCompleted(success: false)
+        endBackgroundTask()
+        endBackgroundTest()
+        log.info(self, "background task expired at capture \(currentCapture + 1), run goes on in the app")
+        finishReport()
+    }
+
+    private func endBackgroundTest() {
+        isBackgroundTest = false
+        backgroundTask = nil
     }
 
     /// Every page's `read`, timed, then the last page's `readBottom`. Leaves the status at
@@ -210,6 +400,8 @@ import UIKit
         )
         captures[index].status = .reading
         log.info(self, "capture \(index): reading")
+        // Whether the scene was inactive at any point of the reading (M3-3l).
+        var readInBackground = !isSceneActive
         do {
             var lastImage: CGImage?
             for url in urls {
@@ -218,29 +410,38 @@ import UIKit
                 let reading = try await reader.read(image)
                 result.readMillis.append(Self.millis(since: start))
                 result.readings.append(reading)
+                readInBackground = readInBackground || !isSceneActive
                 lastImage = image
+                stepDone("read")
             }
             if let lastImage {
                 let start = ContinuousClock.now
                 let bottom = try await reader.readBottom(lastImage)
                 result.bottomReadMillis = Self.millis(since: start)
                 result.bottomText = bottom.text
+                readInBackground = readInBackground || !isSceneActive
+                stepDone("read")
             }
         } catch {
             fail(index, &result, error)
         }
+        result.readWhileInBackground = readInBackground
         captures[index].result = result
     }
 
-    /// Structures one read capture, only while the scene is active. A rate-limit refusal while
-    /// the scene is active is retried after a short wait, up to three times (SLT-153); after that,
-    /// or with the scene inactive, the capture waits for the app instead of failing (SLT-144).
+    /// Structures one read capture, only while the scene is active, or in any scene in the
+    /// background test (M3-3l). A rate-limit refusal while the scene is active is retried after a
+    /// short wait, up to three times (SLT-153); in the background test, one while it isn't is
+    /// retried after `backgroundRetryDelay`'s longer waits (M3-3o). Each wait follows the scene at
+    /// the refusal, the count carrying on. After that, or with the scene inactive outside the
+    /// test, the capture waits for the app instead of failing (SLT-144). Each attempt is recorded,
+    /// with the parts that got through and the wait after it.
     private func structure(_ index: Int) async {
         guard var result = captures[index].result else {
             return
         }
         let captureID = captures[index].id
-        guard isSceneActive else {
+        guard isSceneActive || isBackgroundTest else {
             wait(index, &result)
             return
         }
@@ -248,10 +449,26 @@ import UIKit
         log.info(self, "capture \(index): structuring")
         var refusals = 0
         while true {
+            let attemptAt = Date()
+            let attemptStart = ContinuousClock.now
+            let attemptSceneActive = isSceneActive
+            // The background test skips the title comparison (M3-3p), decided as the attempt starts.
+            let comparesTitles = !isBackgroundTest
+            // The part names `onPartDone` gives during this attempt (M3-3o), from any thread.
+            let partsDone = OSAllocatedUnfairLock(initialState: [String]())
+            func recordAttempt(_ outcome: String, retryAfter delay: Duration? = nil) {
+                result.structureAttempts = (result.structureAttempts ?? []) + [SpikeCaptureResult.Attempt(
+                    sceneActive: attemptSceneActive, outcome: outcome, millis: Self.millis(since: attemptStart), at: attemptAt,
+                    partsDone: partsDone.withLock { $0 }, retryAfterSeconds: delay.map { Int($0.components.seconds) }
+                )]
+            }
             do {
                 // The spike has no SourcePages; each page gets an id for this run only.
                 let pageIDs = captures[index].urls.map { _ in UUID() }
-                let outcome = try await structurer.structure(result.readings, pageIDs: pageIDs)
+                let outcome = try await structurer.structure(result.readings, pageIDs: pageIDs) { part in
+                    partsDone.withLock { $0.append(part) }
+                    Task { @MainActor in self.stepDone(Self.stepName(part), capture: captureID) }
+                }
                 guard isCapture(captureID, at: index) else {
                     return
                 }
@@ -264,11 +481,15 @@ import UIKit
                 result.unreadableLines = result.readings.reduce(0) { count, reading in
                     count + reading.lines.filter { !ScriptCheck.isLatin($0.text) }.count
                 }
-                // RV-35: each way of finding the page's titles, and the pieces they cut it into.
-                await findTitles(&result, pageIDs: pageIDs)
+                // RV-35: each way of finding the page's titles, and the pieces they cut it into; not
+                // in the background test, so a capture makes only the structurer's calls (M3-3p).
+                if comparesTitles {
+                    await findTitles(&result, pageIDs: pageIDs)
+                }
                 guard isCapture(captureID, at: index) else {
                     return
                 }
+                recordAttempt("done")
                 captures[index].status = .done
                 log.info(self, "capture \(index): done, \(result.recipes.count) recipe(s)")
             } catch where RecipeStructurer.isRateLimit(error) {
@@ -276,24 +497,36 @@ import UIKit
                     return
                 }
                 refusals += 1
-                if isSceneActive, let delay = Self.retryDelay(afterRefusal: refusals) {
+                // The wait follows the scene now (M3-3o): in front, SLT-153's; behind it, the
+                // background test's longer ones; otherwise none.
+                let sceneActive = isSceneActive
+                let delay = sceneActive ? Self.retryDelay(afterRefusal: refusals)
+                    : isBackgroundTest ? Self.backgroundRetryDelay(afterRefusal: refusals) : nil
+                recordAttempt("refused", retryAfter: delay)
+                if let delay {
                     // Still `.structuring`: wait, then structure again from the start.
-                    log.info(self, "capture \(index): refused, retrying after a wait")
+                    log.info(self, "capture \(index): refused, scene active \(sceneActive), retrying in \(delay.components.seconds) s")
+                    updateSubtitle(capture: index, waiting: true)
                     try? await Task.sleep(for: delay)
                     guard isCapture(captureID, at: index) else {
                         return
                     }
-                    // A cancelled wait ends without retrying.
-                    if isSceneActive, !Task.isCancelled {
+                    // A cancelled wait ends without retrying; outside the test, so does a scene
+                    // that left meanwhile.
+                    if isSceneActive || isBackgroundTest, !Task.isCancelled {
                         result.rateLimitRetries += 1
+                        updateSubtitle(capture: index, waiting: false)
                         continue
                     }
+                } else {
+                    log.info(self, "capture \(index): refused, scene active \(sceneActive)")
                 }
                 wait(index, &result)
             } catch {
                 guard isCapture(captureID, at: index) else {
                     return
                 }
+                recordAttempt("failed: \(String(describing: error))")
                 // Keep what the structurer learned before it failed (`11` M1-9).
                 if let failed = error as? StructuringFailed {
                     Self.copyDiagnostics(failed.outcome, into: &result)
@@ -322,6 +555,7 @@ import UIKit
 
         do {
             let answer = try await TitleLister.titles(numberedLines: pages.flatMap { $0.map(\.text) })
+            stepDone("titles")
             result.titlesModel = answer.titles
             result.titlesModelDropped = answer.dropped
             result.piecesModel = await pieces(Self.positions(of: answer.titles, in: pages), pages: pages,
@@ -359,6 +593,7 @@ import UIKit
             } catch {
                 errors["pieces \(way) \(offset + 1)"] = String(describing: error)
             }
+            stepDone("pieces")
         }
         return pieces
     }
@@ -394,7 +629,8 @@ import UIKit
     }
 
     /// The outcome's part times, part errors, retries, fallbacks, line-label use, header title,
-    /// model title, other titles and header area, which a failed capture keeps too.
+    /// model title, other titles, header area and answers as line numbers (M3-3m), which a failed
+    /// capture keeps too.
     private static func copyDiagnostics(_ outcome: StructuringOutcome, into result: inout SpikeCaptureResult) {
         result.partMillis = outcome.partMillis
         result.partErrors = outcome.partErrors
@@ -405,12 +641,69 @@ import UIKit
         result.modelTitle = outcome.modelTitle
         result.otherTitles = outcome.otherTitles
         result.headerArea = outcome.headerArea
+        result.stepRanges = outcome.stepRanges
+        result.ingredientItems = outcome.ingredientItems
+        result.sectionLineCounts = outcome.sectionLineCounts
     }
 
     /// The wait before structuring again after the `count`th refusal in a row while in front:
     /// 30 seconds for the first three, then nil (SLT-153).
     nonisolated static func retryDelay(afterRefusal count: Int) -> Duration? {
         (1...3).contains(count) ? .seconds(30) : nil
+    }
+
+    /// The background test's wait after the `count`th refusal in a row with the scene inactive
+    /// (M3-3o): 30, 60, 120, 240, 300 and 300 seconds, then nil.
+    nonisolated static func backgroundRetryDelay(afterRefusal count: Int) -> Duration? {
+        let seconds = [30, 60, 120, 240, 300, 300]
+        return (1...seconds.count).contains(count) ? .seconds(seconds[count - 1]) : nil
+    }
+
+    /// The task's completed units (M3-3p): 10 for each processed capture (done or failed, never
+    /// waiting for the app), and the current capture's steps, at most 9.
+    nonisolated static func completedUnits(processed: Int, stepsInCurrent: Int) -> Int64 {
+        Int64(processed * unitsPerCapture + min(stepsInCurrent, unitsPerCapture - 1))
+    }
+
+    /// A step's name in the subtitle: the part's name, a fallback under its part's (M3-3p).
+    nonisolated static func stepName(_ part: String) -> String {
+        let name = part.hasSuffix(" fallback") ? String(part.dropLast(" fallback".count)) : part
+        return name == "lineLabels" ? "line labels" : name
+    }
+
+    /// The capture at `index` starts its steps from 0 (M3-3p).
+    private func startSteps(capture index: Int) {
+        stepCaptureID = captures[index].id
+        stepsInCurrent = 0
+    }
+
+    /// One step of the current capture (or of `captureID`, if it is still the current one) is
+    /// done (M3-3p): its unit is added, and the subtitle names it. Nothing outside the
+    /// background test.
+    private func stepDone(_ step: String, capture captureID: UUID? = nil) {
+        guard captureID == nil || captureID == stepCaptureID else {
+            return
+        }
+        stepsInCurrent += 1
+        guard let backgroundTask, let index = captures.firstIndex(where: { $0.id == stepCaptureID }) else {
+            return
+        }
+        updateProgress()
+        backgroundTask.updateTitle(Self.backgroundTaskTitle,
+                                   subtitle: "Capture \(index + 1) of \(captures.count), \(step)")
+    }
+
+    /// The task's progress as it stands (M3-3p).
+    private func updateProgress() {
+        backgroundTask?.progress.completedUnitCount = Self.completedUnits(processed: processedCount,
+                                                                          stepsInCurrent: stepsInCurrent)
+    }
+
+    /// The background task's subtitle for a capture: "Capture n of m", with ", waiting" during a
+    /// refusal's wait (M3-3o). Nothing outside the background test.
+    private func updateSubtitle(capture index: Int, waiting: Bool) {
+        backgroundTask?.updateTitle(Self.backgroundTaskTitle,
+                                    subtitle: "Capture \(index + 1) of \(captures.count)" + (waiting ? ", waiting" : ""))
     }
 
     /// Whether the capture at `index` is still `id`: Clear or Load Test Set may have replaced the
@@ -426,7 +719,12 @@ import UIKit
             guard isSceneActive else {
                 return
             }
+            currentCapture = index
+            startSteps(capture: index)
             await structure(index)
+            // While the background task runs, its progress follows (M3-3o, M3-3p).
+            stepsInCurrent = 0
+            updateProgress()
             finishReport()
         }
     }
@@ -452,7 +750,10 @@ import UIKit
             deviceModel: Self.hardwareIdentifier(),
             systemVersion: UIDevice.current.systemVersion,
             modelAvailable: modelAvailable,
-            captures: captures.compactMap(\.result)
+            captures: captures.compactMap(\.result),
+            backgroundTask: backgroundTaskOutcome,
+            backgroundTaskStartedAt: backgroundTaskStartedAt,
+            backgroundTaskEndedAt: backgroundTaskEndedAt
         )
     }
 

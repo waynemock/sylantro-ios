@@ -20,8 +20,9 @@ struct SavedPauseView: View {
             Text("Saved. Ready for the next one.")
                 .font(.title3.weight(.semibold))
                 .multilineTextAlignment(.center)
-            CapsuleButton("Next Recipe", fillsWidth: true) { onNextRecipe() }
-            Button("Done") { onDone() }
+            // The main action filled, Done a capsule below it (SLT-161).
+            CapsuleButton("Next Recipe", style: .primary, fillsWidth: true) { onNextRecipe() }
+            CapsuleButton("Done", fillsWidth: true) { onDone() }
         }
         .padding(24)
         .frame(maxWidth: 560)

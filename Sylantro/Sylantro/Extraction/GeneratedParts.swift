@@ -59,21 +59,22 @@ nonisolated struct GeneratedLineItem {
     var isOptional: Bool?
 }
 
-/// The steps.
+/// The steps, as numbers of the lines they were read from, so their words come from the page
+/// (`15` RV-39, M3-3j), as the ingredients' do (SLT-146).
 @Generable
-nonisolated struct GeneratedStepPart {
-    @Guide(description: "The steps in printed order, each with its words unchanged.")
-    var steps: [GeneratedStep]
+nonisolated struct GeneratedStepLines {
+    @Guide(description: "The method steps in printed order, each as the numbers of its lines.")
+    var steps: [GeneratedStepRange]
 }
 
-/// One method step.
+/// One step, by its line numbers.
 @Generable
-nonisolated struct GeneratedStep {
-    @Guide(description: "The step's words exactly as printed.")
-    var text: String
+nonisolated struct GeneratedStepRange {
+    @Guide(description: "The number of the step's first line.")
+    var firstLine: Int
 
-    @Guide(description: "The heading the step is printed under, if any.")
-    var groupName: String?
+    @Guide(description: "The number of its last line, the same as the first if it fits on one line.")
+    var lastLine: Int
 }
 
 /// A label for each numbered line of a page with no headings.

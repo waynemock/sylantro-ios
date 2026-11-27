@@ -3,14 +3,14 @@ import Foundation
 /// Groups the spike's test photos into captures by page ID only, never by page content (SLT-154,
 /// `00B` §2). Behind SLT-093's `AppConfig.AccuracySpike` flag.
 nonisolated enum TestSetGroups {
-    /// The page pairs `10` §1 joins into one capture.
-    private static let joinedPairs: [(first: Int, second: Int)] = [(5, 6), (7, 8), (16, 17)]
+    /// The page runs `10` §1 joins into one capture: the pairs, and the five-page recipe (M3-3m).
+    private static let joinedRuns: [ClosedRange<Int>] = [5...6, 7...8, 16...17, 26...30]
 
     private static let extensions: Set<String> = ["jpeg", "jpg", "png", "heic"]
 
     /// The names that are exactly `TP-` and two digits, `.`, then `jpeg`, `jpg`, `png` or `heic`
-    /// (any case), in page order. A joined pair is one capture when both pages are present; every
-    /// other page is its own capture.
+    /// (any case), in page order. A joined run is one capture, in page order, when every page in it
+    /// is present; otherwise, and for every other page, each page is its own capture.
     static func captures(fileNames: [String]) -> [[String]] {
         let pages = fileNames
             .compactMap { name in pageNumber(name).map { (number: $0, name: name) } }
@@ -20,12 +20,12 @@ nonisolated enum TestSetGroups {
         var groups: [[String]] = []
         var joinedIndex: [Int: Int] = [:]
         for page in pages {
-            if let pair = joinedPairs.first(where: { $0.first == page.number || $0.second == page.number }),
-               numbers.contains(pair.first), numbers.contains(pair.second) {
-                if let index = joinedIndex[pair.first] {
+            if let run = joinedRuns.first(where: { $0.contains(page.number) }),
+               run.allSatisfy(numbers.contains) {
+                if let index = joinedIndex[run.lowerBound] {
                     groups[index].append(page.name)
                 } else {
-                    joinedIndex[pair.first] = groups.count
+                    joinedIndex[run.lowerBound] = groups.count
                     groups.append([page.name])
                 }
             } else {

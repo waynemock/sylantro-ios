@@ -17,7 +17,7 @@ struct SpikeView: View {
     @State private var importMode = ImportMode.photos
     @State private var isExporting = false
     @State private var isConfirmingClose = false
-    /// The task Run All started, kept so Close can cancel it.
+    /// The task Run All (or BG Run All) started, kept so Close can cancel it.
     @State private var runTask: Task<Void, Never>?
     @Environment(\.scenePhase) private var scenePhase
 
@@ -41,6 +41,13 @@ struct SpikeView: View {
                     .disabled(runner.isRunning)
                     CapsuleButton("Run All", style: .accent) {
                         runTask = Task { await runner.runAll() }
+                    }
+                    .disabled(runner.isRunning || runner.captures.isEmpty)
+                    // Spike only (`15` M3-3l, M3-3o): Run All inside a continued-processing task,
+                    // to see whether the model answers in the background. Close cancels it as
+                    // Run All.
+                    CapsuleButton("BG Run All") {
+                        runTask = Task { await runner.runAllInBackground() }
                     }
                     .disabled(runner.isRunning || runner.captures.isEmpty)
                     // Works mid-run and after failures (M1-9).
@@ -85,7 +92,8 @@ struct SpikeView: View {
                 }
             }
             ToolbarItem(placement: .topBarLeading) {
-                Menu {
+                // SyLib's `MoreMenu`, as the library's (SLT-161).
+                MoreMenu(look: .toolbar, accessibilityLabel: "More") {
                     Button("Add Capture") {
                         importMode = .photos
                         isImporting = true
@@ -95,8 +103,6 @@ struct SpikeView: View {
                     }
                     // Enabled whenever there is a capture or a report to clear.
                     .disabled(runner.captures.isEmpty && runner.report == nil)
-                } label: {
-                    IconButton("ellipsis.circle", context: .toolbar)
                 }
             }
         }

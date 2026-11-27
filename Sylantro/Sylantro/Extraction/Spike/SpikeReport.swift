@@ -10,12 +10,26 @@ nonisolated struct SpikeReport: Codable, Sendable {
     var systemVersion: String
     var modelAvailable: Bool
     var captures: [SpikeCaptureResult]
+    /// Nil for a plain run; for Run All in Background (Test) (`15` M3-3l): "completed",
+    /// "cancelled", "expired at capture n" or "not started: <error>". Nil in earlier results.
+    var backgroundTask: String?
+    /// The background task's launch, and its end however it ended (`15` M3-3p); nil for a plain
+    /// run and in earlier results.
+    var backgroundTaskStartedAt: Date?
+    var backgroundTaskEndedAt: Date?
 
     func encoded() throws -> Data {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .prettyPrinted, .withoutEscapingSlashes]
         encoder.dateEncodingStrategy = .iso8601
         return try encoder.encode(self)
+    }
+
+    /// A results file read back, its dates ISO 8601 as `encoded()` writes them.
+    static func decoded(from data: Data) throws -> SpikeReport {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode(SpikeReport.self, from: data)
     }
 }
 
@@ -80,4 +94,31 @@ nonisolated struct SpikeCaptureResult: Codable, Sendable {
     /// With two or more titles, the capture cut by them and each piece structured on its own.
     var piecesBigType: [Piece]?
     var piecesModel: [Piece]?
+
+    /// One structuring attempt (`15` M3-3l): whether the scene was active when it started, how it
+    /// ended ("done", "refused" or "failed: <error>"), how long it took, and when it started.
+    nonisolated struct Attempt: Codable, Sendable, Equatable {
+        var sceneActive: Bool
+        var outcome: String
+        var millis: Int
+        var at: Date
+        /// The part names `onPartDone` gave during the attempt, in order (M3-3o); nil before M3-3o.
+        var partsDone: [String]?
+        /// The wait before the next attempt, in seconds, when there is one (M3-3o).
+        var retryAfterSeconds: Int?
+    }
+
+    /// Whether the scene was inactive at any point while its pages were read; nil in a result from
+    /// before M3-3l.
+    var readWhileInBackground: Bool?
+    /// Each structuring attempt, in order; nil in a result from before M3-3l.
+    var structureAttempts: [Attempt]?
+
+    /// The model's answers as line numbers, and the sections' sizes (`15` M3-3m), numbers only:
+    /// the steps' `[firstLine, lastLine]`; the ingredients' `[groupIndex, nameLine, -1]` per group,
+    /// then `[groupIndex, firstLine, lastLine]` per item; and `ingredients` and `steps` line counts.
+    /// Nil in a result from before M3-3m, or when that part gave no answer.
+    var stepRanges: [[Int]]?
+    var ingredientItems: [[Int]]?
+    var sectionLineCounts: [String: Int]?
 }

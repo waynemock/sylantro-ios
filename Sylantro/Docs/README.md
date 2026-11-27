@@ -32,9 +32,9 @@ Score It \* as its template (SLT-080).
 
 | # | Document | What it holds | Status |
 |---|---|---|---|
-| 00 | `00_DECISION_LEDGER.md` | Every locked ruling, and the open decisions | **Ships with every task** · v0.59 |
+| 00 | `00_DECISION_LEDGER.md` | Every locked ruling, and the open decisions | **Ships with every task** · v0.61 |
 | 00A | `00A_STUDIO_CONVENTIONS.md` | Studio conventions — canonical; cited, never restated | v1.15 — studio-wide, verbatim from SyWords |
-| 00B | `00B_SYLANTRO_GUARDRAILS.md` | Sylantro's stop conditions, prohibitions, commands, checklist; Tasks A-1 to A-4 | v0.19 — the spike flag goes off when App Store copy starts for RC0 (SLT-093); plain centered alerts (SLT-088); toolbar buttons are `IconButton` (SLT-089); a permission needs its usage key (stop condition); Delete Recipe is the one named photo delete (SLT-157); tests pinned to the iPhone SE (3rd generation) at iOS 26.5 |
+| 00B | `00B_SYLANTRO_GUARDRAILS.md` | Sylantro's stop conditions, prohibitions, commands, checklist; Tasks A-1 to A-4 | v0.20 — SyLib's UI components wherever one fits (SLT-161); the spike flag goes off when App Store copy starts for RC0 (SLT-093); plain centered alerts (SLT-088); toolbar buttons are `IconButton` (SLT-089); a permission needs its usage key (stop condition); Delete Recipe is the one named photo delete (SLT-157); tests pinned to the iPhone SE (3rd generation) at iOS 26.5 |
 | 01 | `01_INGESTION_DESIGN.md` | The camera ingestion engine: pipeline, on-device reading and structuring, the data, storage, the mirror, nutrition slots, milestones | v0.21 — rulings in (SLT-020 to SLT-103); one capture is one recipe, with a pause after Save (SLT-045); Save asks "Is there another page?" when unfinished (SLT-046); sharing in `04`, photos in `05` |
 | 02 | `02_ARCHITECTURE.md` | The architecture contract: layers, Domain, capture and extraction, the two stores, the writers, recovery, the mirror's layout, file map | v0.17 — **accepted** (22 Nov 2026); Files copy layout per SLT-157, SLT-158; the queue only while open and its own small store (`15` RV-5, RV-23) |
 | 03 | `03_NUTRITION_DESIGN.md` | Nutrition for recipes that don't print it: USDA FoodData Central (SR Legacy), a trimmed bundled copy, food matching with her confirmation, grams from portions, protein and phenylalanine per serving, the flagged phe estimate, custom foods, substitutions | v0.4 — **draft, not accepted; phe and diet features on hold, out of 1.0 (§16)**; open decisions N-1 to N-13; §15 unscheduled ideas (recipe from a label, from a dish photo) |
@@ -44,13 +44,13 @@ Score It \* as its template (SLT-080).
 | 07 | `07_APP_ICON.md` | The app icon: four concepts drawn in code, a paste-ready ChatGPT prompt for each, the field, palette, appearances, process, rulings; its files in `AppIcon/` | v0.4 — **locked and placed** (SLT-110 to SLT-115); About's full-size copy is `00B` Task A-4; on-device check open |
 | 08 | `08_APPLE_NEWS_IMPORT.md` | Importing recipes saved in Apple News: what its share sheet gives (a link; no export), the ways in (the publisher's recipe data, screenshots, copied text), fetching the shared page, duplicates, what stands in for the original, a spike | v0.5 — draft; SLT-120 in (link first, screenshots fallback); NI-5, NI-8 (QR codes, §2.3) and NI-9 (photos from Photos, §2.4) ruled; NI-2 to NI-4, NI-6, NI-7 open |
 | 09 | `09_MEALS.md` | Meals: a named meal (Thanksgiving) made of recipes from the library, how it maps to the model, and later a combined shopping list, scaling, meal-level protein and phe, a cooking timeline, yearly reuse | v0.1 — idea, nothing ruled; open decisions ML-1 to ML-8 |
-| 10 | `10_ACCURACY_TEST_SET.md` | The spike's test set: 25 real binder pages by ID, how each is scored, 42 hard cases (recipes across two pages, several recipes on one page, handwriting, bleed-through, shorthand, odd yields, damage), the design questions they raise; the pages and answer key live outside git in `~/GIT/Syzygy/sylantro-testpages/` (SLT-092) | v0.28 — run 9 scored in §7 (same as run 8; steps, titles and units still short); SP-21 and SP-22 open |
+| 10 | `10_ACCURACY_TEST_SET.md` | The spike's test set: 25 real binder pages by ID, how each is scored, 42 hard cases (recipes across two pages, several recipes on one page, handwriting, bleed-through, shorthand, odd yields, damage), the design questions they raise; the pages and answer key live outside git in `~/GIT/Syzygy/sylantro-testpages/` (SLT-092) | v0.35 — TP-26 to TP-30 added (a five-page recipe, 26 recipes); run 12 scored, run in the background (all 23 captures structured in the background; the five-page recipe's 10 steps right); run 13 scored (every ingredient's name from its own line; the five-page recipe with no warning); SP-21 in M3-3s; run 14 scored (three titles fixed, four cards take in ingredient lines) |
 | 11 | `11_MILESTONE_1_SPIKE.md` | Milestone 1's spike task: M1-3, the reader, the structurer and a hidden spike screen, behind an AppConfig flag, that runs the test pages on Pops's iPhone 18 Pro and exports results (SLT-093) | v1.0 — **closed** (SLT-156): M1-3 to M1-15 complete, 60 tests, six runs scored |
 | 12 | `12_IMPLEMENTATION_PLAN.md` | The build order: how the build runs, the SyLib queue, the milestones M0 to M9 in build order, every document mapped to the milestone that builds it, each milestone's gates, and the proposals for Pops | v0.17 — M3's tasks in `15` (draft); **draft**; M0, M1 (SLT-156) and M2 (SLT-160) done; M9 turns the spike flag off (SLT-093); IP-7 ruled (1.0 holds M1 to M8 except the PKU features; M5 after 1.0); IP-10 open; proposals IP-1 to IP-6, IP-8, IP-9; **build order is read only from its §2** |
 | 13 | `13_SCREENS.md` | The screens: the library, the camera, a recipe and its review, and the recovery screen, with every string she reads | v0.42 — several recipes on a page drawn (SC-22, S-74 to S-77 proposed); SC-23 ruled (Read Again asks, progress bar), S-78 proposed |
 | 14 | `14_MILESTONE_2_CAPTURE.md` | Milestone 2's tasks: the plan M2-1 to M2-6 (capture types, store and recovery screen, photo files and `CaptureRecorder`, screens, mirror, device check), M2-1 to M2-5 written in full | v1.0 — **closed** (SLT-160); M2-1 to M2-5 and fixes M2-4a to M2-4g complete (107 tests); every device check passed |
 | 14A | `14A_SYLIB_IMAGE_CACHE_MEMORY.md` | One SyLib task (M2-4a): `ImageCache` keeps an image in memory without writing a JPEG, for M2-4's thumbnails | v0.3 — **M2-4a complete** (SyLib 1659 tests) |
-| 15 | `15_MILESTONE_3_REVIEW.md` | Milestone 3's tasks: the plan M3-1 to M3-7 (Domain and structurer fixes, the extraction queue, review, a recipe's pages, several recipes on a page, unreadable handwriting and search, device check) and the questions they wait on | v0.73 — **draft**; kolaches device check passed; RV-39 ruled; M3-3j written (steps by line numbers); M3-3e (199) and M3-3f (202) complete; M3-3h, M3-3g and M3-3i complete (209); M3-5 on hold; RV-37 ruled (M3-5a); M3-3e written (two device fixes); run 8 scored, the model's title list kept (RV-35); RV-36 ruled; **M3-5 written** (214 tests); RV-1 to RV-13, RV-18, RV-19, RV-21 and RV-23 to RV-27 ruled; **M3-1 complete** (123 tests); **M3-2 complete** (142 tests); **M3-2a complete** (149 tests); **M3-3 complete** (163 tests); **M3-4 complete** (172 tests); **M3-3a complete** (181 tests); **M3-3b complete** (184 tests); **M3-3c complete** (187 tests); **M3-3d complete** (191 tests); **M3-5s complete** (197 tests); spike run 8 next |
+| 15 | `15_MILESTONE_3_REVIEW.md` | Milestone 3's tasks: the plan M3-1 to M3-7 (Domain and structurer fixes, the extraction queue, review, a recipe's pages, several recipes on a page, unreadable handwriting and search, device check) and the questions they wait on | v0.98 — **draft**; run 14 scored; M3-3t complete (titles stop at the ingredients, 246), spike run 15 next; kolaches device check passed; RV-39 ruled; M3-3j complete (216 tests, steps by line numbers), run 10 scored; M3-3k complete (step clean-up rules, 223), run 11 next; M3-3l complete (background spike test, 224); run 11 scored; M3-3m complete (232), run 12 next; M3-3n complete (background test crash fixed); M3-3o complete (background run waits out the rate limit, 234); M3-3p complete (background progress at each step, an expiry doesn't end the run, 236); run 12 scored (all 23 captures structured in the background); M3-3q complete (ingredient names from their own lines, 239), spike run 13 next; M3-3r complete (SyLib components, SLT-161); M3-3s complete (title rules, 243), spike run 14 next; RV-40 ruled (her reading in the background, after the title rules); M3-3e (199) and M3-3f (202) complete; M3-3h, M3-3g and M3-3i complete (209); M3-5 on hold; RV-37 ruled (M3-5a); M3-3e written (two device fixes); run 8 scored, the model's title list kept (RV-35); RV-36 ruled; **M3-5 written** (214 tests); RV-1 to RV-13, RV-18, RV-19, RV-21 and RV-23 to RV-27 ruled; **M3-1 complete** (123 tests); **M3-2 complete** (142 tests); **M3-2a complete** (149 tests); **M3-3 complete** (163 tests); **M3-4 complete** (172 tests); **M3-3a complete** (181 tests); **M3-3b complete** (184 tests); **M3-3c complete** (187 tests); **M3-3d complete** (191 tests); **M3-5s complete** (197 tests); spike run 8 next |
 | 16 | `16_FEATURE_IDEAS.md` | Features popular recipe apps have and how each would fit: cook mode, scaling and unit conversion, a grocery list, organizing, import from other apps, the pantry, Apple extras, export and print | v0.2 — FI-11 (marking a missed line) placed in M3; — ideas; SLT-170 to SLT-172 in (cook mode and scaling in 1.0; import eventually); FI-1 to FI-10 open |
 
 ---
@@ -126,6 +126,34 @@ Score It \* as its template (SLT-080).
 | 0.74 | Row 10 to v0.27: run 8 scored; row 15 to v0.59: RV-35's outcome, RV-36 proposed | Pops, 25 Nov 2026 |
 | 0.76 | Row 15 to v0.62: M3-3e written | Pops, 25 Nov 2026 |
 | 0.88 | Row 15 to v0.73: RV-39, M3-3j written | Pops, 25 Nov 2026 |
+| 0.89 | Row 15 to v0.74: M3-3j complete | Pops, 25 Nov 2026 |
+| 0.90 | Row 10 to v0.29: run 10 scored | Pops, 25 Nov 2026 |
+| 0.91 | Row 15 to v0.75: M3-3k written | Pops, 25 Nov 2026 |
+| 0.92 | Row 10 to v0.30: TP-26 to TP-30 added | Pops, 25 Nov 2026 |
+| 0.93 | Row 15 to v0.76: M3-3k complete | Pops, 25 Nov 2026 |
+| 0.94 | Row 15 to v0.77: M3-3l written | Pops, 25 Nov 2026 |
+| 0.95 | Row 10 to v0.31 (run 11), row 15 to v0.78 (M3-3m written) | Pops, 25 Nov 2026 |
+| 0.96 | Row 15 to v0.80: M3-3l complete, M3-3m revised (232) | Pops, 25 Nov 2026 |
+| 0.97 | Row 15 to v0.81: M3-3m complete | Pops, 25 Nov 2026 |
+| 0.98 | Row 15 to v0.82: M3-3n written | Pops, 25 Nov 2026 |
+| 0.99 | Row 15 to v0.83: M3-3n complete | Pops, 25 Nov 2026 |
+| 1.00 | Row 15 to v0.84: M3-3o written | Pops, 25 Nov 2026 |
+| 1.01 | Row 15 to v0.85: M3-3o complete | Pops, 25 Nov 2026 |
+| 1.02 | Row 15 to v0.86: M3-3p written | Pops, 25 Nov 2026 |
+| 1.03 | Row 15 to v0.87: M3-3p complete | Pops, 25 Nov 2026 |
+| 1.04 | Row 10 to v0.32: run 12 scored | Pops, 25 Nov 2026 |
+| 1.05 | Row 15 to v0.88: M3-3q written | Pops, 25 Nov 2026 |
+| 1.06 | Row 15 to v0.89: RV-40 proposed | Pops, 25 Nov 2026 |
+| 1.07 | Row 15 to v0.90: M3-3q complete | Pops, 25 Nov 2026 |
+| 1.08 | Row 15 to v0.91: RV-40 ruled | Pops, 25 Nov 2026 |
+| 1.09 | Rows 00 to v0.61 and 00B to v0.20: SLT-161, SyLib's UI components wherever one fits | Pops, 25 Nov 2026 |
+| 1.10 | Row 15 to v0.92: M3-3r written | Pops, 25 Nov 2026 |
+| 1.11 | Row 10 to v0.33: run 13 scored | Pops, 25 Nov 2026 |
+| 1.12 | Row 15 to v0.94: M3-3r complete | Pops, 25 Nov 2026 |
+| 1.13 | Row 15 to v0.95: M3-3s written; row 10 to v0.34 | Pops, 25 Nov 2026 |
+| 1.14 | Row 15 to v0.96: M3-3s complete | Pops, 25 Nov 2026 |
+| 1.15 | Row 15 to v0.97: M3-3t written; row 10 to v0.35: run 14 scored | Pops, 25 Nov 2026 |
+| 1.16 | Row 15 to v0.98: M3-3t complete | Pops, 27 Nov 2026 |
 | 0.87 | Row 10 to v0.28: run 9 scored | Pops, 25 Nov 2026 |
 | 0.86 | Row 15 to v0.72: kolaches device check passed | Pops, 25 Nov 2026 |
 | 0.85 | Row 15 to v0.71: M3-3i complete | Pops, 25 Nov 2026 |

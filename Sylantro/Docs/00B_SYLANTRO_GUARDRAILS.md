@@ -1,7 +1,7 @@
 # Sylantro — Project Guard Rails
 
 **Project-level. Sylantro only.** Companion to `00A_STUDIO_CONVENTIONS.md`.
-Version 0.19 · 23 November 2026 · Ships in every agent prompt, alongside `00A`,
+Version 0.20 · 25 November 2026 · Ships in every agent prompt, alongside `00A`,
 `00_DECISION_LEDGER.md` and the task's own documents.
 
 ---
@@ -100,6 +100,11 @@ In addition to `00A`. These apply to every task, in perpetuity.
 - **Toolbar symbol buttons are SyLib's `IconButton`** (SLT-089), with `context: .toolbar`, both
   as a button and as a `Menu`'s label; never a bare `Button` or `Image(systemName:)`. Text buttons
   such as Done stay text.
+- **Screens use SyLib's UI components wherever one fits** (SLT-161): `CapsuleButton`, `IconButton`,
+  `MoreMenu`, `EmptyStateView`, `SettingRow` and the rest of `SyLibUI`, never a hand-rolled
+  equivalent. When SyLib lacks one, or one needs a new size or style, stop and say so: the task
+  that changes SyLib is Claude's to write. SyLib's `.md` docs never name an app; its code
+  comments may, and are never edited for that.
 - **Alerts are plain and centered** (SLT-088): every confirmation or message uses SwiftUI's
   `.alert`, never `.confirmationDialog`, an action sheet or a popover anchored to a button. *Why:*
   Pops, 22 Nov 2026: "all alerts should be normal alerts and not try to point to anything. swfitui still is furbar with this."
@@ -337,6 +342,7 @@ The test target is already at the floor (`"26.5"` for both targets), so no build
 | Version | Decision | Rationale |
 |---|---|---|
 | 0.19 | §0 and §2: a recipe she deletes goes entirely (SLT-157); M2-4f is the task that names photo deletion | Pops, 23 Nov 2026: "Delete should mean all gone." |
+| 0.20 | §3: screens use SyLib's UI components wherever one fits; a missing or changed one is a SyLib task | SLT-161 (Pops, 25 Nov 2026) |
 | 0.18 | §3: toolbar symbol buttons are SyLib's `IconButton` | SLT-089 (Pops, 23 Nov 2026: "always use the SyLib IconButton for ToolBar buttons") |
 | 0.17 | §2: a permission without its usage-description key and approved string is a stop condition | M2-4 shipped the camera without `NSCameraUsageDescription`; Pops, 23 Nov 2026: "seems like we missed one" |
 | 0.16 | §2: image bytes in either store are a stop condition | SLT-053 (Pops, 22 Nov 2026: "looks good. can you make sure we are storing no image data in the database") |

@@ -3,7 +3,7 @@
 *One row per locked design decision, always showing the **current** ruling. Sylantro's documents
 are rewritten in place (`00A` §1); this ledger is where a reversal survives. This file is HEAD.*
 
-**Version 0.60** · 24 November 2026 · Companion to all numbered Sylantro documents
+**Version 0.61** · 25 November 2026 · Companion to all numbered Sylantro documents
 
 ---
 
@@ -134,6 +134,7 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | SLT-084 | **SyLib is a local package** (`../../sylib-swift`); the app links `SyLibCore`, `SyLibUI` and `SyLibCloud` today. `SyLibCache` is added when thumbnails are built. | `project.xcproj` as created by Pops, 21 Nov 2026 |
 | SLT-088 | **Every confirmation or message is a plain centered alert** (SwiftUI `.alert`), never a `.confirmationDialog`, action sheet or popover anchored to a button. Standing rule for all of Sylantro (`00B` §3). | Pops, 22 Nov 2026: "all alerts should be normal alerts and not try to point to anything. swfitui still is furbar with this." → `00B` §3, `11` M1-8 |
 | SLT-089 | **Every toolbar symbol button is SyLib's `IconButton`** (`context: .toolbar`), as a button or a `Menu`'s label; text buttons such as Done stay text. It replaces the system close button MT-11 chose for the page viewer. | Pops, 23 Nov 2026: "always use the SyLib IconButton for ToolBar buttons" |
+| SLT-161 | **Screens use SyLib's UI components wherever one fits** (`CapsuleButton`, `IconButton`, `MoreMenu`, `EmptyStateView`, `SettingRow` and the rest of `SyLibUI`), never a hand-rolled equivalent. Where SyLib has no component or one needs a change (a new size, a new style), SyLib is changed by a task that names it, rather than Sylantro rolling its own. SyLib's `.md` docs never name an app; its code comments may, and are never edited for that. | Pops, 25 Nov 2026: "we should us as much sylib ui components as possible. keep in mind we can make any change to sylib we might need." |
 
 ## Sharing
 
@@ -250,6 +251,7 @@ are rewritten in place (`00A` §1); this ledger is where a reversal survives. Th
 | Version | Decision | Rationale |
 |---|---|---|
 | 0.60 | Features from other recipe apps heading added, SLT-170 to SLT-179 reserved for `16`; SLT-170 (cook mode in 1.0), SLT-171 (scaling in 1.0), SLT-172 (import from other apps eventually, lowest priority); FI-1 to FI-10 listed as open | Pops, 24 Nov 2026: "Note them all somewhere appropriate. Cook mode and scaling seems mvp, import least interesting to me but good to include eventually" |
+| 0.61 | SLT-161 added: screens use SyLib's UI components wherever one fits, and SyLib is changed when it lacks one | Pops, 25 Nov 2026: "we should us as much sylib ui components as possible. keep in mind we can make any change to sylib we might need." |
 | 0.59 | The PKU hold's open decision restated: out of 1.0, after it; IP-10 (general nutrition in 1.0) added | Pops, 24 Nov 2026 |
 | 0.58 | Open decision N-13 added: the phe and diet features on hold, with `03` §16's options; no rulings filed | Pops, 24 Nov 2026 |
 | 0.57 | Open decisions N-11 and N-12 added from `03` v0.2 §15 (label and dish-photo ideas); no rulings filed | Pops, 24 Nov 2026 |

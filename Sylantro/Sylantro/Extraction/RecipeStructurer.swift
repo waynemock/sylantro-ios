@@ -24,6 +24,14 @@ nonisolated struct StructuringOutcome: Sendable {
     var otherTitles: [String]
     /// The lines the header step showed the model, with their sizes (`15` M3-1).
     var headerArea: [HeaderArea.HeaderLine]
+    /// For the spike only (`15` M3-3m), numbers only: the steps answer's `[firstLine, lastLine]`
+    /// ranges; the ingredients answer as `[groupIndex, nameLine, -1]` for each group, then
+    /// `[groupIndex, firstLine, lastLine]` for each of its items; and how many lines each section
+    /// held (`ingredients` after wraps are joined, `steps`). A fallback's answer replaces its part's,
+    /// with its own line count. The app ignores them.
+    var stepRanges: [[Int]]?
+    var ingredientItems: [[Int]]?
+    var sectionLineCounts: [String: Int]?
 }
 
 /// Structuring failed with something other than a rate limit. It carries what was learned before
@@ -54,6 +62,8 @@ nonisolated struct RecipeStructurer: Sendable {
     static let headerPromptIntro = "Lines from the top of the page, with each line's text size compared with the page's usual text (1.0):"
 
     static let ingredientsPromptIntro = "The ingredient lines of a recipe, numbered:"
+
+    static let stepsPromptIntro = "The method lines of a recipe, numbered:"
 
     /// Each call's maximum response length (SLT-141). A retry doubles it (SLT-147).
     enum TokenCap {
@@ -143,9 +153,11 @@ nonisolated struct RecipeStructurer: Sendable {
             if let labels = try await call("lineLabels", prompt: Self.numbered(allLines), generating: GeneratedLineLabels.self,
                                             cap: TokenCap.lineLabels(forLineCount: allLines.count), onPartDone: onPartDone, outcome: &outcome) {
                 split = Self.labelled(allLines, labels: labels, keeping: split)
-                stopAt = labels.labels
-                    .filter { $0.kind == "ingredient" || $0.kind == "step" }
-                    .map { $0.line - 1 }
+                // From the labels as `labelled` reads them, so a title line labelled a step stays
+                // in the header area (`15` M3-3s).
+                stopAt = Self.lineKinds(allLines, labels: labels)
+                    .filter { $0.value == "ingredient" || $0.value == "step" }
+                    .map { $0.key - 1 }
                     .filter { $0 >= 0 }
                     .min()
             }
@@ -187,13 +199,19 @@ nonisolated struct RecipeStructurer: Sendable {
             let mapped = Self.ingredientGroups(from: part, lines: ingredientLines)
             ingredientGroups = mapped.groups
             warnings.append(contentsOf: mapped.warnings)
+            Self.record(part, lineCount: ingredientLines.count, into: &outcome)
         }
 
-        // 5. The steps.
-        var steps: GeneratedStepPart?
-        if !split.steps.isEmpty {
-            steps = try await call("steps", prompt: split.steps.joined(separator: "\n"),
-                                   generating: GeneratedStepPart.self, cap: TokenCap.steps, onPartDone: onPartDone, outcome: &outcome)
+        // 5. The steps, as line numbers into their section's lines, so their words are the page's
+        // (RV-39, `15` M3-3j).
+        var steps: [Step]?
+        if !split.steps.isEmpty,
+           let part = try await call("steps", prompt: Self.stepsPrompt(split.steps),
+                                     generating: GeneratedStepLines.self, cap: TokenCap.steps, onPartDone: onPartDone, outcome: &outcome) {
+            let mapped = Self.steps(from: part, lines: split.steps)
+            steps = mapped.steps
+            warnings.append(contentsOf: mapped.warnings)
+            Self.record(part, lineCount: split.steps.count, into: &outcome)
         }
 
         // 6. A part still missing is asked over every readable line, not retried (SLT-147).
@@ -205,17 +223,21 @@ nonisolated struct RecipeStructurer: Sendable {
                                          retrying: false, onPartDone: onPartDone, outcome: &outcome) {
                 let mapped = Self.ingredientGroups(from: part, lines: joinedLines)
                 ingredientGroups = mapped.groups
+                Self.record(part, lineCount: joinedLines.count, into: &outcome)
                 warnings.append("ingredients from whole page")
                 warnings.append(contentsOf: Self.fallbackWarnings(mapped.warnings))
             }
         }
         if steps == nil || split.steps.isEmpty {
             outcome.fallbacks.append("steps")
-            if let part = try await call("steps fallback", prompt: allLines.joined(separator: "\n"),
-                                         generating: GeneratedStepPart.self, cap: TokenCap.steps,
+            if let part = try await call("steps fallback", prompt: Self.stepsPrompt(allLines),
+                                         generating: GeneratedStepLines.self, cap: TokenCap.steps,
                                          retrying: false, onPartDone: onPartDone, outcome: &outcome) {
-                steps = part
+                let mapped = Self.steps(from: part, lines: allLines, putsBackSkipped: false)
+                steps = mapped.steps
+                Self.record(part, lineCount: allLines.count, into: &outcome)
                 warnings.append("steps from whole page")
+                warnings.append(contentsOf: mapped.warnings)
             }
         }
 
@@ -226,6 +248,20 @@ nonisolated struct RecipeStructurer: Sendable {
                                    pageIDs: pageIDs, unreadableAreas: unreadableAreas, warnings: warnings)
         let checked = RecipeValidator.check(recipe, pageText: pageText, clutterFreeText: clutterFreeText)
         outcome.recipes = [SourceLocator.locate(checked, lines: Self.locatorLines(pageLines, pageIDs: pageIDs))]
+    }
+
+    /// The ingredients answer's numbers for the spike (M3-3m).
+    private static func record(_ part: GeneratedIngredientLines, lineCount: Int, into outcome: inout StructuringOutcome) {
+        outcome.ingredientItems = part.groups.enumerated().flatMap { index, group in
+            [[index, group.nameLine, -1]] + group.items.map { [index, $0.firstLine, $0.lastLine] }
+        }
+        outcome.sectionLineCounts = (outcome.sectionLineCounts ?? [:]).merging(["ingredients": lineCount]) { $1 }
+    }
+
+    /// The steps answer's numbers for the spike (M3-3m).
+    private static func record(_ part: GeneratedStepLines, lineCount: Int, into outcome: inout StructuringOutcome) {
+        outcome.stepRanges = part.steps.map { [$0.firstLine, $0.lastLine] }
+        outcome.sectionLineCounts = (outcome.sectionLineCounts ?? [:]).merging(["steps": lineCount]) { $1 }
     }
 
     /// Every readable line but page clutter (RV-30), in page then reading order, its box on its
@@ -323,15 +359,20 @@ nonisolated struct RecipeStructurer: Sendable {
         ingredientsPromptIntro + "\n" + numbered(lines)
     }
 
+    private static func stepsPrompt(_ lines: [String]) -> String {
+        stepsPromptIntro + "\n" + numbered(lines)
+    }
+
     /// The sections the line labels give: `header`, `ingredient`, `step` and `note` lines; `other`,
     /// unlabelled, clutter and heading lines are dropped, and bullets are removed from ingredient,
     /// step and note lines, as in headed sections (SLT-149). Equipment and nutrition stay as the
-    /// headings found them.
+    /// headings found them. A run of 1 to 3 `ingredient` or `note` lines whose nearest labelled
+    /// lines before and after it (clutter, headings and unlabelled lines skipped) are both `step`
+    /// lines is step lines, in their place (`15` M3-3k, M3-3m), unless a line in the run starts
+    /// with a quantity and a unit, as the ingredient parser reads it. A title line labelled a step
+    /// is no step (M3-3s, `lineKinds`).
     static func labelled(_ lines: [String], labels: GeneratedLineLabels, keeping split: SplitPage) -> SplitPage {
-        var kinds: [Int: String] = [:]
-        for label in labels.labels where kinds[label.line] == nil {
-            kinds[label.line] = label.kind
-        }
+        let kinds = lineKinds(lines, labels: labels)
         var result = SplitPage(equipment: split.equipment, nutrition: split.nutrition,
                                unsectioned: split.unsectioned, hasIngredientsAndSteps: split.hasIngredientsAndSteps)
         for (offset, line) in lines.enumerated() where !PageClutter.isClutter(line) && PageSplitter.heading(line) == nil {
@@ -344,6 +385,63 @@ nonisolated struct RecipeStructurer: Sendable {
             }
         }
         return result
+    }
+
+    /// Each line's label as `labelled` reads it: the first given for the line; then a run of
+    /// ingredient or note lines between step lines made step lines (M3-3k, M3-3m); then a line
+    /// labelled `step` before the first line labelled `ingredient` left unlabelled when a `step`
+    /// line also comes after the last `ingredient` line, since on such a page it is the title or
+    /// a deck, not a step (`15` M3-3s). A page whose steps all come before its ingredients is
+    /// unchanged. `stopAt` is found from these, so such a line stays in the header area.
+    static func lineKinds(_ lines: [String], labels: GeneratedLineLabels) -> [Int: String] {
+        var kinds: [Int: String] = [:]
+        for label in labels.labels where kinds[label.line] == nil {
+            kinds[label.line] = label.kind
+        }
+        let headingLines = Set(IngredientHeadings.lines(lines))
+        let labelledLines = lines.indices.map { $0 + 1 }.filter { number in
+            let line = lines[number - 1]
+            return kinds[number] != nil && !PageClutter.isClutter(line) && PageSplitter.heading(line) == nil
+                && !headingLines.contains(number)
+        }
+        // Each run of ingredient or note lines, in the labelled lines' order.
+        var position = 0
+        while position < labelledLines.count {
+            guard kinds[labelledLines[position]] == "ingredient" || kinds[labelledLines[position]] == "note" else {
+                position += 1
+                continue
+            }
+            var end = position
+            while end + 1 < labelledLines.count,
+                  kinds[labelledLines[end + 1]] == "ingredient" || kinds[labelledLines[end + 1]] == "note" {
+                end += 1
+            }
+            let run = labelledLines[position...end]
+            if run.count <= 3, position > 0, end + 1 < labelledLines.count,
+               kinds[labelledLines[position - 1]] == "step", kinds[labelledLines[end + 1]] == "step",
+               !run.contains(where: { startsWithQuantityAndUnit(lines[$0 - 1]) }) {
+                for number in run {
+                    kinds[number] = "step"
+                }
+            }
+            position = end + 1
+        }
+        // A title line labelled a step (M3-3s).
+        let ingredientLines = kinds.filter { $0.value == "ingredient" }.keys
+        if let firstIngredient = ingredientLines.min(), let lastIngredient = ingredientLines.max(),
+           kinds.contains(where: { $0.value == "step" && $0.key > lastIngredient }) {
+            for (line, kind) in kinds where kind == "step" && line < firstIngredient {
+                kinds[line] = nil
+            }
+        }
+        return kinds
+    }
+
+    /// Whether the line starts with a quantity followed by a unit, as `IngredientLineParser` reads
+    /// it: "½ cup …" does, "25 minutes." doesn't (M3-3m).
+    private static func startsWithQuantityAndUnit(_ line: String) -> Bool {
+        let parsed = IngredientLineParser.parse(PageSplitter.removingBullet(line))
+        return parsed.quantity != nil && parsed.unit != nil
     }
 
     // MARK: Mapping
@@ -380,6 +478,11 @@ nonisolated struct RecipeStructurer: Sendable {
     /// ingredient lines after the first heading are put back, and every ingredient goes under the
     /// last heading before it. Warnings for numbers out of range, a long group name, a repeated
     /// line, each line put back, and every line nothing used.
+    ///
+    /// M3-3q: an item's `item`, when the model gives one, is its text only when its own line's
+    /// parser `rest` holds it (compared without case, whitespace runs as one space), else that `rest`; its `preparation`
+    /// and `note` only when its line holds them, else nil. Under printed headings, a line put back
+    /// after the first heading with a quantity the parser finds gets no `put back` warning.
     static func ingredientGroups(from part: GeneratedIngredientLines, lines: [String]) -> (groups: [IngredientGroup], warnings: [String]) {
         var warnings: [String] = []
         var used = Set<Int>()
@@ -435,14 +538,15 @@ nonisolated struct RecipeStructurer: Sendable {
                 itemRanges.append(item.firstLine...item.lastLine)
                 let rawText = joinedLines(Array(lines[(item.firstLine - 1)...(item.lastLine - 1)]))
                 let parsed = IngredientLineParser.parse(rawText)
+                let names = Self.namesFromLine(rawText, item: item)
                 ingredients.append((item.firstLine, Ingredient(
                     rawText: rawText,
                     quantity: parsed.quantity,
                     unit: parsed.unit,
-                    item: nonEmpty(item.item),
-                    preparation: nonEmpty(item.preparation),
+                    item: names.item,
+                    preparation: names.preparation,
                     isOptional: item.isOptional ?? false,
-                    note: nonEmpty(item.note)
+                    note: names.note
                 )))
             }
 
@@ -521,6 +625,11 @@ nonisolated struct RecipeStructurer: Sendable {
                 used.insert(number)
             }
             all.sort { $0.line < $1.line }
+            // M3-3q: a line put back under a printed heading, with a quantity, is the page's own
+            // ingredient line under its own heading; it isn't flagged.
+            for (line, ingredient) in all where line > firstHeading && ingredient.quantity != nil {
+                putBack.remove(ingredient.id)
+            }
             let before = all.filter { $0.line < firstHeading }.map(\.ingredient)
             if !before.isEmpty {
                 groups.append(IngredientGroup(name: nil, ingredients: before))
@@ -556,6 +665,32 @@ nonisolated struct RecipeStructurer: Sendable {
         return (groups, warnings)
     }
 
+    /// An item's names checked against its own line (M3-3q): the model's `item` only when the
+    /// parser's `rest` for the line (bullet removed) holds it, else that `rest` (nil when empty);
+    /// no item from the model (nil, or an empty answer such as "none") stays nil, as before. Its
+    /// `preparation` and `note` only when the line holds them, else nil.
+    private static func namesFromLine(_ rawText: String, item: GeneratedLineItem)
+        -> (item: String?, preparation: String?, note: String?) {
+        let line = comparable(rawText)
+        let rest = IngredientLineParser.parse(PageSplitter.removingBullet(rawText)).rest
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        func onLine(_ text: String?, in target: String) -> String? {
+            guard let text = nonEmpty(text), !comparable(text).isEmpty,
+                  target.contains(comparable(text)) else { return nil }
+            return text
+        }
+        let name: String? = nonEmpty(item.item) == nil ? nil
+            : onLine(item.item, in: comparable(rest)) ?? (rest.isEmpty ? nil : rest)
+        return (name,
+                onLine(item.preparation, in: line),
+                onLine(item.note, in: line))
+    }
+
+    /// Text for comparing: lowercased, trimmed, whitespace runs as one space (M3-3q).
+    private static func comparable(_ text: String) -> String {
+        text.lowercased().split(whereSeparator: \.isWhitespace).joined(separator: " ")
+    }
+
     /// A line the model skipped, made as an item is: the line, and the parser's quantity, unit and
     /// rest as its item (RV-29).
     private static func putBackIngredient(_ text: String) -> Ingredient {
@@ -589,7 +724,7 @@ nonisolated struct RecipeStructurer: Sendable {
         title: String,
         header: GeneratedHeader?,
         ingredientGroups: [IngredientGroup],
-        steps: GeneratedStepPart?,
+        steps: [Step]?,
         split: SplitPage,
         rules: RuleFields,
         pageIDs: [UUID],
@@ -608,7 +743,7 @@ nonisolated struct RecipeStructurer: Sendable {
             yield: nonEmpty(rules.yieldText).map { Yield(rawText: $0) },
             times: nonEmpty(rules.timesText).map { Times(rawText: $0) },
             ingredientGroups: ingredientGroups,
-            steps: makeSteps(steps?.steps ?? []),
+            steps: steps ?? [],
             notes: split.notes.isEmpty ? nil : split.notes.joined(separator: "\n"),
             attribution: attribution,
             printedNutrition: split.nutrition.isEmpty ? nil : split.nutrition.joined(separator: "\n"),
@@ -616,15 +751,310 @@ nonisolated struct RecipeStructurer: Sendable {
             unreadableAreas: unreadableAreas,
             sourcePageIDs: pageIDs,
             reviewState: .needsReview,
-            extraction: Extraction(promptVersion: 3, warnings: warnings)
+            extraction: Extraction(promptVersion: 4, warnings: warnings)
         )
     }
 
-    /// Steps indexed from 0.
-    private static func makeSteps(_ steps: [GeneratedStep]) -> [Step] {
-        steps.enumerated().map { index, step in
-            Step(index: index, text: step.text, groupName: nonEmpty(step.groupName))
+    // MARK: Steps (`15` M3-3j, RV-39)
+
+    /// A step range spanning more lines than this is out of range.
+    static let maximumStepLines = 15
+
+    /// The steps the model's line numbers give, the words being `lines`' own (numbered from 1), in
+    /// line order (M3-3j, with M3-3k's rules). A group heading (`IngredientHeadings`: a short line
+    /// ending `:`) is no step: each step after it, until the next, has it (less the `:`) as its
+    /// `groupName`. A range in range, `firstLine <= lastLine`, at most 15 lines, its lines neither
+    /// used nor headings, is kept; any other is dropped with `step lines out of range`. Then:
+    ///
+    /// 1. A step marker line (`4.`, `4)`, `Step 4`, with or without a `:`) adds no text, and the
+    ///    next line starts a step. A line starting with a printed step number or `Step 4` starts a
+    ///    step inside a range, and the number is removed from its text.
+    /// 2. On a numbered page (two or more lines start with a step number or are markers), a step
+    ///    starts only at a number, after a marker, or first after a heading; anything else joins
+    ///    the step before.
+    /// 3. A range or skipped line that doesn't start at a number or marker joins the step before,
+    ///    in its group, when it starts lowercase or that step is left open (no `.`, `!` or `?` at
+    ///    its end, and it is neither a heading-shaped line nor a fragment).
+    /// 4. With `putsBackSkipped`, a skipped line (not used, not a heading, not clutter) that would
+    ///    start a step is put back (`put back: step n`) only between the first kept range's first
+    ///    line and the last one's last line, or when it starts with a number or follows a marker;
+    ///    any other is left out. Without it (the fallback over the whole page), skipped lines are
+    ///    left out.
+    /// 5. A one-line step of at most 4 capitalised words, no digit, no `.` or `?` at its end,
+    ///    followed by another step in its group, names the steps after it in that group instead.
+    /// 6. A step with fewer than 2 words with a letter, not ending with `.`, `!` or `?`, is left out.
+    ///
+    /// M3-3m: marker and heading lines inside a range are taken out of it (not counted toward its
+    /// 15 lines), so only a range with nothing left, or one touching a line already used, is
+    /// dropped; the first line after a marker or a heading, skipped, is put back wherever it is;
+    /// on a numbered page, rule 2 joins neither a heading-shaped one-line piece nor anything onto
+    /// one; and a line such as "Related Pages" ends the steps, it and every line after it no
+    /// step's.
+    ///
+    /// A step's text is its lines (clutter left out) joined with a space, a line ending with `-`
+    /// joining the next with no space. Indexed from 0 after these rules.
+    static func steps(from part: GeneratedStepLines, lines: [String],
+                      putsBackSkipped: Bool = true) -> (steps: [Step], warnings: [String]) {
+        var warnings: [String] = []
+        let headings = Set(IngredientHeadings.lines(lines))
+        // M3-3m: the method ends before a line such as "Related Pages"; only lines before it are
+        // steps' lines.
+        let stepLineCount = lines.firstIndex(where: endsMethod) ?? lines.count
+        let markers = Set(lines.indices.filter { isStepMarker(lines[$0]) }.map { $0 + 1 })
+
+        // The kept ranges, by line: each line's range's first line. Marker and heading lines are
+        // taken out of a range (M3-3m), and it is cut short before the method's end.
+        var rangeStart: [Int: Int] = [:]
+        var keptSpan: ClosedRange<Int>?
+        for range in part.steps {
+            guard range.firstLine >= 1, range.lastLine <= lines.count, range.firstLine <= range.lastLine else {
+                warnings.append("step lines out of range")
+                continue
+            }
+            let numbers = (range.firstLine...range.lastLine).filter { number in
+                number <= stepLineCount && !markers.contains(number) && !headings.contains(number)
+            }
+            guard let first = numbers.first, let last = numbers.last, numbers.count <= maximumStepLines,
+                  numbers.allSatisfy({ rangeStart[$0] == nil }) else {
+                warnings.append("step lines out of range")
+                continue
+            }
+            for number in numbers {
+                rangeStart[number] = range.firstLine
+            }
+            keptSpan = keptSpan.map { min($0.lowerBound, first)...max($0.upperBound, last) } ?? first...last
         }
+
+        // Rule 1: the lines as pieces, in line order. A piece is a run of a range's lines up to a
+        // number or a marker, or one skipped line; a heading is its own piece.
+        var pieces: [StepPiece] = []
+        var afterMarker = false
+        // The last line before this one (not empty, not clutter) was a marker or a heading (M3-3m).
+        var afterLabel = false
+        for (offset, rawLine) in lines.prefix(stepLineCount).enumerated() {
+            let number = offset + 1
+            let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
+            if headings.contains(number) {
+                pieces.append(StepPiece(heading: String(line.dropLast()).trimmingCharacters(in: .whitespaces)))
+                afterMarker = false
+                afterLabel = true
+                continue
+            }
+            guard !line.isEmpty, !PageClutter.isClutter(line) else { continue }
+            if markers.contains(number) {
+                afterMarker = true
+                afterLabel = true
+                continue
+            }
+            let startsNumbered = stepNumberLength(line) != nil
+            if let start = rangeStart[number], let last = pieces.last, last.rangeStart == start,
+               !startsNumbered, !afterMarker {
+                pieces[pieces.count - 1].lines.append(line)
+            } else {
+                pieces.append(StepPiece(lines: [line], line: number, rangeStart: rangeStart[number],
+                                        isNumbered: startsNumbered || afterMarker, followsLabel: afterLabel))
+            }
+            afterMarker = false
+            afterLabel = false
+        }
+
+        // Rules 2 to 4: each piece starts a step, joins the one before, or is left out.
+        let isNumberedPage = lines.prefix(stepLineCount).filter { line in
+            let text = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            return stepNumberLength(text) != nil || isStepMarker(text)
+        }.count >= 2
+        var built: [(lines: [String], groupName: String?, isPutBack: Bool)] = []
+        var groupName: String?
+        var stepsInGroup = 0
+        for piece in pieces {
+            if let heading = piece.heading {
+                groupName = heading
+                stepsInGroup = 0
+                continue
+            }
+            let isSkipped = piece.rangeStart == nil
+            if isSkipped && !putsBackSkipped { continue }
+            let joins: Bool
+            if stepsInGroup == 0 || piece.isNumbered {
+                joins = false
+            } else if isNumberedPage {
+                // M3-3m: never a heading-shaped one-line piece, nor anything onto one.
+                let before = built[built.count - 1].lines
+                joins = !isHeadingShapedLine(piece.lines) && !isHeadingShapedLine(before)
+            } else {
+                let before = built[built.count - 1].lines
+                let beforeText = removingStepNumber(joinedStepText(before))
+                let isOpen = !endsSentence(beforeText) && !isFragment(beforeText)
+                    && !(before.count == 1 && isHeadingShaped(beforeText))
+                joins = (piece.lines[0].first?.isLowercase ?? false) || isOpen
+            }
+            if joins {
+                built[built.count - 1].lines.append(contentsOf: piece.lines)
+                continue
+            }
+            if isSkipped {
+                let isBetweenSteps = keptSpan.map { piece.line > $0.lowerBound && piece.line < $0.upperBound } ?? false
+                guard piece.isNumbered || piece.followsLabel || isBetweenSteps else { continue }
+            }
+            built.append((piece.lines, groupName, isSkipped))
+            stepsInGroup += 1
+        }
+
+        // Rule 5: a heading-shaped one-line step followed by another in its group names the
+        // steps after it in that group.
+        var named: [(text: String, groupName: String?, isPutBack: Bool)] = []
+        var heading: (group: String?, name: String)?
+        for (index, step) in built.enumerated() {
+            let text = removingStepNumber(joinedStepText(step.lines))
+            if let current = heading, current.group != step.groupName {
+                heading = nil
+            }
+            if step.lines.count == 1, isHeadingShaped(text),
+               index + 1 < built.count, built[index + 1].groupName == step.groupName {
+                heading = (step.groupName, text)
+                continue
+            }
+            named.append((text, heading?.name ?? step.groupName, step.isPutBack))
+        }
+
+        // Rule 6: fragments are left out; the rest are indexed from 0.
+        var steps: [Step] = []
+        for step in named where !step.text.isEmpty && !isFragment(step.text) {
+            steps.append(Step(index: steps.count, text: step.text, groupName: step.groupName))
+            if step.isPutBack {
+                warnings.append("put back: step \(steps.count)")
+            }
+        }
+        return (steps, warnings)
+    }
+
+    /// A run of a step range's lines, one skipped line, or a heading, in `steps(from:lines:)`.
+    private struct StepPiece {
+        var lines: [String] = []
+        /// Its first line's number.
+        var line = 0
+        /// The first line of the kept range it is in; nil for a skipped line.
+        var rangeStart: Int?
+        /// It starts at a printed step number or follows a marker.
+        var isNumbered = false
+        /// It is the first line after a marker or a heading (M3-3m).
+        var followsLabel = false
+        /// A heading's name.
+        var heading: String?
+    }
+
+    /// The lines that end a recipe's method (M3-3m), compared trimmed, in lowercase, less a `:`.
+    private static let methodEnds: Set<String> = [
+        "related pages", "related recipes", "more recipes", "you may also like", "frequently asked questions",
+    ]
+
+    /// Whether the line reads as one of `methodEnds`.
+    private static func endsMethod(_ line: String) -> Bool {
+        var text = line.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if text.hasSuffix(":") {
+            text = String(text.dropLast()).trimmingCharacters(in: .whitespaces)
+        }
+        return methodEnds.contains(text)
+    }
+
+    /// One line with a heading's shape (rule 5), its step number removed.
+    private static func isHeadingShapedLine(_ lines: [String]) -> Bool {
+        lines.count == 1 && isHeadingShaped(removingStepNumber(joinedStepText(lines)))
+    }
+
+    /// Whether the text ends with `.`, `!` or `?`.
+    private static func endsSentence(_ text: String) -> Bool {
+        text.hasSuffix(".") || text.hasSuffix("!") || text.hasSuffix("?")
+    }
+
+    /// Fewer than 2 words with a letter, and no `.`, `!` or `?` at its end (M3-3k rule 6).
+    private static func isFragment(_ text: String) -> Bool {
+        let words = text.split(whereSeparator: \.isWhitespace).filter { $0.contains(where: \.isLetter) }
+        return words.count < 2 && !endsSentence(text)
+    }
+
+    /// At most 4 words, each starting with a capital letter, no digit, and no `.` or `?` at its
+    /// end (M3-3k rule 5).
+    private static func isHeadingShaped(_ text: String) -> Bool {
+        let words = text.split(whereSeparator: \.isWhitespace)
+        return (1...4).contains(words.count)
+            && words.allSatisfy { $0.first?.isUppercase ?? false }
+            && !text.contains(where: \.isNumber)
+            && !text.hasSuffix(".") && !text.hasSuffix("?")
+    }
+
+    /// A line that is only a step number (`4.`, `4)`) or `Step` and a number, with or without a
+    /// `:` after it.
+    private static func isStepMarker(_ line: String) -> Bool {
+        var text = Substring(line.trimmingCharacters(in: .whitespacesAndNewlines))
+        if text.hasSuffix(":") {
+            text = text.dropLast()
+        }
+        if let rest = droppingStepWord(text) {
+            return !rest.isEmpty && rest.allSatisfy(isDigit)
+        }
+        let digits = text.prefix(while: isDigit)
+        let mark = text.dropFirst(digits.count)
+        return !digits.isEmpty && (mark == "." || mark == ")")
+    }
+
+    /// Whether the character is 0 to 9.
+    private static func isDigit(_ character: Character) -> Bool {
+        ("0"..."9").contains(character)
+    }
+
+    /// The text after a leading `Step` and its spaces, or nil when it doesn't start with `Step`.
+    private static func droppingStepWord(_ text: Substring) -> Substring? {
+        guard text.prefix(4).lowercased() == "step" else { return nil }
+        let rest = text.dropFirst(4)
+        let trimmed = rest.drop(while: \.isWhitespace)
+        return trimmed.first.map(isDigit) == true ? trimmed : nil
+    }
+
+    /// How many characters a leading step number takes (with its mark and space), or nil: digits,
+    /// then `.` or `)` and a space; digits, a space and a capital letter; or `Step` and a number,
+    /// a `:` or `.` if printed, and a space (M3-3k rule 1).
+    private static func stepNumberLength(_ text: String) -> Int? {
+        let whole = Substring(text)
+        if let afterWord = droppingStepWord(whole) {
+            let digits = afterWord.prefix(while: isDigit)
+            var rest = afterWord.dropFirst(digits.count)
+            if rest.first == ":" || rest.first == "." {
+                rest = rest.dropFirst()
+            }
+            guard rest.first?.isWhitespace == true, rest.contains(where: { !$0.isWhitespace }) else { return nil }
+            return whole.count - rest.drop(while: \.isWhitespace).count
+        }
+        let digits = text.prefix { ("0"..."9").contains($0) }
+        guard !digits.isEmpty else { return nil }
+        let rest = Array(text.dropFirst(digits.count))
+        if rest.count >= 2, rest[0] == "." || rest[0] == ")", rest[1] == " " {
+            return digits.count + 2
+        }
+        if rest.count >= 2, rest[0] == " ", rest[1].isUppercase {
+            return digits.count + 1
+        }
+        return nil
+    }
+
+    /// The text without its leading step number.
+    private static func removingStepNumber(_ text: String) -> String {
+        guard let length = stepNumberLength(text) else { return text }
+        return String(text.dropFirst(length)).trimmingCharacters(in: .whitespaces)
+    }
+
+    /// Lines trimmed and joined with a space, except that a line ending with `-` joins the next
+    /// with no space (the `-` kept).
+    private static func joinedStepText(_ lines: [String]) -> String {
+        var result = ""
+        for line in lines.map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) }) where !line.isEmpty {
+            if result.isEmpty || result.hasSuffix("-") {
+                result += line
+            } else {
+                result += " " + line
+            }
+        }
+        return result
     }
 
     /// The text, or nil for an empty answer such as "none" (SLT-152).

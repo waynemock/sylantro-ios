@@ -29,22 +29,13 @@ struct StoreRecoveryView: View {
                 Text("Something went wrong opening your recipe library. Nothing has been deleted.")
                 Text("A copy of every recipe and photo is safe in Files, in the Sylantro folder.")
 
+                // SyLib's `CapsuleButton` (SLT-161).
                 VStack(spacing: 12) {
-                    Button(action: tryAgain) {
-                        Text("Try Again")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-
-                    Button(role: .destructive) {
+                    CapsuleButton("Try Again", style: .primary, size: .large, fillsWidth: true, action: tryAgain)
+                    CapsuleButton("Start Fresh", style: .destructive, size: .large, fillsWidth: true) {
                         isConfirmingStartFresh = true
-                    } label: {
-                        Text("Start Fresh")
-                            .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.bordered)
                 }
-                .controlSize(.large)
 
                 DisclosureGroup("Details") {
                     Text(errorText)

@@ -1,9 +1,9 @@
 # Sylantro — Accuracy Test Set
 
-**Design document · the spike's 25 real binder pages: how they are scored, what makes them hard,
+**Design document · the spike's 30 real binder pages: how they are scored, what makes them hard,
 and the design questions they raise**
-Version 0.28 · 25 November 2026 · **Draft, not accepted; TS-5, TS-10, TS-11 and TS-15 ruled in `15` RV-18 (filed at M3's close);
-SP-21 and SP-22 open; the rest are settled (SLT-045 to SLT-048, SLT-062 to SLT-065, SLT-070, SLT-071) and TS-12 is
+Version 0.35 · 25 November 2026 · **Draft, not accepted; TS-5, TS-10, TS-11 and TS-15 ruled in `15` RV-18 (filed at M3's close);
+SP-21 in `15` M3-3s, SP-22 built in M3-3a; the rest are settled (SLT-045 to SLT-048, SLT-062 to SLT-065, SLT-070, SLT-071) and TS-12 is
 done.** Not for the agent until a task names it.
 
 Ships with `00_DECISION_LEDGER.md`, `00A_STUDIO_CONVENTIONS.md` and `00B_SYLANTRO_GUARDRAILS.md`.
@@ -37,15 +37,19 @@ made up the same way.
 
 | Kind | Pages | What it is |
 |---|---|---|
-| Web print, recipe site | TP-01, TP-03, TP-04, TP-09, TP-16 to TP-18, TP-22, TP-23, TP-25 | A browser's print of a recipe page: logo, photo, ratings, "Related Pages", and a footer with the URL, the print date and "Page n of m" |
+| Web print, recipe site | TP-01, TP-03, TP-04, TP-09, TP-16 to TP-18, TP-22, TP-23, TP-25, TP-26 to TP-30 | A browser's print of a recipe page: logo, photo, ratings, "Related Pages", and a footer with the URL, the print date and "Page n of m" |
 | Typed, family | TP-05 to TP-08, TP-10 to TP-13 | Word-processor pages from one family cook: no headings, kitchen shorthand, a running method, notes inside the method |
 | Magazine clipping | TP-14, TP-15, TP-20, TP-24 | Glossy pages, text over or beside large photos, multi-column, stained and yellowed |
 | Class handout | TP-02 | A kids' cooking class sheet with an Equipment column and an alternate method |
 | Handwritten | TP-19, TP-21 | Written by hand on notebook paper or the back of a printed page: kitchen shorthand, no headings, crossed-out words |
 | Printed with handwritten additions | TP-23, TP-25 (also web prints) | Her own changes written beside the printed list: a column of added ingredients, one line in red ink |
 
-25 pages make **25 recipes**. Three recipes run across two pages (TP-05 + TP-06, TP-07 + TP-08,
-TP-16 + TP-17), and the first page of one of them (TP-16) holds only the header. One page (TP-24)
+30 pages make **26 recipes**. Three recipes run across two pages (TP-05 + TP-06, TP-07 + TP-08,
+TP-16 + TP-17), and the first page of one of them (TP-16) holds only the header. One runs across
+five (TP-26 to TP-30, added 25 Nov 2026): five ingredient groups, ten steps each printed with a
+"Step n" label and a heading, steps that cross page breaks, and a last page with no recipe
+content. It joins the runs from run 12 on, once the spike joins its five pages into one capture;
+runs 10 and 11 cover the first 25 pages only. One page (TP-24)
 holds **four recipes**, the last cut off at its foot; she picks which to save (SLT-047). Six recipes have a page that was not
 photographed: three web prints say "Page 1 of 2" (TP-03, TP-04, TP-18), TP-22 is "Page 2 of 3",
 TP-23 is "Page 1 of 3", and TP-24's last recipe continues overleaf. TP-18, TP-22, TP-23 and that
@@ -550,7 +554,7 @@ Why:
 
 | # | Proposal | Why |
 |---|---|---|
-| SP-21 | On the labels path, the header area always holds at least the first 5 lines, or up to the first line labelled `step` if that is later, so a title's continuation is offered | TP-15's title is cut to its first word; the labels end the area at line 2 |
+| SP-21 | On the labels path, the header area always holds at least the first 5 lines, or up to the first line labelled `step` if that is later, so a title's continuation is offered | TP-15's title is cut to its first word; the labels end the area at line 2. **Accepted with RV-39 (`15`); built in M3-3s** |
 | SP-22 | A step not found within one page is looked for as a run that may cross into the next page; its position is the part on the first page | One step in the set runs onto the next page and gets no position |
 
 ### Run 8 · 25 November 2026 (Milestone 3, task M3-5s)
@@ -604,6 +608,106 @@ nothing.
 | Titles | 3 fixable by rule (labels-path area, SP-21; a label line after the title; a breadcrumb line first); 2 the model's choice; 1 handwriting; 1 several recipes | 7 pages |
 | Quantity and unit | "Zest of 1 …", "Pinch …", "2 bags …", "1(14.5-ounce) can …", OCR misreads of tsp | 2 pages |
 
+### Run 10 · 25 November 2026 (Milestone 3, after M3-3j)
+
+On the build with M3-3j (steps as line numbers, `promptVersion` 4). Per-page notes outside git
+(`SPIKE_10_SCORING.md`). 22 of 22 captures finished.
+
+**Titles and ingredients are the same as run 9** (titles 15 of 22, ingredients 193, 185 with a
+position). **Steps:** 70 (60 with a position), against 74 (64); step counts match the key on 8
+pages, against about 11.
+
+**What changed:** the model no longer drops words from a step. Every step is now the page's own
+lines. What is left is mechanical:
+
+| Fault | What happens | Pages |
+|---|---|---|
+| Lines given to another part | On line-labelled pages, a step's middle line labelled an ingredient or a note leaves a gap in the step | 3 |
+| Splits mid-sentence | The model's ranges break a sentence, and nothing joins it back (the join rule covers only skipped lines) | 5 |
+| Labels and stray lines as steps | "Step n" labels, a lone step number, a footer, a copyright line, a time label, an ingredient's second line | 6 |
+| Step headings with no colon | Short headings like a section name become steps | 1 |
+| A step across two pages | Its text is right, but it has no position | 2 |
+
+### Run 11 · 25 November 2026 (Milestone 3, after M3-3k)
+
+On the build with M3-3k (step clean-up rules). Per-page notes outside git (`SPIKE_11_SCORING.md`).
+The 22 captures as before, plus the five-page recipe (TP-26 to TP-30) as one capture, added by hand.
+
+**The 22:** titles are the same. Ingredients are the same but on 2 pages: one ingredient line was
+wrongly moved into a step, and one step line was rightly moved back. **Steps:** 54 (45 with a
+position), against 70 (60). Step counts match the key on 13 pages, against 7. Left: a step heading
+with no colon joined on a numbered page, two step lines in a row given to the ingredients, a
+"Related Pages" list joined to the last step, a join across a footer, and one ingredient line
+moved into a step.
+
+**The five-page recipe:** title, yield, times and all 31 ingredients in their 5 groups are right.
+But every ingredient is flagged as put back, and one carries a misread footer. Only 4 of its 10
+steps came through. The model's ranges took in each step's label and heading lines, and a range
+that touches a heading is dropped.
+
+---
+
+### Run 12 · 25 November 2026 (Milestone 3, after M3-3m to M3-3p, in the background)
+
+On the build with M3-3m (steps under labels and headings) to M3-3p, run with BG Run All: every
+capture after the first was read and structured with Sylantro in the background. Per-page notes
+outside git (`SPIKE_12_SCORING.md`). 23 captures, the five-page recipe now loaded as one by Load
+Test Set. The title comparison (M3-5s) is off in a background run, so this run has no title lists.
+
+**In the background:** all 23 captures done, none refused, no wait, no expiry. The task ran 3 min
+48 s and completed. The on-device model answers in the background under a task she starts.
+
+**The 22:** titles are the same. Steps the same on 18 pages. Better on three: a step's middle words
+come back on the two-column web print (two lines in a row had been given to the ingredients), the
+colonless headings on the numbered class sheet now name their steps, and one fewer step range is
+dropped on the empanada page. One ingredient comes back (the right count on two pages), and the
+line that was wrongly moved into a step is an ingredient again. One page is worse: the magazine
+salad's TIP sidebar now comes through as two extra steps. Left: the "Related Pages" line was misread,
+so the method didn't end there; the across-page and column faults as before.
+
+**The five-page recipe:** all 10 steps, each with its printed heading as its group, none lost (4
+before). Title, yield, times, and all 31 ingredient lines in their 5 groups are right. But 21
+ingredients are still flagged as put back: the model answered for the first group only.
+
+**A fault found by the new fields:** on three pages (the five-page recipe, the magazine salad, the
+four-recipe page) an ingredient's item name comes from the line after its own. Its words, quantity,
+unit and position are right; the item name is the model's own text, and the model's line number
+for it is one off. It has been so since run 9 and wasn't visible before.
+
+**Web extras (Pops, 25 Nov 2026):** an FAQ box and other web extras around a recipe are not worth
+structuring. They are never expected in any field.
+
+---
+
+### Run 13 · 25 November 2026 (Milestone 3, after M3-3q)
+
+On the build with M3-3q (each ingredient's name from its own line), a plain Run All in front, so
+the title comparison ran. Per-page notes outside git (`SPIKE_13_SCORING.md`). 23 captures.
+
+**Ingredient names:** every ingredient's name now comes from its own line: 0 names from another
+line, against 24 in run 12 (the five-page recipe, the magazine salad, the four-recipe page).
+**The five-page recipe:** its 21 put-back flags are gone; all 31 lines, 5 groups and 10 steps are
+right, with no warning. **Everything else** is the same as run 12: titles, title lists, steps,
+ingredient counts and the other warnings. Left for the unit rules: six names still open with a
+size or count the parser doesn't take ("15-ounce can …", "1 onion").
+
+### Run 14 · 25 November 2026 (Milestone 3, after M3-3r and M3-3s)
+
+On the build with M3-3s (the title rules), a plain Run All in front. Per-page notes outside git
+(`SPIKE_14_SCORING.md`). 23 captures.
+
+**Titles fixed (3):** the granola web print (the label line no longer joins it), the slow-cooker
+web print (the section name and navigation line dropped), and the hummus page (its title line is
+the title and no longer opens step 1). **Titles broken (4):** four typed or handwritten cards on
+the labels path now take in their first ingredient lines. The 5-line minimum (SP-21) brings those
+lines into the header area; the model answers with all of them as its title, and they are the same
+size, so the snapped title takes in one or two. **Still wrong:** the magazine salad now reads
+"salad with beets and Feta": the area holds all three lines, but the model starts its title at the
+second. **Steps:** counts match the key on 12 pages (13 before). The hummus page loses its second
+step to an overlapping line range from the model, and the activity sheet and the empanada page 2
+change with their labels; Part 3 removed the activity sheet's "Place It!" box from the steps, as
+the key wants. **Ingredients:** unchanged.
+
 ---
 
 
@@ -612,6 +716,13 @@ nothing.
 | Version | Decision | Rationale |
 |---|---|---|
 | 0.28 | §7: run 9 scored: the same as run 8 on every capture; where single-recipe reading still falls short | Pops, 25 Nov 2026: "run 9 done" |
+| 0.29 | §7: run 10 scored: steps keep the page's words; titles and ingredients unchanged; the splitting faults left | Pops, 25 Nov 2026: "run 10 done" |
+| 0.30 | §1: TP-26 to TP-30 added, a five-page web print (26 recipes on 30 pages); in the runs once the spike joins its pages | Pops, 25 Nov 2026: "here are the kolaches recipe pages … roll them into the spike test harness" |
+| 0.31 | §7: run 11 scored: step counts match the key on 13 pages (7 before); the five-page recipe's steps mostly lost | Pops, 25 Nov 2026: "done" (run 11) |
+| 0.32 | §7: run 12 scored, in the background: all 23 captures structured with the app in the background, none refused; the five-page recipe's 10 steps all right; an item name one line off found on three pages; web extras such as an FAQ never expected | Pops, 25 Nov 2026: "ok, run in bg completed"; "lets skip it for now...not interesting to process into structured data..." |
+| 0.33 | §7: run 13 scored: every ingredient's name from its own line (0 off, 24 before); the five-page recipe's 21 put-back flags gone; the rest as run 12 | Pops, 25 Nov 2026: "spike run done" (run 13) |
+| 0.34 | SP-21 accepted with RV-39 and written into `15` M3-3s | RV-39 |
+| 0.35 | §7: run 14 scored: three titles fixed (granola, slow-cooker, hummus) and the hummus title out of its steps; four cards' titles now take in ingredient lines through SP-21's 5-line area; step counts match on 12 pages (13 before) | Pops, 25 Nov 2026: "spike 14 done" |
 | 0.27 | §7: run 8 scored (M3-5s's build): the model's title list finds the four-recipe page's titles with one false split, big type ten; titles 15 of 22 (one lost to a label line), step positions 64 of 74 | `15` M3-5s, RV-35; Pops, 24 Nov 2026: "ok run 8 done"; 25 Nov 2026 (decision card, "Model list, join adjacent lines") |
 | 0.26 | §7: run 7 scored (M3-1's build): titles 16 of 22, positions for 96% of ingredients and 85% of steps; SP-21 and SP-22 proposed | `15` M3-1; Pops, 24 Nov 2026: "ok run 7 done, check it out" |
 | 0.25 | §7: run 6's results and Milestone 1's verdict; SP-20 carried to Milestone 3 | SLT-156 (Pops, 22 Nov 2026: "close out milestone 1"; "ok we will finish the spike") |

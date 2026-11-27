@@ -13,12 +13,21 @@ nonisolated enum HeaderArea {
     private static let maximumLines = 25
     /// When the area would be empty, this many lines are taken instead.
     private static let fallbackLines = 10
+    /// On the labels path the area runs at least this many lines (SP-21, `15` M3-3s).
+    private static let minimumLabelledLines = 5
 
     /// `lines` is the first page's lines in reading order, with each box's height. `stopAt` is the
-    /// index of the first line labelled `ingredient` or `step`, when labels ran.
+    /// index of the first line labelled `ingredient` or `step`, when labels ran; the area then runs
+    /// to the later of it and the 5th line (SP-21, `15` M3-3s), the lines added after `stopAt`
+    /// stopping before the first quantity line (`15` M3-3t).
     static func lines(_ lines: [(text: String, height: Double)], stopAt: Int?) -> [HeaderLine] {
-        // 1. The end: the first labelled ingredient or step, else the first heading, else the page.
-        let end = stopAt ?? lines.firstIndex { PageSplitter.heading($0.text) != nil } ?? lines.count
+        // 1. The end: the first labelled ingredient or step, but not before the 5th line unless a
+        // quantity line comes first (lines before `stopAt` are always kept); else the first
+        // heading, else the page.
+        let end = stopAt.map { stopAt in
+            let firstQuantity = lines.prefix(minimumLabelledLines).firstIndex { startsWithQuantity($0.text) }
+            return max(stopAt, min(minimumLabelledLines, firstQuantity ?? minimumLabelledLines))
+        } ?? lines.firstIndex { PageSplitter.heading($0.text) != nil } ?? lines.count
         var taken = Array(lines.prefix(min(max(end, 0), maximumLines)))
         // 2. Nothing before the end: the first lines instead.
         if taken.isEmpty {
@@ -63,7 +72,11 @@ nonisolated enum HeaderArea {
     /// the start: the first area line equal to the first of them, else the first run of 2 or 3
     /// lines matching it. The title takes in the following area lines, up to 3 in all, while each
     /// isn't a side line and either starts lowercase or is the model's next line at 0.8 to 1.25
-    /// times the start's size. A title starting with a step number is no title. An answer with no
+    /// times the start's size, and isn't a quantity line (`15` M3-3t). A title starting with a step
+    /// number is no title. Navigation lines
+    /// (` | ` twice or more) and the breadcrumb line just before one are never title: the model's
+    /// lines equal to one are dropped with the side lines, and the title never takes one in
+    /// (`15` M3-3s). An answer with no
     /// line left, or none found, gives the largest line (the first of equal ones), with `snapped`
     /// false; an empty area gives `""`, and so does a largest line starting with a step number.
     static func snappedTitle(_ text: String, area: [HeaderLine], author: String? = nil,
@@ -73,11 +86,18 @@ nonisolated enum HeaderArea {
             return ("", false)
         }
 
-        // 2. The model's lines, less side lines.
+        // 2. The model's lines, less side lines and the area's navigation and breadcrumb lines.
+        let barred = barredLines(in: area)
+        let barredTexts = Set(barred.map { TextMatch.normalize(area[$0].text) })
+        // A label line is a side line, but not as the model's first line: a title that is itself
+        // one is unchanged.
         let modelLines = text.split(whereSeparator: \.isNewline)
             .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty && !isSideLine($0, author: author, sourceHost: sourceHost) }
-            .map(TextMatch.normalize)
+            .filter { !$0.isEmpty }
+            .enumerated()
+            .filter { !isSideLine($0.element, author: author, sourceHost: sourceHost, labels: $0.offset > 0) }
+            .map { TextMatch.normalize($0.element) }
+            .filter { !barredTexts.contains($0) }
 
         // 3. The start: one area line, else a run of 2 or 3.
         guard let firstModelLine = modelLines.first, let start = startRun(of: firstModelLine, in: area) else {
@@ -93,7 +113,8 @@ nonisolated enum HeaderArea {
         var index = start.upperBound
         while titleLines.count < maximumTitleLines, index < area.count {
             let line = area[index]
-            guard !isSideLine(line.text, author: author, sourceHost: sourceHost) else {
+            guard !isSideLine(line.text, author: author, sourceHost: sourceHost), !barred.contains(index),
+                  !startsWithQuantity(line.text) else {
                 break
             }
             let normalized = TextMatch.normalize(line.text)
@@ -136,10 +157,34 @@ nonisolated enum HeaderArea {
         return nil
     }
 
+    /// The normalized starts of a label line (`15` M3-3s, moved from M3-5): each followed by a
+    /// space (a printed `:` normalizes to one) and more text.
+    private static let labelStarts = [
+        "author", "by", "prep time", "cook time", "total time", "active time", "yield", "serves", "servings", "makes",
+    ]
+
+    /// The indexes of the area's navigation lines (holding ` | ` two or more times) and of the line
+    /// just before each, its breadcrumb (`15` M3-3s).
+    private static func barredLines(in area: [HeaderLine]) -> Set<Int> {
+        var barred = Set<Int>()
+        for (index, line) in area.enumerated() where line.text.components(separatedBy: " | ").count >= 3 {
+            barred.insert(index)
+            if index > 0 {
+                barred.insert(index - 1)
+            }
+        }
+        return barred
+    }
+
     /// A line that is the site's name (its letters and digits, at least 4, found in the host
     /// without dots) or the author's line: the name alone, or `by` and the name, compared
-    /// normalized (`15` M3-2a, RV-25). A title that merely holds the name isn't one.
-    private static func isSideLine(_ line: String, author: String?, sourceHost: String?) -> Bool {
+    /// normalized (`15` M3-2a, RV-25). A title that merely holds the name isn't one. Also a label
+    /// line, such as "Author: … Prep Time: …" (`15` M3-3s), unless `labels` is false.
+    private static func isSideLine(_ line: String, author: String?, sourceHost: String?, labels: Bool = true) -> Bool {
+        let normalized = TextMatch.normalize(line)
+        if labels, labelStarts.contains(where: { normalized.hasPrefix($0 + " ") && normalized.count > $0.count + 1 }) {
+            return true
+        }
         if let sourceHost {
             let letters = String(line.lowercased().filter { $0.isLetter || ("0"..."9").contains($0) })
             if letters.count >= minimumSiteNameLength, sourceHost.replacingOccurrences(of: ".", with: "").contains(letters) {
@@ -154,6 +199,33 @@ nonisolated enum HeaderArea {
             }
         }
         return false
+    }
+
+    /// Whether the text, trimmed, starts with a bullet (as `PageSplitter.removingBullet` finds one),
+    /// or with a quantity and a space: digits, a fraction such as `1/2`, a fraction character, or
+    /// digits joined to one (`1½`) (`15` M3-3t). "5-minute …" and "3-Bean …" aren't.
+    nonisolated static func startsWithQuantity(_ text: String) -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if PageSplitter.removingBullet(trimmed) != trimmed {
+            return true
+        }
+        let characters = Array(trimmed)
+        var index = 0
+        while index < characters.count, ("0"..."9").contains(characters[index]) {
+            index += 1
+        }
+        let digits = index
+        if digits > 0, index + 1 < characters.count, characters[index] == "/", ("0"..."9").contains(characters[index + 1]) {
+            index += 1
+            while index < characters.count, ("0"..."9").contains(characters[index]) {
+                index += 1
+            }
+        } else if index < characters.count, IngredientLineParser.unicodeFractions[characters[index]] != nil {
+            index += 1
+        } else if digits == 0 {
+            return false
+        }
+        return index < characters.count && characters[index] == " "
     }
 
     /// One or more digits, then `.` or `)`, then a space.
